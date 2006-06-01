@@ -1,0 +1,48 @@
+% -*- mode: noweb; noweb-default-code-mode: R-mode; -*-
+\documentclass[a4paper]{article}
+
+\title{\texttt{pcalg}: A brief overview}
+\author{Markus Kalisch}
+%\VignetteIndexEntry{pcalg}
+
+\usepackage{a4wide}
+
+\usepackage{/usr/local64.sfs/app/R/R-2.3.1-ATLAS-inst/share/texmf/Sweave}
+\begin{document}
+
+\maketitle
+\section{General Introduction}
+In this document, we will give a short overview of the R-package
+\texttt{pcalg}. The package can be used to analyze dependencies among
+random variables. The main functions are
+\begin{itemize}
+\item \texttt{pcAlgo}: (also see \texttt{?pcAlgo}) Use the PC-Algorithm to
+  estimate the skeleton of a 
+  DAG. A DAG is a Directed Acyclic Graph and the skeleton of a DAG is the
+  DAG without the arrowheads. In practice, the skeleton will only be a good
+  estimate, if you have 
+  way more samples than nodes. If not, you will only get the edges, that
+  show the most obvious ``direct'' dependencies (``direct'' means: The
+  dependence didn't go away, even when conditioning on any subset of the
+  remaining variables). Using the plot option \texttt{zvalue.lwd} you can
+  further qualify the edges by choosing their line width according to their
+  reliability in the statistical tests. I.e., thick lines show reliable
+  dependencies. The value of this function is an object of S4 class
+  ``pcAlgo'' (see \texttt{?pcAlgo-class}) on which you can use
+  \texttt{plot}, \texttt{summary} and \texttt{show}.
+\item \texttt{corGraph}: (see also \texttt{?corGraph}) Each pair of
+  variables is tested for zero 
+  correlation on a given significance level. If a test is rejected, the
+  corresponding edge in the graph is kept. I.e., the graph shows an edge
+  between correlated nodes.
+\end{itemize}
+Furthermore, there are some functions that generate random data and perform
+statistical tests.
+
+\section{Some examples}
+In this section, we will show some simple examples with the most important
+functions.
+First, we generate a data set that will be used later on:
+\begin{Schunk}
+\begin{Sinput}
+> library(pcalg)

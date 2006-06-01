@@ -1,0 +1,203 @@
+
+R : Copyright 2006, The R Foundation for Statistical Computing
+Version 2.3.1 beta (2006-05-23 r38179)
+ISBN 3-900051-07-0
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(pcalg)
+Loading required package: MASS
+Loading required package: graph
+Loading required package: Ruuid
+Loading required package: robustbase
+Loading required package: Rgraphviz
+> 
+> set.seed(2)
+> 
+> ## Parameters
+> p <- 5
+> n <- 1000
+> alpha <- 0.05
+> s <- 0.6
+> 
+> mlb <- 0.1
+> mub <- 1
+> dag <- randomDAG(p,s,lB=mlb,uB=mub)
+> data <- rmvDAG(n, dag)
+> ## TODO: improve this, once we have print(),plot() methods:
+> r1 <- pcAlgo(data,alpha, verbose=TRUE)
+Order=0; remaining edges:20
+ (1,2) |  : T = 27.32866
+ (1,3) |  : T = 27.01688
+ (1,4) |  : T = 30.87507
+ (1,5) |  : T = 18.27332
+ (2,1) |  : T = 27.32866
+ (2,3) |  : T = 16.00362
+ (2,4) |  : T = 27.29790
+ (2,5) |  : T = 17.48601
+ (3,1) |  : T = 27.01688
+ (3,2) |  : T = 16.00362
+ (3,4) |  : T = 34.80377
+ (3,5) |  : T = 18.68056
+ (4,1) |  : T = 30.87507
+ (4,2) |  : T = 27.29790
+ (4,3) |  : T = 34.80377
+ (4,5) |  : T = 27.02249
+ (5,1) |  : T = 18.27332
+ (5,2) |  : T = 17.48601
+ (5,3) |  : T = 18.68056
+ (5,4) |  : T = 27.02249
+Order=1; remaining edges:20
+ (1,2) | 3 : T = 21.32158
+ (1,2) | 4 : T = 12.19561
+ (1,2) | 5 : T = 21.48853
+ (1,3) | 2 : T = 20.95041
+ (1,3) | 4 : T = 7.445094
+ (1,3) | 5 : T = 20.7538
+ (1,4) | 2 : T = 17.99551
+ (1,4) | 3 : T = 15.49847
+ (1,4) | 5 : T = 23.66262
+ (1,5) | 2 : T = 8.90483
+ (1,5) | 3 : T = 8.097431
+ (1,5) | 4 : T = -0.02040859
+ (2,1) | 3 : T = 21.32158
+ (2,1) | 4 : T = 12.19561
+ (2,1) | 5 : T = 21.48853
+ (2,3) | 1 : T = -1.084625
+ (2,4) | 1 : T = 12.13714
+ (2,4) | 5 : T = 20.03626
+ (2,5) | 1 : T = 7.298902
+ (2,5) | 4 : T = 1.132112
+ (3,1) | 4 : T = 7.445094
+ (3,1) | 5 : T = 20.7538
+ (3,4) | 1 : T = 21.32440
+ (3,4) | 5 : T = 27.95856
+ (3,5) | 1 : T = 8.911734
+ (3,5) | 4 : T = -1.842911
+ (4,1) | 2 : T = 17.99551
+ (4,1) | 3 : T = 15.49847
+ (4,1) | 5 : T = 23.66262
+ (4,2) | 1 : T = 12.13714
+ (4,2) | 3 : T = 22.50535
+ (4,2) | 5 : T = 20.03626
+ (4,3) | 1 : T = 21.32440
+ (4,3) | 2 : T = 30.74408
+ (4,3) | 5 : T = 27.95856
+ (4,5) | 1 : T = 18.91558
+ (4,5) | 2 : T = 19.69253
+ (4,5) | 3 : T = 18.61457
+Final graph adjacency matrix:
+              
+[1,] . | | | .
+[2,] | . . | .
+[3,] | . . | .
+[4,] | | | . |
+[5,] . . . | .
+> 
+> if(dev.interactive()) {
++     op <- par(mfrow=c(1,2))
++     plot(dag,      main = "true")
++     plot(r1@graph, main = "estimate")
++     par(op)
++ }
+> 
+> ## check TPR, FPR and TDR for randomly generated data
+> dag <- randomDAG(p,s,lB=mlb,uB=mub)
+> data <- rmvDAG(n, dag)
+> r <- pcAlgo(data,alpha,verbose=TRUE)
+Order=0; remaining edges:20
+ (1,2) |  : T = 16.23558
+ (1,3) |  : T = 12.51634
+ (1,4) |  : T = 1.358277
+ (1,5) |  : T = 22.86313
+ (2,1) |  : T = 16.23558
+ (2,3) |  : T = 32.14577
+ (2,4) |  : T = 0.9069257
+ (2,5) |  : T = 38.30217
+ (3,1) |  : T = 12.51634
+ (3,2) |  : T = 32.14577
+ (3,4) |  : T = 1.175552
+ (3,5) |  : T = 28.62675
+ (4,5) |  : T = 5.40007
+ (5,1) |  : T = 22.86313
+ (5,2) |  : T = 38.30217
+ (5,3) |  : T = 28.62675
+ (5,4) |  : T = 5.40007
+Order=1; remaining edges:14
+ (1,2) | 3 : T = 10.10653
+ (1,2) | 5 : T = -3.370478
+ (1,3) | 2 : T = 0.7250372
+ (1,5) | 2 : T = 15.83673
+ (2,1) | 3 : T = 10.10653
+ (2,1) | 5 : T = -3.370478
+ (2,3) | 1 : T = 28.90539
+ (2,3) | 5 : T = 14.85106
+ (2,5) | 1 : T = 33.58628
+ (2,5) | 3 : T = 23.94536
+ (3,2) | 5 : T = 14.85106
+ (3,5) | 2 : T = 6.917651
+ (5,1) | 2 : T = 15.83673
+ (5,1) | 3 : T = 19.12962
+ (5,1) | 4 : T = 22.96804
+ (5,2) | 1 : T = 33.58628
+ (5,2) | 3 : T = 23.94536
+ (5,2) | 4 : T = 39.11458
+ (5,3) | 1 : T = 25.4972
+ (5,3) | 2 : T = 6.917651
+ (5,3) | 4 : T = 28.91907
+ (5,4) | 1 : T = 5.80841
+ (5,4) | 2 : T = 8.605823
+ (5,4) | 3 : T = 6.578234
+Order=2; remaining edges:12
+ (2,1) | 35 : T = -1.807269
+ (5,1) | 23 : T = 16.07997
+ (5,1) | 24 : T = 16.16738
+ (5,1) | 34 : T = 19.36656
+ (5,2) | 13 : T = 21.43607
+ (5,2) | 14 : T = 34.55993
+ (5,2) | 34 : T = 24.68966
+ (5,3) | 12 : T = 7.438277
+ (5,3) | 14 : T = 25.90582
+ (5,3) | 24 : T = 6.966949
+ (5,4) | 12 : T = 9.178267
+ (5,4) | 13 : T = 7.199158
+ (5,4) | 23 : T = 8.644341
+Order=3; remaining edges:10
+ (5,1) | 234 : T = 16.43347
+ (5,2) | 134 : T = 22.3029
+ (5,3) | 124 : T = 7.540066
+ (5,4) | 123 : T = 9.260186
+Order=4; remaining edges:10
+Final graph adjacency matrix:
+              
+[1,] . . . . |
+[2,] . . | . |
+[3,] . | . . |
+[4,] . . . . |
+[5,] | | | | .
+> cgr <- compareGraphs(r@graph, dag)
+> if (abs(round(cgr["tpr"]-0.83333333333,10))>1e-10)
++     stop("Inconsistent result in Testing test_pcAlgo.R")
+> 
+> if(dev.interactive()) {
++     c.cgr <- format(round(cgr, 3))
++     op <- par(mfrow=c(1,2))
++     plot(dag, main = "true")
++     plot(r@graph, main = "estimated skeleton")
++     mtext(paste(paste(toupper(names(c.cgr)), c.cgr, sep="= "),
++ 		collapse=", "))
++     par(op)
++ }
+> 
+> 
+> 

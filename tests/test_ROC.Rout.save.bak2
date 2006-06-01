@@ -1,0 +1,160 @@
+
+R : Copyright 2006, The R Foundation for Statistical Computing
+Version 2.3.0 Patched (2006-05-15 r38065)
+ISBN 3-900051-07-0
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(pcalg)
+Loading required package: MASS
+Loading required package: graph
+Loading required package: Ruuid
+Loading required package: robustbase
+Loading required package: Rgraphviz
+> 
+> ### quite a few simulations -- extended by MM
+> 
+> set.seed(42)
+> p <- 10
+> n <- 100
+> s <- 0.1
+> trueDAG <- randomDAG(p, s, lB=0.1, uB=1)
+> trueG <- ugraph(trueDAG)
+> 
+> ncor <- length(corMethods <- c("standard", "Qn"))
+> ## using different alpha cutoffs for "standard" and "robust"
+> alpha <- cbind(alphaS =c(0.01, 0.05,  0.10, 0.20,  0.35, 0.50,  0.60, 0.70),
++                alphaQ =c(0.001,0.005, 0.010,0.050, 0.100,0.200, 0.300,0.500))
+> colnames(alpha) <- corMethods
+> alphaL <- nrow(alpha)
+> 
+> errDs <- c("normal", "cauchy")
+> 
+> nReps <- 5
+> res <- array(0, dim= c(length(errDs), alphaL, ncor, 4),
++                dimnames = list(err.Dist = errDs, alphas = rep("", alphaL),
++                corrMeth = corMethods,
++                stat = c("m.tpr", "SE.tpr", "m.fpr", "SE.fpr")))
+> tprMat <- matrix(0, nReps, ncor)
+> fprMat <- matrix(0, nReps, ncor)
+> ## tdrMat <- matrix(0, nReps, ncor)
+> rMat <- matrix(0, alphaL, 4)
+> mix <- 0.1
+> for(errDist in errDs) {
++     cat("\nError Dist: ", errDist,"\n")
++     ## MM {FIXME?}: why don't keep both 'trueDAG' and 'dm' fixed for all j ?
++     ## --          and really make 'j in 1:alphaL' to the *inner* loop?
++     for (j in 1:alphaL) {
++         cat("Outer: ",j," of ",alphaL," -> ", nReps, " inner : ", sep='')
++         for (i in 1:nReps) {
++             cat("",i,"")
++             trueDAG <- randomDAG(p, s, lB=0.1, uB=1)
++             trueG <- ugraph(trueDAG)
++             dm <- rmvDAG(n, trueDAG, errDist)
++             for (icor in 1:ncor) {
++                 estG <- pcAlgo(dm, alpha = alpha[j,icor],
++                                corMethod = corMethods[icor])
++                 cmp <- compareGraphs(estG, trueG)
++                 tprMat[i,icor] <- cmp["tpr"]
++                 fprMat[i,icor] <- cmp["fpr"]
++                 ## tdrMat[i,icor] <- cmp["tdr"]
++             }
++         }
++         cat("\n")
++         res[errDist, j, , ] <-
++             cbind(colMeans(tprMat), apply(tprMat, 2, sd) / sqrt(nReps),
++                   colMeans(fprMat), apply(fprMat, 2, sd) / sqrt(nReps))
++     }
++ }
+
+Error Dist:  normal 
+Outer: 1 of 8 -> 5 inner :  1  2  3  4  5 
+Outer: 2 of 8 -> 5 inner :  1  2  3  4  5 
+Outer: 3 of 8 -> 5 inner :  1  2  3  4  5 
+Outer: 4 of 8 -> 5 inner :  1  2  3  4  5 
+Outer: 5 of 8 -> 5 inner :  1  2  3  4  5 
+Outer: 6 of 8 -> 5 inner :  1  2  3  4  5 
+Outer: 7 of 8 -> 5 inner :  1  2  3  4  5 
+Outer: 8 of 8 -> 5 inner :  1  2  3  4  5 
+
+Error Dist:  cauchy 
+Outer: 1 of 8 -> 5 inner :  1  2  3  4  5 
+Outer: 2 of 8 -> 5 inner :  1  2  3  4  5 
+Outer: 3 of 8 -> 5 inner :  1  2  3  4  5 
+Outer: 4 of 8 -> 5 inner :  1  2  3  4  5 
+Outer: 5 of 8 -> 5 inner :  1  2  3  4  5 
+Outer: 6 of 8 -> 5 inner :  1  2  3  4  5 
+Outer: 7 of 8 -> 5 inner :  1  2  3  4  5 
+Outer: 8 of 8 -> 5 inner :  1  2  3  4  5 
+> 
+> cat('Time elapsed: ', proc.time(),'\n') # for ``statistical reasons''
+Time elapsed:  13.771 0.223 17.444 0 0 
+> 
+> dim(res)
+[1] 2 8 2 4
+> aperm(res, c(2,4,1,3))
+, , err.Dist = normal, corrMeth = standard
+
+      stat
+alphas     m.tpr     SE.tpr      m.fpr      SE.fpr
+       0.8583333 0.08700255 0.01928531 0.009098454
+       0.8200000 0.11135529 0.06211870 0.011701870
+       0.7200000 0.19595918 0.16894573 0.049101992
+       0.8266667 0.09153020 0.20839595 0.047467699
+       1.0000000 0.00000000 0.29886736 0.029943578
+       0.9800000 0.02000000 0.29751146 0.063976948
+       0.9310440 0.03014601 0.29064563 0.070763265
+       0.9714286 0.02857143 0.54387585 0.085653620
+
+, , err.Dist = cauchy, corrMeth = standard
+
+      stat
+alphas     m.tpr     SE.tpr      m.fpr      SE.fpr
+       0.5000000 0.12909944 0.03429822 0.009904574
+       0.6095238 0.12634761 0.09440910 0.013785931
+       0.7083333 0.18726838 0.05860875 0.015381891
+       0.4666667 0.20000000 0.06691087 0.027809358
+       0.7283333 0.07253352 0.10781502 0.036311135
+       0.8428571 0.06448382 0.13564707 0.038983069
+       0.8600000 0.06359595 0.24968368 0.062624081
+       0.8666667 0.09718253 0.22445361 0.035618050
+
+, , err.Dist = normal, corrMeth = Qn
+
+      stat
+alphas     m.tpr     SE.tpr       m.fpr      SE.fpr
+       0.9083333 0.06508541 0.020340022 0.009972400
+       0.7800000 0.10198039 0.009545455 0.005856409
+       0.7000000 0.18973666 0.057158695 0.024566936
+       0.8600000 0.09797959 0.090500894 0.012569945
+       0.9666667 0.03333333 0.127306728 0.021578414
+       0.9314286 0.04295228 0.185077939 0.038915108
+       0.8348901 0.07726621 0.260191426 0.062757905
+       0.8647619 0.06327423 0.485303503 0.057365161
+
+, , err.Dist = cauchy, corrMeth = Qn
+
+      stat
+alphas     m.tpr     SE.tpr     m.fpr     SE.fpr
+       0.9000000 0.06666667 0.0866025 0.01574842
+       0.9380952 0.03809524 0.2812801 0.06077044
+       0.8750000 0.06180165 0.2459869 0.03853544
+       0.7333333 0.18708287 0.2693129 0.04743619
+       0.9166667 0.05270463 0.4191834 0.07686678
+       0.8428571 0.06448382 0.3602084 0.03657709
+       0.7528571 0.02968466 0.4034556 0.07457017
+       0.9333333 0.06666667 0.6209942 0.08423213
+
+> 
+> ## ROC curve plot "tpr" vs "fpr"
+> 

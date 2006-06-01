@@ -1,0 +1,124 @@
+% -*- mode: noweb; noweb-default-code-mode: R-mode; -*-
+\documentclass[a4paper]{article}
+
+\title{\texttt{pcalg}: A brief overview}
+\author{Markus Kalisch}
+%\VignetteIndexEntry{pcalg}
+\SweaveOpts{echo=FALSE}
+\usepackage{a4wide}
+
+\begin{document}
+
+\maketitle
+\section{General Introduction}
+In this document, we will give a short overview of the R-package
+\texttt{pcalg}. The package can be used to analyze dependencies among
+random variables. The main functions are
+\begin{itemize}
+\item \texttt{pcAlgo}: (also see \texttt{?pcAlgo}) Use the PC-Algorithm to
+  estimate the skeleton of a 
+  DAG. A DAG is a Directed Acyclic Graph and the skeleton of a DAG is the
+  DAG without the arrowheads. In practice, the skeleton will only be a good
+  estimate, if you have 
+  way more samples than nodes. If not, you will only get the edges, that
+  show the most obvious ``direct'' dependencies (``direct'' means: The
+  dependence didn't go away, even when conditioning on any subset of the
+  remaining variables). Using the plot option \texttt{zvalue.lwd} you can
+  further qualify the edges by choosing their line width according to their
+  reliability in the statistical tests. I.e., thick lines show reliable
+  dependencies. The value of this function is an object of S4 class
+  ``pcAlgo'' (see \texttt{?pcAlgo-class}) on which you can use
+  \texttt{plot}, \texttt{summary} and \texttt{show}.
+\item \texttt{corGraph}: (see also \texttt{?corGraph}) Each pair of
+  variables is tested for zero 
+  correlation on a given significance level. If a test is rejected, the
+  corresponding edge in the graph is kept. I.e., the graph shows an edge
+  between correlated nodes.
+\end{itemize}
+Furthermore, there are some functions that generate random data and perform
+statistical tests.
+
+\section{Some examples}
+In this section, we will show some simple examples with the most important
+functions.
+First, we generate a data set that will be used later on:
+<<echo=TRUE,results=hide>>=
+library(pcalg)
+## define parameters
+p <- 10 # number of random variables = nodes in the graph
+n <- 10000 # number of samples
+s <- 0.4 # sparsness of the graph
+
+## generate random data
+set.seed(42)
+g <- randomDAG(p,s) # generate a random Directed Acyclic Graph
+d <- rmvDAG(n,g) # generate random samples from the DAG
+@ 
+
+The DAG that was produced by \texttt{g <- randomDAG(p,s)} is shown in Figure 1.
+\begin{figure}[htbp]
+  \centering
+<<fig=TRUE,echo=TRUE>>=
+plot(g) # plot generated DAG
+@
+\label{fig:trueDAG}
+\caption{True DAG}
+\end{figure}
+
+\texttt{d} contains the datamatrix you would start from in
+practice. Let's try to estimate the skeleton of the DAG and also compute
+the correlation graph:
+<<echo=TRUE>>=
+gSkel <- pcAlgo(d,alpha=0.05) # estimate of the skeleton
+gCor <- corGraph(d,alpha=0.05) # estimate the correlation graph
+@ 
+
+The result of \texttt{corGraph} is a \texttt{graph} object and can be plotted
+with \texttt{plot(gCor)} (see Figure 2).
+\begin{figure}[htbp]
+  \centering
+<<fig=TRUE,echo=TRUE>>=
+plot(gCor)
+@
+\label{fig:corGraph}
+\caption{Correlation Graph}
+\end{figure}
+
+The result of \texttt{pcAlgo} is a
+\texttt{pcAlog} object. To get an overview, you can use the
+\texttt{summary} function:
+<<echo=TRUE>>=
+summary(gSkel)  # shows some facts about the skeleton and the 
+  # process of finding it
+@ 
+
+\begin{figure}[htbp]
+  \centering
+<<fig=TRUE,echo=TRUE>>=
+plot(gSkel)
+@
+\label{fig:skel}
+\caption{Estimated skeleton}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+<<fig=TRUE,echo=TRUE>>=
+plot(gSkel, zvalue.lwd=TRUE)
+@
+\label{fig:skelLWD}
+\caption{Estimated skeleton using variable line width}
+\end{figure}
+When plotting the \texttt{pcAlgo} object by using \texttt{plot(gSkel)}, we
+obtain Figure 3; choosing the option \texttt{zvalue.lwd = TRUE}, we can
+adapt the line width of the graph according to the reliability of the
+corresponding statistical test (see Figure 4).
+
+To compare the estimate of the skeleton with the true skeleton, use
+<<echo=TRUE>>=
+compareGraphs(gSkel@graph,g)
+@ 
+
+\end{document}
+
+
