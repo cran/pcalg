@@ -1,6 +1,12 @@
 \name{pcalg-internal}
 %
 \alias{wgtMatrix}
+\alias{adj.check}
+\alias{amat2dag}
+\alias{find.sink}
+\alias{labelEdges}
+\alias{make.edge.df}
+\alias{orderEdges}
 %
 \title{Internal Pcalg Functions}
 \description{
@@ -8,6 +14,12 @@
 }
 \usage{
 wgtMatrix(g)
+adj.check(gm,x)
+amat2dag(amat)
+find.sink(gm)
+labelEdges(amat)
+make.edge.df(amat)
+orderEdges(amat)
 }
 \details{
   These are not to be called by the user.

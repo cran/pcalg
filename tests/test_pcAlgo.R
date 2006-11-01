@@ -1,7 +1,6 @@
 library(pcalg)
 
 set.seed(2)
-
 ## Parameters
 p <- 5
 n <- 1000
@@ -40,4 +39,6 @@ if(dev.interactive()) {
     par(op)
 }
 
-
+## check generating CPDAG
+rD <- pcAlgo(data,alpha,verbose=TRUE,directed=TRUE)
+(as(rD@graph,"matrix"))

@@ -8,8 +8,8 @@
 }
 \usage{
 rmvDAG(n, dag,
-             errDist = c("normal", "cauchy", "mix", "t4"), mix = 0.1,
-             errMat = NULL)
+             errDist = c("normal", "cauchy", "mix", "mixt3", "mixN100",
+"t4"), mix = 0.1, errMat = NULL)
 }
 \arguments{
   \item{dag}{a graph object describing the DAG; must contain weights for
@@ -18,10 +18,13 @@ rmvDAG(n, dag,
     \pkg{RBGL} package.)}
   \item{n}{number of samples that should be drawn. (integer)}
   \item{errDist}{Specifies the distribution of each node. Currently, the
-    options "normal", "t4", "cauchy" and "mix" are supported. The first
+    options "normal", "t4", "cauchy", "mix", "mixt3" and "mixN100" are
+    supported. The first 
     three generate standard normal-, t(df=4)- and cauchy-random
-    numbers. The option "mix" creates standard normal random variables
-    with a mix of standard cauchy random variables. The fraction of
+    numbers. The options containing the word "mix" create standard
+    normal random variables with a mix of outliers. The outliers for the
+    options "mix", "mixt3", "mixN100" are drawn from a standard cauchy,
+    t(df=3) and N(0,100) distribution, respectively. The fraction of 
     cauchy points can be adjusted using the parameter "mix". (string)}
   \item{mix}{For \code{errDist="mix"} this parameter specifies the
     percentage of samples that are drawn from a standard cauchy

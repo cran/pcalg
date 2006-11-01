@@ -1,13 +1,17 @@
 \name{pcAlgo}
 \alias{pcAlgo}
-\title{PC-Algorithm: Estimate the Underlying Graph (Skeleton) of a DAG}
+\title{PC-Algorithm: Estimate the Underlying Graph (Skeleton) or
+  Equivalence Class (CPDAG) of a DAG}
 \description{
   Estimate the underlying graph (\code{\link[graph]{ugraph}} or
   \dQuote{skeleton} (structure) of a DAG (\bold{D}irected \bold{A}cyclic
-  \bold{G}raph) from data using the PC-algorithm.
+  \bold{G}raph) from data using the PC-algorithm. Alternatively, one can
+  directly infer the equivalence class of the underlying structure,
+  which is uniquely represented by its CPDAG (\bold{C}ompleted
+  \bold{P}artially \bold{D}irected \bold{A}cyclic \bold{G}raph).
 }
 \usage{
-pcAlgo(dm, alpha, corMethod = "standard", verbose = FALSE)
+pcAlgo(dm, alpha, corMethod = "standard", verbose = FALSE, directed = FALSE)
 }
 \arguments{
   \item{dm}{data matrix; rows correspond to samples, cols correspond to nodes.}
@@ -18,6 +22,8 @@ pcAlgo(dm, alpha, corMethod = "standard", verbose = FALSE)
     the Qn scale estimator without and with OGK) correlation estimation}
   \item{verbose}{Indicates whether some intermediate output should be
     shown (WARNING: This decreases the performance dramatically!)}
+  \item{directed}{If \code{FALSE}, the underlying skeleton is computed;
+    if \code{TRUE}, the underlying CPDAG is computed}
 }
 \value{
   An undirected graph (object of \code{\link{class}} \code{"graph"}, see
@@ -62,7 +68,8 @@ pcAlgo(dm, alpha, corMethod = "standard", verbose = FALSE)
   \code{\link{rmvDAG}} for generating data according to a DAG;
   \code{\link{compareGraphs}} for comparing undirected graphs in terms of
   TPR, FPR and TDR.  Further, \code{\link[graph]{randomGraph}} (in
-  package \pkg{graph}) for other random graph models.
+  package \pkg{graph}) for other random graph
+  models. \code{\link{udag2cpdag}} for converting the skeleton to a CPDAG.
 }
 \author{
   Markus Kalisch (\email{kalisch@stat.math.ethz.ch}) and Martin Maechler.
@@ -78,17 +85,25 @@ plot(myDAG, main = "randomDAG(10, prob = 0.2)")
 n <- 1000
 d.mat <- rmvDAG(n, myDAG, errDist = "normal")
 
-## estimate skeleton given data
-res <- pcAlgo(d.mat, alpha = 0.05, corMethod = "standard")
-res
-plot(res)# << using the plot() method for 'pcAlgo' objects!
-str(res, max = 2)
-(c.g <- compareGraphs(myDAG, res@graph))
-## plot the original DAG and the estimated skeleton :
-op <- par(mfrow=c(2,1))
+## estimate skeleton and CPDAG of given data
+resU <- pcAlgo(d.mat, alpha = 0.05, corMethod = "standard")
+resU
+plot(resU,zvalue.lwd=TRUE)# << using the plot() method for 'pcAlgo' objects!
+str(resU, max = 2)
+(c.g <- compareGraphs(myDAG, resU@graph))
+## CPDAG
+resD <- pcAlgo(d.mat, alpha = 0.05, corMethod =
+"standard",directed=TRUE)
+plot(resD,zvalue.lwd=TRUE)
+
+## plot the original DAG, the estimated skeleton and the estimated CPDAG:
+op <- par(mfrow=c(3,1))
 plot(myDAG, main = "original (random)DAG")
-plot(res@graph,
-     main = "estimated skeleton from pcAlgo(<simulated, n = 1000>)")
+plot(resU@graph,
+     main = "estimated skeleton from pcAlgo(<simulated, n =
+1000>)")
+plot(resD@graph,main="estimated CPDAG from pcAlgo(<simulated, n =
+1000>)")
 par(op)
 
 ## generate data containing severe outliers
@@ -102,7 +117,7 @@ str(pcR, max = 2)
 op <- par(mfrow=c(3,1))
   plot(myDAG, main = "original (random)DAG")
   plot(pcC)
-  plot(pcR)
+  plot(pcR,zvalue.lwd=TRUE,lwd.max=7)
 par(op)
 }
 \keyword{multivariate}

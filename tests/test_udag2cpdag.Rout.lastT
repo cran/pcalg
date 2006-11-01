@@ -1,0 +1,85 @@
+
+R version 2.4.0 (2006-10-03)
+Copyright (C) 2006 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+Attaching package of SfS goodies.. Loading required package: stats
+Loading required package: methods
+Loading required package: utils
+ ... and today's fortune() cookie is:
+
+Paul Gilbert: [code comparing speed of apply(z,2,sum) vs. rep(1,10000)%*%z)]
+which seemed completely contrary to all my childhood teachings.
+Douglas Bates: Must have had an interesting childhood if you spent it learning
+about the speeds of various matrix multiplication techniques.
+Paul Gilbert: [...] why is apply so slow?
+Brian Ripley: `so slow' sic: what are you going to do in the 7ms you saved?
+   -- Paul Gilbert, Douglas Bates and Brian D. Ripley (discussing `the
+      incredible lightness of crossprod')
+      R-devel (January 2005)
+
+Working directory : /sfs/u/staff/kalisch/R/Pkgs/pcalg/tests  {change with setwd()}
+> invisible(options(echo = TRUE))
+> library(pcalg)
+Loading required package: MASS
+Loading required package: graph
+Loading required package: Ruuid
+Loading required package: robustbase
+
+Attaching package: 'robustbase'
+
+
+	The following object(s) are masked from package:sfsmisc :
+
+	 huberM 
+
+Loading required package: Rgraphviz
+Loading required package: geneplotter
+Loading required package: annotate
+Loading required package: Biobase
+Loading required package: tools
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material. To view, type
+    'openVignette()' or start with 'help(Biobase)'. For details
+    on reading vignettes, see the openVignette help page.
+
+KernSmooth 2.22 installed
+Copyright M. P. Wand 1997
+Creating a new generic function for "summary" in "pcalg"
+> ## library(pcalg,lib.loc="/u/kalisch/R/Pkgs/pcalg.Rcheck")
+> 
+> p <- 7 # number of random variables
+> n <- 10000 # number of samples
+> s <- 0.3 # sparsness of the graph
+> 
+> ## generate random data
+> for (i in 1:10) {
++   set.seed(i)
++   g <- randomDAG(p,s) # generate a random DAG
++   d <- rmvDAG(n,g) # generate random samples
++   
++   gSkel <- 
++     pcAlgo(d,alpha=0.05) # estimate of the skeleton
++   (as(gSkel@graph,"matrix"))
++   gCPDAG <- 
++     udag2cpdag(gSkel) # transform skeleton to cpdag
++   (as(gCPDAG@graph,"matrix"))
++ }
+Error: could not find function "udag2cpdag"
+Execution halted

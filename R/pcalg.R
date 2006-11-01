@@ -1,4 +1,3 @@
-### -*- mode: R; kept-new-versions: 30; kept-old-versions: 20; ess-indent-level: 2 -*-
 
 randomDAG <- function(n, prob, lB = 0.1, uB = 1) {
   ## Purpose: Randomly generate a DAG (graph object as in graph-package).
@@ -64,8 +63,7 @@ wgtMatrix <- function(g)
     tm
 }
 
-rmvDAG <- function(n, dag, errDist = c("normal", "cauchy", "mix", "t4"),
-                   mix = 0.1, errMat = NULL)
+rmvDAG <- function(n, dag, errDist = c("normal", "cauchy", "mix", "mixt3", "mixN100","t4"), mix = 0.1, errMat = NULL)
 {
   ## Purpose: Generate data according to a given DAG (with weights) and
   ## given node distribution (rows: number of samples; cols: node values in
@@ -102,6 +100,20 @@ rmvDAG <- function(n, dag, errDist = c("normal", "cauchy", "mix", "t4"),
 
                  samples <- c(normSamples,cauchySamples)
                  matrix(sample(samples,length(samples)), nrow = n)
+               },
+               "mixt3" = {
+                 t3Samples <- rt(round(mix*n*p),df=3)
+                 normSamples <- rnorm(n*p-length(t3Samples))
+
+                 samples <- c(normSamples,t3Samples)
+                 matrix(sample(samples,length(samples)), nrow = n)
+               },
+               "mixN100" = {
+                 outlierSamples <- rnorm(round(mix*n*p),sd=10)
+                 normSamples <- rnorm(n*p-length(outlierSamples))
+
+                 samples <- c(normSamples,outlierSamples)
+                 matrix(sample(samples,length(samples)), nrow = n)
                })
   }
   else { ## check & use 'errMat' argument:
@@ -135,7 +147,7 @@ setClass("pcAlgo", representation =
               zMin= "matrix"))
               
 
-pcAlgo <- function(dm, alpha, corMethod = "standard", verbose = FALSE) {
+pcAlgo <- function(dm, alpha, corMethod = "standard", verbose = FALSE, directed=FALSE) {
   ## Purpose: Perform PC-Algorithm, i.e., estimate skeleton of DAG given data
   ## Output is an unoriented graph object
   ## ----------------------------------------------------------------------
@@ -241,11 +253,13 @@ pcAlgo <- function(dm, alpha, corMethod = "standard", verbose = FALSE) {
 ### TODO:
 ### - for each edge[i,j], save the largest P-value ``seen''
 ### - for each [i,j],     save (the size of) the neighborhood << as option only!
-  new("pcAlgo",
+  res <- new("pcAlgo",
       graph = Gobject,
       call = cl, n = n, max.ord = as.integer(ord-1),
       n.edgetests = n.edgetests, sepset = sepset,
       zMin = zMin)
+  if (directed) res <- udag2cpdag(res)
+  res
 }
 
 
@@ -325,6 +339,9 @@ zStat <- function(x,y, S, C, n)
   
   res <- sqrt(n- length(S) - 3) * ( 0.5*log( (1+r)/(1-r) ) )
   if (is.na(res)) res <- 0
+  
+##VERBOSE  cat(" (",x,",",y,") | ",S," : z-Stat = ",res,"\n", sep='')
+  
   res
 }
 
@@ -534,33 +551,443 @@ corGraph <- function(dm, alpha = 0.05, Cmethod = "pearson")
   as(mat, "graphNEL")
 }
 
+##################################################
+## CPDAG
+##################################################
 
-##- glmCIformula <- function(x,y,s,v)
-##- {
-##-   ## Purpose: Generate a formula to be used in a GLM for testing CI(x,y|s)
-##-   ##          using given variable names. The response variable is called
-##-   ##          "Freq"
-##-   ## ----------------------------------------------------------------------
-##-   ## Arguments: - v: vector containing the variable names of the data frame
-##-   ##            - x,y: integers specifying the variables of the data frame
-##-   ##            - s: vector containing the indices of the variables
-##-   ## ----------------------------------------------------------------------
-##-   ## Value: - ci: Formula Object for fitting the conditional independence model
-##-   ##        - dep: Formula Object for fitting the dependence model
-##-   ## ----------------------------------------------------------------------
-##-   ## Author: Markus Kalisch, Date: 23 Mar 2006, 12:21
-##-   c1 <- v[x]
-##-   c2 <- v[y]
-##-   d <- paste(v[x],"*",v[y],sep="")
-##-   for (i in 1:length(s)) {
-##-     c1 <- paste(c1,"*",v[s[i]])
-##-     c2 <- paste(c2,"*",v[s[i]])
-##-     d <- paste(d,"*",v[s[i]])
-##-   }
-##-   ci <- as.formula(paste("Freq~",c1,"+",c2,sep=""))
-##-   dep <- as.formula(paste("Freq~",d,sep=""))
-##-   list(ci=ci,dep=dep)
-##- }
-##-
+##################################################
+## dag2cpdag
+##################################################
 
+make.edge.df <- function(amat) {
+  ## Purpose: Generate a data frame describing some properties of a DAG
+  ## (for extending to a CPDAG)
+  ## The output contains xmin,xmax,head,tail,order (NA or number),
+  ## type (1="d",0="u") in lexikographic order
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - amat: Adjacency matrix of DAG
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: 31 Oct 2006, 15:43
+
+  ## INPUT: Adjacency matrix
+  stopifnot(sum(amat)>0)
+  e <- which(amat==1,arr.ind=TRUE)
+  e.dup <- duplicated(t(apply(e,1,sort)))
+  nmb.edges <- sum(!e.dup)
+  res <- data.frame(xmin=rep(NA,nmb.edges),xmax=rep(NA,nmb.edges),
+                    tail=rep(NA,nmb.edges),head=rep(NA,nmb.edges),
+                    order=rep(NA,nmb.edges),type=rep(1,nmb.edges))
+  pure.edges <- e[!e.dup,]
+  if(length(pure.edges)==2) dim(pure.edges) <- c(1,2)
+  for (i in 1:dim(pure.edges)[1]) {
+    if (all(amat[pure.edges[i,1],pure.edges[i,2]]==
+            amat[pure.edges[i,2],pure.edges[i,1]])) {
+      res$type[i] <- 0
+      res$head[i] <- NA
+      res$tail[i] <- NA
+    } else {
+      res$head[i] <- pure.edges[i,2]
+      res$tail[i] <- pure.edges[i,1]
+    }
+  }
+  s.pure.edges <- t(apply(pure.edges,1,sort))
+  ii <- order(s.pure.edges[,1],s.pure.edges[,2])
+  res <- res[ii,]
+  res$xmin <- s.pure.edges[ii,1]
+  res$xmax <- s.pure.edges[ii,2]
+  res
+}
+
+orderEdges <- function(amat) {
+  ## Purpose: Order the edges of a DAG according to Chickering
+  ## (for extension to CPDAG)
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - amat: Adjacency matrix of DAG
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: 31 Oct 2006, 15:42
+
+  stopifnot(isAcyclic(amat))
+  ordered.nodes <- topOrder(amat) ##parents before children
+  edge.df <- make.edge.df(amat)
+  
+  eOrder <- 0
+  while(any(is.na(edge.df$order))) {
+    counter <- 0
+    ## find y
+    y <- NA
+    found <- FALSE
+    while(!found) {
+      counter <- counter+1
+      node <- ordered.nodes[counter]
+      ## which edges are incident to node?
+      nbr.nodes <- which(amat[,node]==1)
+      if(length(nbr.nodes)>0) {
+        xRes <- rep(0,length(nbr.nodes))
+        for(i in 1:length(nbr.nodes)) {
+          x <- nbr.nodes[i]
+          ## is edge edge x-y unlabeled?
+          xRes[i] <- length(intersect(which(edge.df$xmin==min(node,x) &
+                                            edge.df$xmax==max(node,x)),
+                                      which(is.na(edge.df$order))))>0
+        }
+        ## choose unlabeled edge with highest order node
+        if(sum(xRes)>0) {
+          nbr.unlab <- nbr.nodes[which(xRes==TRUE)] #nbrnodes w. unlabeled edges
+          tmp <- ordered.nodes[which(ordered.nodes %in% nbr.unlab)]
+          y <- tmp[length(tmp)]
+          ## y <- last(ordered.nodes[which(ordered.nodes %in% nbr.unlab)])
+          edge.df$order[which(edge.df$xmin==min(node,y)
+                              & edge.df$xmax==max(node,y))] <- eOrder
+          eOrder <- eOrder+1
+          found <- TRUE
+        }
+      }
+    }
+  }
+  edge.df
+}
+
+
+labelEdges <- function(amat) {
+  ## Purpose: Label the edges in a DAG with "compelled" and "reversible"
+  ## (for extension to a CPDAG)
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - amat: Adjacency matrix of DAG
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: 31 Oct 2006, 15:40
+
+  ## label=TRUE -> compelled
+  ## label=FALSe -> reversible
+  edge.df <- orderEdges(amat)
+  edge.df$label <- rep(NA,dim(edge.df)[1])
+  edge.df <- edge.df[order(edge.df$order),]
+
+  while(sum(is.na(edge.df$label))>0) {
+    x.y <- which(is.na(edge.df$label))[1]
+    x <- edge.df$tail[x.y]
+    y <- edge.df$head[x.y]
+    e1 <- which(edge.df$head==x & edge.df$label==TRUE)
+    if(length(e1)>0) {
+      i <- 1
+      go.on <- TRUE
+      while(i<=length(e1) & go.on==TRUE) {
+        w <- edge.df$tail[e1[i]]
+        if(length(which(edge.df$tail==w & edge.df$head==y))==0) {
+          edge.df$label[which(edge.df$head==y)] <- TRUE
+          go.on <- FALSE
+        }
+        else {
+          edge.df$label[which(edge.df$head==y & edge.df$tail==w)] <- TRUE
+          i <- i+1
+        }
+      }
+    }
+    ## edges going to y not starting from x
+    cand <- which(edge.df$head==y & edge.df$tail!=x)
+    if (length(cand)>0) {
+      valid.cand <- rep(FALSE,length(cand))
+      for (iz in 1:length(cand)) {
+        z <- edge.df$tail[cand[iz]]
+        NOT.parent.of.x <- (length(which(edge.df$tail==z & edge.df$head==x))==0)
+        if(NOT.parent.of.x) valid.cand[iz] <- TRUE
+      }
+      cand <- cand[valid.cand]
+    }
+    if(length(cand)>0) {
+      edge.df$label[which(edge.df$head==y & is.na(edge.df$label))] <- TRUE
+    } else {
+      edge.df$label[which(edge.df$head==y & is.na(edge.df$label))] <- FALSE
+    }
+  }
+  edge.df
+}
+
+
+dag2cpdag <- function(dag) {
+  ## Purpose: Compute the (unique) completed partially directed graph (CPDAG)
+  ## that corresponds to the input DAG; result is a graph object
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - dag: input DAG (graph object)
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: 31 Oct 2006, 15:30
+
+  ## transform DAG to adjacency matrix
+  dag <- as(dag,"matrix")
+  dag[dag!=0] <- 1
+  
+  ## dag is adjacency matrix
+  p <- dim(dag)[1]
+  e.df <- labelEdges(dag)
+  cpdag <- matrix(rep(0,p*p),nrow=p,ncol=p)
+  for (i in 1:dim(e.df)[1]) {
+    if (e.df$label[i]) {
+      cpdag[e.df$tail[i],e.df$head[i]] <- 1
+    } else {
+      cpdag[e.df$tail[i],e.df$head[i]] <- cpdag[e.df$head[i],e.df$tail[i]] <- 1
+    }
+  }
+  rownames(cpdag) <- colnames(cpdag) <- as.character(seq(1,p))
+  as(cpdag,"graphNEL")
+}
+
+##################################################
+## pdag2dag
+##################################################
+find.sink <- function(gm) {
+  ## Purpose: Find sink of an adj matrix; return numeric(0) if there is none
+  ## a sink my have incident indirected edges, but no directed ones
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - gm: Adjacency matrix
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: 31 Oct 2006, 15:28
+
+  ## treat undirected edges
+  undir.nbrs <- which((gm==t(gm) & gm==1),arr.ind=TRUE)
+  gm[undir.nbrs] <- 0
+  undir.nbrs <- unique(as.vector(undir.nbrs))
+  ## treat directed edges
+  res <- union(which(apply(gm,1,sum)==0),undir.nbrs)
+  res
+}
+
+adj.check <- function(gm,x) {
+  ## Purpose:  Return "TRUE", if:
+  ## For every vertex y, adj to x, with (x,y) undirected, y is adjacent to
+  ## all the other vertices which are adjacent to x
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - gm: adjacency matrix of graph
+  ## - x: node number (number)
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: 31 Oct 2006, 15:27
+
+  res <- TRUE
+  ## find undirected neighbors of x
+  un <- which(gm[x,]==1 & gm[,x]==1)
+  if (length(un)>0) {
+    for (i in 1:length(un)) {
+      y <- un[i]
+      adj.x <- setdiff(which(gm[x,]==1 | gm[,x]==1),y)
+      adj.y <- setdiff(which(gm[y,]==1 | gm[,y]==1),x)
+      axINay <- all(adj.x %in% adj.y)
+      res <- (res & axINay)
+    }
+  }
+  res
+}
+
+pdag2dag <- function(g) {
+  ## Purpose: Generate a consistent extension of a PDAG to a DAG; if this
+  ## is not possible, a random extension of the skeleton is returned and
+  ## a warning is issued.
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - g: PDAG (graph object)
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: Sep 2006, 15:21
+
+  gm <- as(g,"matrix")
+  gm[which(gm>0 & gm!=1)] <- 1
+  p <- dim(gm)[1]
+  
+  gm2 <- gm
+  a <- gm
+  go.on <- TRUE
+  while(length(a)>1 & sum(a)>0 & go.on) {
+    go.on <- FALSE
+    go.on2 <- TRUE
+    sinks <- find.sink(a)
+    if (length(sinks)>0) {
+      counter <- 1
+      while(counter<=length(sinks) & go.on2==TRUE) {
+        x <- sinks[counter]
+        if (adj.check(a,x)) {
+          go.on2 <- FALSE
+          ## orient edges
+          inc.to.x <- which(a[,x]==1 & a[x,]==1) ## undirected
+          if (length(inc.to.x)>0) {
+            real.inc.to.x <- as.numeric(row.names(a)[inc.to.x])
+            real.x <- as.numeric(row.names(a)[x])
+            gm2[real.inc.to.x,real.x] <- rep(1,length(inc.to.x))
+            gm2[real.x,real.inc.to.x] <- rep(0,length(inc.to.x))
+          }
+          ## remove x and all edges connected to it
+          a <- a[-x,-x]
+        }
+        counter <- counter+1
+      }
+    }
+    go.on <- !go.on2
+  }
+  if (go.on2==TRUE) {
+    res <- as(amat2dag(gm),"graphNEL")
+    warning("PDAG not extendible: Random DAG on skeleton drawn")
+  } else {
+    res <- as(gm2,"graphNEL")
+  }
+  res
+}
+
+amat2dag <- function(amat) {
+  ## Purpose: Transform an adjacency matrix to a DAG (graph object)
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - amat: adjacency matrix; x -> y if amat[x,y]=1,amat[y,x]=0
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: 31 Oct 2006, 15:23
+
+  p <- dim(amat)[1]
+  ## amat to skel
+  skel <- amat+t(amat)
+  skel[which(skel>1)] <- 1
+
+  ## permute skel
+  ord <- sample(1:p)
+  skel <- skel[ord,ord]
+  
+  ## skel to dag
+  for (i in 2:p) {
+    for (j in 1:(i-1)) {
+      if(skel[i,j]==1) skel[i,j] <- 0
+    }
+  }
+  ## inverse permutation
+  i.ord <- order(ord)
+  res.dag <- skel[i.ord,i.ord]
+  res.dag
+}
+
+##################################################
+## udag2pdag
+##################################################
+udag2pdag <- function(gInput) {
+  ## Purpose: Transform the Skeleton of a pcAlgo-object to a PDAG using
+  ## the rules of Pearl. The output is again a pcAlgo-object. 
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - gInput: pcAlgo object
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: Sep 2006, 15:03
+
+  g <- as(gInput@graph,"matrix")
+  pdag <- g
+  ind <- which(g==1,arr.ind=TRUE)
+  
+  ## Create minimal pattern
+  for (i in 1:dim(ind)[1]) {
+    x <- ind[i,1]
+    y <- ind[i,2]
+    allZ <- setdiff(which(g[y,]==1),x)
+    
+    if (length(allZ)>0) {
+      for (j in 1:length(allZ)) {
+        z <- allZ[j]
+        if ((g[x,z]==0) & !((y %in% gInput@sepset[[x]][[z]]) |
+                (y %in% gInput@sepset[[z]][[x]]))) {
+          ## cat("\n",x,"->",y,"<-",z,"\n")
+          ## cat("Sxz=",gInput@sepset[[z]][[x]],"Szx=",gInput@sepset[[x]][[z]])
+          pdag[x,y] <- pdag[z,y] <- 1
+          pdag[y,x] <- pdag[y,z] <- 0
+        }
+      }
+    }
+  }
+
+  ## Test whether this pdag allows a consistent extension
+  res <- pdag2dag(as(pdag,"graphNEL"))
+
+  if (class(res)=="graphNEL") {
+    ## Convert to complete pattern: use rules by Pearl
+    old_pdag <- matrix(rep(0,p^2),nrow=p,ncol=p)
+    while (sum(!(old_pdag==pdag))>0) {
+      old_pdag <- pdag
+      ## rule 1
+      ind <- which((pdag==1 & t(pdag)==0), arr.ind=TRUE) ## a -> b
+      if (length(ind)>0) {
+        for (i in 1:dim(ind)[1]) {
+          a <- ind[i,1]
+          b <- ind[i,2]
+          indC <- which( (pdag[b,]==1 & pdag[,b]==1) & (pdag[a,]==0 & pdag[,a]==0))
+          if (length(indC)>0) {
+            pdag[b,indC] <- 1
+            pdag[indC,b] <- 0
+          ## cat("\nRule 1:",a,"->",b," und ",b,"-",indC,": ",b,"->",indC)
+          }
+        }
+        ## x11()
+        ## plot(as(pdag,"graphNEL"), main="After Rule1")
+      }
+      
+      ## rule 2
+      ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a -> b
+      if (length(ind)>0) {
+        for (i in 1:dim(ind)[1]) {
+          a <- ind[i,1]
+          b <- ind[i,2]
+          indC <- which( (pdag[a,]==1 & pdag[,a]==0) & (pdag[,b]==1 & pdag[b,]==0))
+          if (length(indC)>0) {
+            pdag[a,b] <- 1
+            pdag[b,a] <- 0
+            ## cat("\nRule 2:",a,"->",b)
+          }
+        }
+      }
+      ## x11()
+      ## plot(as(pdag,"graphNEL"), main="After Rule2")
+      
+      ## rule 3
+      ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a -> b
+      if (length(ind)>0) {
+        for (i in 1:dim(ind)[1]) {
+          a <- ind[i,1]
+          b <- ind[i,2]
+          indC <- which( (pdag[a,]==1 & pdag[,a]==1) & (pdag[,b]==1 & pdag[b,]==0))
+          g2 <- pdag[indC,indC]
+          if (length(g2)==1) {
+            g2 <- 0
+          } else {
+            diag(g2) <- rep(0,length(indC))
+          }
+          if (any(g2==0)) {
+            pdag[a,b] <- 1
+            pdag[b,a] <- 0
+            ## cat("\nRule 3:",a,"->",b)
+          }
+        }
+      }
+      ## x11()
+      ## plot(as(pdag,"graphNEL"), main="After Rule3")
+    }
+    res <- gInput
+    res@graph <- as(pdag,"graphNEL")
+  }
+  return(res)
+}
+
+##################################################
+## udag2cpdag
+##################################################
+udag2cpdag <- function(pc)
+{
+  ## Purpose: Transform the result of the undirected part of the
+  ## PC-algorithm to a CPDAG
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - pc: pcAlgo-Object returned from undirected part of PC-algoritm
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: 13 Sep 2006, 17:16
+  res <- pc
+  pc.directed <- udag2pdag(pc)
+  pc.dag <- pdag2dag(pc.directed@graph)
+  ## pc.cpdag <- dag2cpdag(as(pc.dag,"matrix"))
+  ## rownames(pc.cpdag) <- colnames(pc.cpdag) <- as.character(seq(1,p))
+  ## res@graph <- as(pc.cpdag,"graphNEL")
+  res@graph <- dag2cpdag(pc.dag)
+  res
+}
 

@@ -1,11 +1,13 @@
 Package: pcalg
-Version: 0.1-3
-Date: 2006-06-1
-Author: Markus Kalisch, Marin Maechler
+Version: 0.1-4
+Date: 2006-11-1
+Author: Markus Kalisch, Martin Maechler
 Maintainer: Markus Kalisch <kalisch@stat.math.ethz.ch>
-Title: Estimating the skeleton of a DAG
-Description: Standard and robust estimation of the skeleton (ugraph) of a
-   Directed Acyclic Graph (DAG) via the PC-Algorithm.
-Depends: methods, MASS, graph, robustbase, Rgraphviz
+Title: Estimating the skeleton and equivalence class of a DAG
+Description: Standard and robust estimation of the skeleton (ugraph) 
+ and the equivalence class of a Directed Acyclic Graph (DAG) via the 
+ PC-Algorithm. The equivalence class is represented by its (unique) 
+ Completetd Partially Directed Acyclic Graph (CPDAG).
+Depends: methods, MASS, graph, robustbase, Rgraphviz, ggm
 License: GPL version 2 or later
-Packaged: Tue Jun  6 17:33:42 2006; kalisch
+Packaged: Wed Nov  1 13:41:25 2006; kalisch

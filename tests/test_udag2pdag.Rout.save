@@ -1,0 +1,110 @@
+
+R version 2.4.0 (2006-10-03)
+Copyright (C) 2006 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+Attaching package of SfS goodies.. Loading required package: stats
+Loading required package: methods
+Loading required package: utils
+ ... and today's fortune() cookie is:
+
+As for elegance, R is refined, tasteful, and beautiful. When I grow up, I want
+to marry R.
+   -- Andy Bunn (in a discussion about whether R is simple, powerful and
+      elegant)
+      R-help (May 2005)
+
+Working directory : /sfs/u/staff/kalisch/R/Pkgs/pcalg/tests  {change with setwd()}
+> invisible(options(echo = TRUE))
+> library(pcalg)
+Loading required package: MASS
+Loading required package: graph
+Loading required package: Ruuid
+Loading required package: robustbase
+
+Attaching package: 'robustbase'
+
+
+	The following object(s) are masked from package:sfsmisc :
+
+	 huberM 
+
+Loading required package: Rgraphviz
+Loading required package: geneplotter
+Loading required package: annotate
+Loading required package: Biobase
+Loading required package: tools
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material. To view, type
+    'openVignette()' or start with 'help(Biobase)'. For details
+    on reading vignettes, see the openVignette help page.
+
+KernSmooth 2.22 installed
+Copyright M. P. Wand 1997
+Loading required package: ggm
+
+Attaching package: 'ggm'
+
+
+	The following object(s) are masked from package:graph :
+
+	 edgeMatrix 
+
+> 
+> p <- 10 # number of random variables
+> n <- 10000 # number of samples
+> s <- 0.4 # sparsness of the graph
+> 
+> ## generate random data
+> set.seed(42)
+> g <- randomDAG(p,s) # generate a random DAG
+> d <- rmvDAG(n,g) # generate random samples
+> 
+> gSkel <- 
++   pcAlgo(d,alpha=0.05) # estimate of the skeleton
+> as(gSkel@graph,"matrix")
+   1 2 3 4 5 6 7 8 9 10
+1  0 0 0 1 1 0 0 0 1  1
+2  0 0 0 0 0 1 0 0 1  0
+3  0 0 0 1 0 0 1 0 0  0
+4  1 0 1 0 0 0 1 0 1  0
+5  1 0 0 0 0 0 0 1 0  1
+6  0 1 0 0 0 0 0 0 0  1
+7  0 0 1 1 0 0 0 0 1  0
+8  0 0 0 0 1 0 0 0 0  1
+9  1 1 0 1 0 0 1 0 0  1
+10 1 0 0 0 1 1 0 1 1  0
+> 
+> gPDAG <- udag2pdag(gSkel)
+> as(gPDAG@graph,"matrix")
+   1 2 3 4 5 6 7 8 9 10
+1  0 0 0 1 1 0 0 0 1  1
+2  0 0 0 0 0 1 0 0 1  0
+3  0 0 0 1 0 0 1 0 0  0
+4  0 0 0 0 0 0 0 0 1  0
+5  1 0 0 0 0 0 0 1 0  1
+6  0 1 0 0 0 0 0 0 0  1
+7  0 0 0 1 0 0 0 0 1  0
+8  0 0 0 0 1 0 0 0 0  1
+9  0 0 0 0 0 0 0 0 0  1
+10 0 0 0 0 0 0 0 0 0  0
+> 
+> proc.time()
+[1] 4.940 0.436 8.886 0.011 0.011
+> 
