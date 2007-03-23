@@ -1,28 +1,32 @@
 \name{mcor}
 \alias{mcor}
-\title{Compute Correlation Matrix (Robustly)}
+\title{Compute Correlation Matrix}
 \description{
   Compute a correlation matrix, possibly by robust methods, applicable also
   for the case of a large number of variables.
 }
 \usage{
-mcor(dm, method= c("standard", "Qn", "ogkScaleTau2", "ogkQn"))
+mcor(dm, method= c("standard", "Qn","QnStable", "ogkScaleTau2", "ogkQn"))
 }
 \arguments{
   \item{dm}{numeric matrix of data; rows are samples, columns are variables.}
-  \item{method}{"standard" (default), "Qn" and "ogkQn" envokes standard,
+  \item{method}{"standard" (default), "Qn", "QnStable" and "ogkQn"
+    envokes standard, 
     elementwise robust (based on \eqn{Q_n} scale estimator, see
     \code{\link[robustbase]{Qn}}) or robust (Qn using OGK, see
     \code{\link[robustbase]{covOGK}}) correlation estimate
     respectively.}
 }
 \value{
-  A correlation matrix estimated according to the specified method
+  A correlation matrix estimated according to the specified method.
 }
 \details{
   The "standard" method envokes a standard correlation estimator. "Qn"
   envokes a robust, elementwise correlation estimator based on the Qn scale
-  estimte. "ogkQn" envokes a correlation estimator based on Qn using OGK.
+  estimte. "QnStable" also uses the Qn scale estimator, but uses an
+  improved way of transforming that into the correlation
+  estimator. "ogkQn" envokes a correlation estimator based on Qn using
+  OGK. 
 }
 \seealso{
   \code{\link[robustbase]{Qn}}) and \code{\link[robustbase]{covOGK}}
@@ -57,6 +61,7 @@ mcor(cbind(x,y), method="standard")
 yNoise <- 2*x + rcauchy(100)
 mcor(cbind(x,yNoise), method="standard") ## shows almost no correlation
 mcor(cbind(x,yNoise), method="Qn")       ## shows a lot correlation
+mcor(cbind(x,yNoise), method="QnStable")       ## shows a lot correlation
 mcor(cbind(x,yNoise), method="ogkQn")    ## dito
 }
 \keyword{multivariate}

@@ -26,9 +26,12 @@ pcAlgo(dm, alpha, corMethod = "standard", verbose = FALSE, directed = FALSE)
     if \code{TRUE}, the underlying CPDAG is computed}
 }
 \value{
-  An undirected graph (object of \code{\link{class}} \code{"graph"}, see
+  An object of \code{\link{class}} \code{"pcAlgo"} (see
+  \code{\link[pcAlgo]{pcAlog-class}}) containing an undirected graph
+  (object of \code{\link{class}} \code{"graph"}, see 
   \code{\link[graph]{graph-class}} from the package \pkg{graph})
-  (without weigths) as estimate of the skeleton of the underlying DAG.
+  (without weigths) as estimate of the skeleton or the CPDAG of the
+  underlying DAG. 
 }
 \details{
   The algorithm starts with a complete undirected graph. In a first
@@ -57,12 +60,10 @@ pcAlgo(dm, alpha, corMethod = "standard", verbose = FALSE, directed = FALSE)
   P. Spirtes, C. Glymour and R. Scheines (2000)
   \emph{Causation, Prediction, and Search}, 2nd edition, The MIT Press.
 
-  Kalisch M. and P. B\"uhlmann (2005)
+  Kalisch M. and P. B\"uhlmann (2007)
   \emph{Estimating high-dimensional
     directed acyclic graphs with the PC-algorithm};
-    Research Report Nr.~130, ETH Zurich
-  \cr
-  (\url{http://stat.ethz.ch/research/research_reports/2005})
+    JMLR, Vol. 8, 613-636, 2007.
 }
 \seealso{\code{\link{randomDAG}} for generating a random DAG;
   \code{\link{rmvDAG}} for generating data according to a DAG;

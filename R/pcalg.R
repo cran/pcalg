@@ -258,7 +258,7 @@ pcAlgo <- function(dm, alpha, corMethod = "standard", verbose = FALSE, directed=
       call = cl, n = n, max.ord = as.integer(ord-1),
       n.edgetests = n.edgetests, sepset = sepset,
       zMin = zMin)
-  if (directed) res <- udag2cpdag(res)
+  if (directed) res <- udag2pdag(res)
   res
 }
 
@@ -480,7 +480,7 @@ getNextSet <- function(n,k,set) {
 }
 
 mcor <- function(dm, method =
-                  c("standard", "Qn", "ogkScaleTau2", "ogkQn"))
+                  c("standard", "Qn", "QnStable", "ogkScaleTau2", "ogkQn"))
 {
   ## Purpose: Compute correlation matrix (perhaps elementwise)
   ## ----------------------------------------------------------------------
@@ -505,6 +505,23 @@ mcor <- function(dm, method =
 	       res[i,j] <- max(-1,
                                min(1,
                                    (qnSum^2 - qnDiff^2) / (4*qnVec[i]*qnVec[j])))
+	     }
+	   }
+	   res <- res + t(res)
+	   diag(res) <- rep(1,p)
+	   res
+	 },
+         "QnStable" = {
+	   res <- matrix(0, p,p)
+	   qnVec <- apply(dm, 2, Qn)
+
+	   for (i in 1:(p-1)) {
+	     for (j in i:p) {
+	       qnSum <- Qn(dm[,i]/Qn(dm[,i]) + dm[,j]/Qn(dm[,j]))
+	       qnDiff <- Qn(dm[,i]/Qn(dm[,i]) - dm[,j]/Qn(dm[,j]))
+	       res[i,j] <- max(-1,
+                               min(1,
+                                   (qnSum^2 - qnDiff^2) / (qnSum^2 + qnDiff^2)))
 	     }
 	   }
 	   res <- res + t(res)
@@ -714,20 +731,24 @@ dag2cpdag <- function(dag) {
   ## - dag: input DAG (graph object)
   ## ----------------------------------------------------------------------
   ## Author: Markus Kalisch, Date: 31 Oct 2006, 15:30
-
-  ## transform DAG to adjacency matrix
-  dag <- as(dag,"matrix")
-  dag[dag!=0] <- 1
   
-  ## dag is adjacency matrix
-  p <- dim(dag)[1]
-  e.df <- labelEdges(dag)
-  cpdag <- matrix(rep(0,p*p),nrow=p,ncol=p)
-  for (i in 1:dim(e.df)[1]) {
-    if (e.df$label[i]) {
-      cpdag[e.df$tail[i],e.df$head[i]] <- 1
-    } else {
-      cpdag[e.df$tail[i],e.df$head[i]] <- cpdag[e.df$head[i],e.df$tail[i]] <- 1
+  p <- numNodes(dag)
+  ## transform DAG to adjacency matrix
+  if (numEdges(dag)==0) {
+    cpdag <- matrix(0,p,p)
+  } else {
+    dag <- as(dag,"matrix")
+    dag[dag!=0] <- 1
+    
+    ## dag is adjacency matrix
+    e.df <- labelEdges(dag)
+    cpdag <- matrix(rep(0,p*p),nrow=p,ncol=p)
+    for (i in 1:dim(e.df)[1]) {
+      if (e.df$label[i]) {
+        cpdag[e.df$tail[i],e.df$head[i]] <- 1
+      } else {
+        cpdag[e.df$tail[i],e.df$head[i]] <- cpdag[e.df$head[i],e.df$tail[i]] <- 1
+      }
     }
   }
   rownames(cpdag) <- colnames(cpdag) <- as.character(seq(1,p))
@@ -791,44 +812,49 @@ pdag2dag <- function(g) {
   ## ----------------------------------------------------------------------
   ## Author: Markus Kalisch, Date: Sep 2006, 15:21
 
-  gm <- as(g,"matrix")
-  gm[which(gm>0 & gm!=1)] <- 1
-  p <- dim(gm)[1]
-  
-  gm2 <- gm
-  a <- gm
-  go.on <- TRUE
-  while(length(a)>1 & sum(a)>0 & go.on) {
-    go.on <- FALSE
-    go.on2 <- TRUE
-    sinks <- find.sink(a)
-    if (length(sinks)>0) {
-      counter <- 1
-      while(counter<=length(sinks) & go.on2==TRUE) {
-        x <- sinks[counter]
-        if (adj.check(a,x)) {
-          go.on2 <- FALSE
-          ## orient edges
-          inc.to.x <- which(a[,x]==1 & a[x,]==1) ## undirected
-          if (length(inc.to.x)>0) {
-            real.inc.to.x <- as.numeric(row.names(a)[inc.to.x])
-            real.x <- as.numeric(row.names(a)[x])
-            gm2[real.inc.to.x,real.x] <- rep(1,length(inc.to.x))
-            gm2[real.x,real.inc.to.x] <- rep(0,length(inc.to.x))
-          }
-          ## remove x and all edges connected to it
-          a <- a[-x,-x]
-        }
-        counter <- counter+1
-      }
-    }
-    go.on <- !go.on2
-  }
-  if (go.on2==TRUE) {
-    res <- as(amat2dag(gm),"graphNEL")
-    warning("PDAG not extendible: Random DAG on skeleton drawn")
+  if (numEdges(g)==0) {
+    res <- g
   } else {
-    res <- as(gm2,"graphNEL")
+    gm <- as(g,"matrix")
+    gm[which(gm>0 & gm!=1)] <- 1
+    p <- dim(gm)[1]
+    
+    gm2 <- gm
+    a <- gm
+    go.on <- TRUE
+    go.on2 <- FALSE
+    while(length(a)>1 & sum(a)>0 & go.on) {
+      go.on <- FALSE
+      go.on2 <- TRUE
+      sinks <- find.sink(a)
+      if (length(sinks)>0) {
+        counter <- 1
+        while(counter<=length(sinks) & go.on2==TRUE) {
+          x <- sinks[counter]
+          if (adj.check(a,x)) {
+            go.on2 <- FALSE
+            ## orient edges
+            inc.to.x <- which(a[,x]==1 & a[x,]==1) ## undirected
+            if (length(inc.to.x)>0) {
+              real.inc.to.x <- as.numeric(row.names(a)[inc.to.x])
+              real.x <- as.numeric(row.names(a)[x])
+              gm2[real.inc.to.x,real.x] <- rep(1,length(inc.to.x))
+              gm2[real.x,real.inc.to.x] <- rep(0,length(inc.to.x))
+            }
+            ## remove x and all edges connected to it
+            a <- a[-x,-x]
+          }
+          counter <- counter+1
+        }
+      }
+      go.on <- !go.on2
+    }
+    if (go.on2==TRUE) {
+      res <- as(amat2dag(gm),"graphNEL")
+      warning("PDAG not extendible: Random DAG on skeleton drawn")
+    } else {
+      res <- as(gm2,"graphNEL")
+    }
   }
   res
 }
@@ -874,97 +900,125 @@ udag2pdag <- function(gInput) {
   ## ----------------------------------------------------------------------
   ## Author: Markus Kalisch, Date: Sep 2006, 15:03
 
-  g <- as(gInput@graph,"matrix")
-  pdag <- g
-  ind <- which(g==1,arr.ind=TRUE)
-  
-  ## Create minimal pattern
-  for (i in 1:dim(ind)[1]) {
-    x <- ind[i,1]
-    y <- ind[i,2]
-    allZ <- setdiff(which(g[y,]==1),x)
+  res <- gInput
+  if (numEdges(gInput@graph)>0) {
+    g <- as(gInput@graph,"matrix")
+    p <- dim(g)[1]
+    pdag <- g
+    ind <- which(g==1,arr.ind=TRUE)
     
-    if (length(allZ)>0) {
-      for (j in 1:length(allZ)) {
-        z <- allZ[j]
-        if ((g[x,z]==0) & !((y %in% gInput@sepset[[x]][[z]]) |
-                (y %in% gInput@sepset[[z]][[x]]))) {
-          ## cat("\n",x,"->",y,"<-",z,"\n")
-          ## cat("Sxz=",gInput@sepset[[z]][[x]],"Szx=",gInput@sepset[[x]][[z]])
-          pdag[x,y] <- pdag[z,y] <- 1
-          pdag[y,x] <- pdag[y,z] <- 0
+    ## Create minimal pattern
+    for (i in 1:dim(ind)[1]) {
+      x <- ind[i,1]
+      y <- ind[i,2]
+      allZ <- setdiff(which(g[y,]==1),x)
+      
+      if (length(allZ)>0) {
+        for (j in 1:length(allZ)) {
+          z <- allZ[j]
+          if ((g[x,z]==0) & !((y %in% gInput@sepset[[x]][[z]]) |
+                  (y %in% gInput@sepset[[z]][[x]]))) {
+            ## cat("\n",x,"->",y,"<-",z,"\n")
+            ## cat("Sxz=",gInput@sepset[[z]][[x]],"Szx=",gInput@sepset[[x]][[z]])
+            pdag[x,y] <- pdag[z,y] <- 1
+            pdag[y,x] <- pdag[y,z] <- 0
+          }
         }
       }
     }
-  }
-
-  ## Test whether this pdag allows a consistent extension
-  res <- pdag2dag(as(pdag,"graphNEL"))
-
-  if (class(res)=="graphNEL") {
-    ## Convert to complete pattern: use rules by Pearl
-    old_pdag <- matrix(rep(0,p^2),nrow=p,ncol=p)
-    while (sum(!(old_pdag==pdag))>0) {
-      old_pdag <- pdag
-      ## rule 1
-      ind <- which((pdag==1 & t(pdag)==0), arr.ind=TRUE) ## a -> b
-      if (length(ind)>0) {
-        for (i in 1:dim(ind)[1]) {
-          a <- ind[i,1]
-          b <- ind[i,2]
-          indC <- which( (pdag[b,]==1 & pdag[,b]==1) & (pdag[a,]==0 & pdag[,a]==0))
-          if (length(indC)>0) {
-            pdag[b,indC] <- 1
-            pdag[indC,b] <- 0
-          ## cat("\nRule 1:",a,"->",b," und ",b,"-",indC,": ",b,"->",indC)
+    
+    ## Test whether this pdag allows a consistent extension
+    res2 <- pdag2dag(as(pdag,"graphNEL"))
+    
+    if (class(res2)=="graphNEL") {
+      ## Convert to complete pattern: use rules by Pearl
+      old_pdag <- matrix(rep(0,p^2),nrow=p,ncol=p)
+      while (sum(!(old_pdag==pdag))>0) {
+        old_pdag <- pdag
+        ## rule 1
+        ind <- which((pdag==1 & t(pdag)==0), arr.ind=TRUE) ## a -> b
+        if (length(ind)>0) {
+          for (i in 1:dim(ind)[1]) {
+            a <- ind[i,1]
+            b <- ind[i,2]
+            indC <- which( (pdag[b,]==1 & pdag[,b]==1) & (pdag[a,]==0 & pdag[,a]==0))
+            if (length(indC)>0) {
+              pdag[b,indC] <- 1
+              pdag[indC,b] <- 0
+              ## cat("\nRule 1:",a,"->",b," und ",b,"-",indC,": ",b,"->",indC)
+            }
+          }
+          ## x11()
+          ## plot(as(pdag,"graphNEL"), main="After Rule1")
+        }
+        
+        ## rule 2
+        ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a -> b
+        if (length(ind)>0) {
+          for (i in 1:dim(ind)[1]) {
+            a <- ind[i,1]
+            b <- ind[i,2]
+            indC <- which( (pdag[a,]==1 & pdag[,a]==0) & (pdag[,b]==1 & pdag[b,]==0))
+            if (length(indC)>0) {
+              pdag[a,b] <- 1
+              pdag[b,a] <- 0
+              ## cat("\nRule 2:",a,"->",b)
+            }
           }
         }
         ## x11()
-        ## plot(as(pdag,"graphNEL"), main="After Rule1")
-      }
-      
-      ## rule 2
-      ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a -> b
-      if (length(ind)>0) {
-        for (i in 1:dim(ind)[1]) {
-          a <- ind[i,1]
-          b <- ind[i,2]
-          indC <- which( (pdag[a,]==1 & pdag[,a]==0) & (pdag[,b]==1 & pdag[b,]==0))
-          if (length(indC)>0) {
-            pdag[a,b] <- 1
-            pdag[b,a] <- 0
-            ## cat("\nRule 2:",a,"->",b)
+        ## plot(as(pdag,"graphNEL"), main="After Rule2")
+        
+        ## rule 3
+        ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a -> b
+        if (length(ind)>0) {
+          for (i in 1:dim(ind)[1]) {
+            a <- ind[i,1]
+            b <- ind[i,2]
+            indC <- which( (pdag[a,]==1 & pdag[,a]==1) & (pdag[,b]==1 & pdag[b,]==0))
+            g2 <- pdag[indC,indC]
+            if (length(g2)==1) {
+              g2 <- 0
+            } else {
+              diag(g2) <- rep(0,length(indC))
+            }
+            if (any(g2==0)) {
+              pdag[a,b] <- 1
+              pdag[b,a] <- 0
+              ## cat("\nRule 3:",a,"->",b)
+            }
           }
         }
-      }
-      ## x11()
-      ## plot(as(pdag,"graphNEL"), main="After Rule2")
-      
-      ## rule 3
-      ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a -> b
-      if (length(ind)>0) {
-        for (i in 1:dim(ind)[1]) {
-          a <- ind[i,1]
-          b <- ind[i,2]
-          indC <- which( (pdag[a,]==1 & pdag[,a]==1) & (pdag[,b]==1 & pdag[b,]==0))
-          g2 <- pdag[indC,indC]
-          if (length(g2)==1) {
-            g2 <- 0
-          } else {
-            diag(g2) <- rep(0,length(indC))
-          }
-          if (any(g2==0)) {
-            pdag[a,b] <- 1
-            pdag[b,a] <- 0
-            ## cat("\nRule 3:",a,"->",b)
+        ## x11()
+        ## plot(as(pdag,"graphNEL"), main="After Rule3")
+
+        ## rule 4
+        ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a - b
+        if (length(ind)>0) {
+          for (i in 1:dim(ind)[1]) {
+            a <- ind[i,1]
+            b <- ind[i,2]
+            indC <- which( (pdag[a,]==1 & pdag[,a]==1) & (pdag[,b]==0 & pdag[b,]==0))
+            l.indC <- length(indC)
+            if (l.indC>0) {
+              found <- FALSE
+              ic <- 0
+              while(!found & (ic < l.indC)) {
+                ic <- ic + 1
+                c <- indC[ic]
+                indD <- which( (pdag[c,]==1 & pdag[,c]==0) & (pdag[,b]==1 & pdag[b,]==0))
+                if (length(indD)>0) {
+                  found <- TRUE
+                  pdag[b,a] = 0
+                }
+              }
+            }
           }
         }
+
       }
-      ## x11()
-      ## plot(as(pdag,"graphNEL"), main="After Rule3")
+      res@graph <- as(pdag,"graphNEL")
     }
-    res <- gInput
-    res@graph <- as(pdag,"graphNEL")
   }
   return(res)
 }
@@ -991,3 +1045,52 @@ udag2cpdag <- function(pc)
   res
 }
 
+shd <- function(g1,g2)
+{
+  ## Purpose: Compute Structural Hamming Distance between graphs g1 and g2
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - g1, g2: Input graphs
+  ## (graph objects;connectivity matrix where m[x,y]=1 iff x->1
+  ## and m[x,y]=m[y,x]=1 iff x-y; pcAlgo-objects)
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date:  1 Dec 2006, 17:21
+
+  # Idea: Transform g1 into g2
+  # Transform g1 and g2 into adjacency matrices
+  if (class(g1)=="pcAlgo") g1 <- g1@graph
+  if (class(g2)=="pcAlgo") g2 <- g2@graph
+  
+  if (class(g1)=="graphNEL") {
+    m1 <- t(wgtMatrix(g1))
+    m1[m1 != 0] <- rep(1, sum(m1 != 0))
+  }
+  if (class(g2)=="graphNEL") {
+    m2 <- t(wgtMatrix(g2))
+    m2[m2 != 0] <- rep(1, sum(m2 != 0))
+  }
+
+  p <- dim(m1)[2]
+  shd <- 0
+  
+  # Remove superfluous edges from g1
+  s1 <- m1 + t(m1)
+  s2 <- m2 + t(m2)
+  s1[which(s1==2)] <- 1
+  s2[which(s2==2)] <- 1
+  ds <- s1-s2
+  inds <- which(ds>0)
+  m1[inds] <- 0
+  shd <- shd + sum(ds>0)/2
+
+  # Add missing edges to g1
+  ind <- which(ds<0)
+  m1[ind] <- m2[ind]
+  shd <- shd + length(ind)/2
+
+  # Compare Orientation
+  d <- abs(m1-m2)
+  shd <- shd + sum((d + t(d))>0)/2
+
+  shd
+}

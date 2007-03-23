@@ -1,6 +1,6 @@
 Package: pcalg
-Version: 0.1-4
-Date: 2006-11-1
+Version: 0.1-5
+Date: 2007-3-23
 Author: Markus Kalisch, Martin Maechler
 Maintainer: Markus Kalisch <kalisch@stat.math.ethz.ch>
 Title: Estimating the skeleton and equivalence class of a DAG
@@ -10,4 +10,4 @@ Description: Standard and robust estimation of the skeleton (ugraph)
  Completetd Partially Directed Acyclic Graph (CPDAG).
 Depends: methods, MASS, graph, robustbase, Rgraphviz, ggm
 License: GPL version 2 or later
-Packaged: Wed Nov  1 13:41:25 2006; kalisch
+Packaged: Wed Apr 11 16:41:15 2007; kalisch
