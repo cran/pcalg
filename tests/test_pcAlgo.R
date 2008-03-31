@@ -1,44 +1,26 @@
 library(pcalg)
 
-set.seed(2)
-## Parameters
-p <- 5
-n <- 1000
-alpha <- 0.05
-s <- 0.6
+seeds <- c(123,444,324,543,764,2316,3341,934,22335,343)
+n <- 100000
+p <- 6
+a <- 0.001
+en <- 3
+correctEst <- rep(FALSE,length(seeds))
 
-mlb <- 0.1
-mub <- 1
-dag <- randomDAG(p,s,lB=mlb,uB=mub)
-data <- rmvDAG(n, dag)
-## TODO: improve this, once we have print(),plot() methods:
-r1 <- pcAlgo(data,alpha, verbose=TRUE)
+s <- en/(p-1)
 
-if(dev.interactive()) {
-    op <- par(mfrow=c(1,2))
-    plot(dag,      main = "true")
-    plot(r1@graph, main = "estimate")
-    par(op)
+for (i in 1:length(seeds)) {
+  cat("i=",i,"\n")
+  set.seed(seeds[i])
+  myDAG <- randomDAG(p, prob = s)
+  true.cpdag <- dag2cpdag(myDAG)
+  d.mat <- rmvDAG(n, myDAG, errDist = "normal")
+  res <- pcAlgo(d.mat, alpha = a, corMethod = "standard",directed=TRUE,verbose=0)
+  compare.res <- compareGraphs(res@graph,true.cpdag)
+
+  if ((compare.res["tpr"]==1) & (compare.res["fpr"]==0)) {
+    correctEst[i] <- TRUE
+  }
 }
 
-## check TPR, FPR and TDR for randomly generated data
-dag <- randomDAG(p,s,lB=mlb,uB=mub)
-data <- rmvDAG(n, dag)
-r <- pcAlgo(data,alpha,verbose=TRUE)
-cgr <- compareGraphs(r@graph, dag)
-if (abs(round(cgr["tpr"]-0.83333333333,10))>1e-10)
-    stop("Inconsistent result in Testing test_pcAlgo.R")
-
-if(dev.interactive()) {
-    c.cgr <- format(round(cgr, 3))
-    op <- par(mfrow=c(1,2))
-    plot(dag, main = "true")
-    plot(r@graph, main = "estimated skeleton")
-    mtext(paste(paste(toupper(names(c.cgr)), c.cgr, sep="= "),
-		collapse=", "))
-    par(op)
-}
-
-## check generating CPDAG
-rD <- pcAlgo(data,alpha,verbose=TRUE,directed=TRUE)
-(as(rD@graph,"matrix"))
+if (!all(correctEst)) stop("Test pcAlgo: Consistency wrong!")

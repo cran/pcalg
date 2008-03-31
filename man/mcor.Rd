@@ -6,16 +6,16 @@
   for the case of a large number of variables.
 }
 \usage{
-mcor(dm, method= c("standard", "Qn","QnStable", "ogkScaleTau2", "ogkQn"))
+mcor(dm, method= c("standard", "Qn","QnStable", "ogkScaleTau2", "ogkQn","shrink"))
 }
 \arguments{
   \item{dm}{numeric matrix of data; rows are samples, columns are variables.}
-  \item{method}{"standard" (default), "Qn", "QnStable" and "ogkQn"
+  \item{method}{"standard" (default), "Qn", "QnStable", "ogkQn" and "shrink"
     envokes standard, 
     elementwise robust (based on \eqn{Q_n} scale estimator, see
-    \code{\link[robustbase]{Qn}}) or robust (Qn using OGK, see
-    \code{\link[robustbase]{covOGK}}) correlation estimate
-    respectively.}
+    \code{\link[robustbase]{Qn}}), robust (Qn using OGK, see
+    \code{\link[robustbase]{covOGK}}) or shrinked ()
+    correlation estimate respectively.} 
 }
 \value{
   A correlation matrix estimated according to the specified method.
@@ -26,7 +26,9 @@ mcor(dm, method= c("standard", "Qn","QnStable", "ogkScaleTau2", "ogkQn"))
   estimte. "QnStable" also uses the Qn scale estimator, but uses an
   improved way of transforming that into the correlation
   estimator. "ogkQn" envokes a correlation estimator based on Qn using
-  OGK. 
+  OGK. "shrink" is only useful when used wiht pcSelect. An optimal
+  shrinkage parameter is used. Only correlation between response and
+  covariates is shrinked. 
 }
 \seealso{
   \code{\link[robustbase]{Qn}}) and \code{\link[robustbase]{covOGK}}

@@ -11,7 +11,7 @@
   \bold{P}artially \bold{D}irected \bold{A}cyclic \bold{G}raph).
 }
 \usage{
-pcAlgo(dm, alpha, corMethod = "standard", verbose = FALSE, directed = FALSE)
+pcAlgo(dm, alpha, corMethod = "standard", verbose = 0, directed = FALSE)
 }
 \arguments{
   \item{dm}{data matrix; rows correspond to samples, cols correspond to nodes.}
@@ -20,8 +20,8 @@ pcAlgo(dm, alpha, corMethod = "standard", verbose = FALSE, directed = FALSE)
     (partial) correlation estimation.
     "standard", "Qn" or "ogkQn" for standard and robust (based on
     the Qn scale estimator without and with OGK) correlation estimation}
-  \item{verbose}{Indicates whether some intermediate output should be
-    shown (WARNING: This decreases the performance dramatically!)}
+  \item{verbose} {0-no output, 1-small output, 2-details (using 1 and 2
+  makes the function very much slower)}
   \item{directed}{If \code{FALSE}, the underlying skeleton is computed;
     if \code{TRUE}, the underlying CPDAG is computed}
 }
@@ -70,7 +70,7 @@ pcAlgo(dm, alpha, corMethod = "standard", verbose = FALSE, directed = FALSE)
   \code{\link{compareGraphs}} for comparing undirected graphs in terms of
   TPR, FPR and TDR.  Further, \code{\link[graph]{randomGraph}} (in
   package \pkg{graph}) for other random graph
-  models. \code{\link{udag2cpdag}} for converting the skeleton to a CPDAG.
+  models. \code{\link{udag2pdag}} for converting the skeleton to a CPDAG.
 }
 \author{
   Markus Kalisch (\email{kalisch@stat.math.ethz.ch}) and Martin Maechler.

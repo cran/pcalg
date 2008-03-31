@@ -30,7 +30,7 @@ udag2pdag(gInput)
   J. Pearl (2000), \emph{Causality}, Cambridge University Press.
 }
 \author{Markus Kalisch (\email{kalisch@stat.math.ethz.ch})}
-\seealso{\code{\link{udag2cpdag}},\code{\link{pdag2dag}},\code{\link{dag2cpdag}}}
+\seealso{\code{\link{pdag2dag}},\code{\link{dag2cpdag}}}
 \examples{
 p <- 10 # number of random variables
 n <- 10000 # number of samples

@@ -27,9 +27,13 @@ randomDAG <- function(n, prob, lB = 0.1, uB = 1) {
     weightList <- runif(length(edgeList), min = lB, max = uB)
     edL[[i]] <- list(edges = edgeList, weights = weightList)
   }
-  if (rbinom(1,1, prob) == 1) ## then generate a last edge
+  if (rbinom(1,1, prob) == 1) {## then generate a last edge
     edL[[n-1]] <- list(edges = n,
                        weights = runif(1, min = lB, max = uB))
+  } else {
+    edL[[n-1]] <- list(edges = integer(0), weights = numeric(0))
+  }
+  edL[[n]] <- list(edges = integer(0), weights = numeric(0))
 
   new("graphNEL", nodes = V, edgeL = edL, edgemode = "directed")
 }
@@ -38,13 +42,16 @@ randomDAG <- function(n, prob, lB = 0.1, uB = 1) {
 
 wgtMatrix <- function(g)
 {
-    ## Purpose: work around "graph" package's  as(g, "matrix") bug
-    ## ----------------------------------------------------------------------
-    ## Arguments: g: an object inheriting from (S4) class "graph"
-    ## ----------------------------------------------------------------------
-    ## Author: Martin Maechler, based on Seth Falcon's code;  Date: 12 May 2006
-
-    ## MM: another buglet for the case of  "no edges":
+  ## Purpose: work around "graph" package's  as(g, "matrix") bug
+  ## ----------------------------------------------------------------------
+  ## ACHTUNG: mat_[i,j]==1 iff j->i,
+  ## whereas with as(g,"matrix") mat_[i,j]==1 iff i->j
+  ## ----------------------------------------------------------------------
+  ## Arguments: g: an object inheriting from (S4) class "graph"
+  ## ----------------------------------------------------------------------
+  ## Author: Martin Maechler, based on Seth Falcon's code;  Date: 12 May 2006
+  
+  ## MM: another buglet for the case of  "no edges":
     if(numEdges(g) == 0) {
       p <- length(nd <- nodes(g))
       return( matrix(0, p,p, dimnames = list(nd, nd)) )
@@ -60,6 +67,7 @@ wgtMatrix <- function(g)
     ## now is a 0/1 - matrix (instead of 0/wgts) with the 'graph' bug
     if(any(w != 1)) ## fix it
         tm[tm != 0] <- w
+    ## tm_[i,j]==1 iff i->j
     tm
 }
 
@@ -147,7 +155,7 @@ setClass("pcAlgo", representation =
               zMin= "matrix"))
               
 
-pcAlgo <- function(dm, alpha, corMethod = "standard", verbose = FALSE, directed=FALSE) {
+pcAlgo <- function(dm, alpha, corMethod = "standard", verbose = 0, directed=FALSE) {
   ## Purpose: Perform PC-Algorithm, i.e., estimate skeleton of DAG given data
   ## Output is an unoriented graph object
   ## ----------------------------------------------------------------------
@@ -156,8 +164,12 @@ pcAlgo <- function(dm, alpha, corMethod = "standard", verbose = FALSE, directed=
   ## - alpha: Significance level of individual partial correlation tests
   ## - corMethod: "standard" or "Qn" for standard or robust correlation
   ##              estimation
+  ## - verbose: 0-no output, 1-small output, 2-details
   ## ----------------------------------------------------------------------
   ## Author: Markus Kalisch, Date: 26 Jan 2006; Martin Maechler
+  ## backward compatibility
+  if (verbose==FALSE) verbose <- 0
+  if (verbose==TRUE) verbose <- 1
 
   stopifnot((n <- nrow(dm)) >= 1,
             (p <- ncol(dm)) >= 1)
@@ -183,10 +195,10 @@ pcAlgo <- function(dm, alpha, corMethod = "standard", verbose = FALSE, directed=
     ## For comparison with C++ sort according to first row
     ind <- ind[order(ind[,1]) ,]
     remainingEdgeTests <- nrow(ind)
-    if(verbose)
+    if(verbose>=1)
         cat("Order=",ord,"; remaining edges:",remainingEdgeTests,"\n", sep='')
     for (i in 1:remainingEdgeTests) {
-      if(verbose) { if(i%%100==0) cat("|i=",i,"|iMax=",nrow(ind),"\n") }
+      if(verbose>=1) { if(i%%100==0) cat("|i=",i,"|iMax=",nrow(ind),"\n") }
       x <- ind[i,1]
       y <- ind[i,2]
 ##      done <- !G[y,x] # i.e. (x,y) was not already deleted in its (y,x) "version"
@@ -212,7 +224,7 @@ pcAlgo <- function(dm, alpha, corMethod = "standard", verbose = FALSE, directed=
             n.edgetests[ord+1] <- n.edgetests[ord+1]+1
             z <- zStat(x,y, nbrs[S], C,n)
             if(abs(z)<zMin[x,y]) zMin[x,y] <- abs(z)
-##            cat(paste("x:",x,"y:",y,"S:"),nbrs[S],paste("z:",z,"\n"))
+            if (verbose==2) cat(paste("x:",x,"y:",y,"S:"),nbrs[S],paste("z:",z,"\n"))
             if (abs(z) <= cutoff) {
 ##              ##  pnorm(abs(z), lower.tail = FALSE) is the P-value
               G[x,y] <- G[y,x] <- FALSE
@@ -234,7 +246,7 @@ pcAlgo <- function(dm, alpha, corMethod = "standard", verbose = FALSE, directed=
 ##    n.edgetests[ord] <- remainingEdgeTests
   }
 
-  if(verbose) { cat("Final graph adjacency matrix:\n"); print(symnum(G)) }
+  if(verbose>=1) { cat("Final graph adjacency matrix:\n"); print(symnum(G)) }
 
   ## transform matrix to graph object :
   if (sum(G) == 0) {
@@ -261,6 +273,93 @@ pcAlgo <- function(dm, alpha, corMethod = "standard", verbose = FALSE, directed=
   if (directed) res <- udag2pdag(res)
   res
 }
+
+pcSelect <- function(y,dm, alpha, corMethod = "standard", verbose = 0, directed=FALSE) {
+  ## Purpose: Find columns in dm, that have nonzero parcor with y given
+  ## any other set of columns in dm
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - y: Response Vector (length(y)=nrow(dm))
+  ## - dm: Data matrix (rows: samples, cols: nodes)
+  ## - alpha: Significance level of individual partial correlation tests
+  ## - corMethod: "standard" or "Qn" for standard or robust correlation
+  ##              estimation
+  ## - verbose: 0-no output, 1-small output, 2-details
+  ## ----------------------------------------------------------------------
+  ## Value: List
+  ## - G: boolean vector with connected nodes
+  ## - zMin: Minimal z values
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: 27.4.07
+  ## backward compatibility
+  if (verbose==FALSE) verbose <- 0
+  if (verbose==TRUE) verbose <- 1
+
+  stopifnot((n <- nrow(dm)) >= 1,
+            (p <- ncol(dm)) >= 1)
+  cl <- match.call()
+  sepset <- vector("list",p)
+  zMin <- c(0,rep(Inf,p))
+  C <- mcor(cbind(y,dm), method = corMethod)
+  cutoff <- qnorm(1 - alpha/2)
+  n.edgetests <- numeric(1)# final length = max { ord}
+  ## G := complete graph :
+  G <- c(FALSE,rep(TRUE,p))
+  seq_p <- 1:(p+1)
+
+  done <- FALSE
+  ord <- 0
+  while (!done && any(G)) {
+    n.edgetests[ord+1] <- 0
+    done <- TRUE
+    ind <- which(G)
+    remainingEdgeTests <- length(ind)
+    if(verbose>=1)
+        cat("Order=",ord,"; remaining edges:",remainingEdgeTests,"\n", sep='')
+    for (i in 1:remainingEdgeTests) {
+      if(verbose>=1) { if(i%%100==0) cat("|i=",i,"|iMax=",nrow(ind),"\n") }
+      y <- 1
+      x <- ind[i]
+
+      if (G[x]) {
+        nbrsBool <- G
+        nbrsBool[x] <- FALSE
+        nbrs <- seq_p[nbrsBool]
+        ## neighbors of y without itself and x
+        length_nbrs <- length(nbrs)
+
+        if (length_nbrs >= ord) {
+          if (length_nbrs > ord) done <- FALSE
+          S <- seq(length = ord)
+
+          ## now includes special cases (ord == 0) or (length_nbrs == 1):
+          repeat {
+            n.edgetests[ord+1] <- n.edgetests[ord+1]+1
+            z <- zStat(x,y, nbrs[S], C,n)
+            if(abs(z)<zMin[x]) zMin[x] <- abs(z)
+            if (verbose==2) cat(paste("x:",colnames(dm)[x-1],"y:",(ytmp <- round((ncol(dm)+1)/2)),"S:"),c(ytmp,colnames(dm))[nbrs[S]],paste("z:",z,"\n"))
+            if (abs(z) <= cutoff) {
+              G[x] <- FALSE
+              break
+            }
+            else {
+              nextSet <- getNextSet(length_nbrs, ord, S)
+              if(nextSet$wasLast)
+                  break
+              S <- nextSet$nextSet
+            }
+          }
+
+        } } ## end if(!done)
+
+    } ## end for(i ..)
+    ord <- ord+1
+  } ## end while
+  Gres <- G[-1]
+  names(Gres) <- colnames(dm)
+  res <- list(G=Gres,zMin=zMin[-1])
+  res
+} 
 
 
 setMethod("summary", "pcAlgo",
@@ -292,14 +391,26 @@ setMethod("show", "pcAlgo",
 	  })
 
 setMethod("plot", signature(x = "pcAlgo"),
-	  function(x, y, main = NULL, zvalue.lwd = FALSE, lwd.max = 7, ...)
+          function(x, y, main = NULL, zvalue.lwd = FALSE, lwd.max = 7,
+                   labels = NULL, ...)
       {
 	if(is.null(main))
 	    main <- deparse(x@call)
+        attrs <- list()
+        nodeAttrs <- list()
+        if (!is.null(labels)) {
+          attrs$node <- list(shape = "ellipse", fixedsize = FALSE)
+          names(labels) <- nodes(x@graph)
+          nodeAttrs$label <- labels
+        }
+
         if (zvalue.lwd & numEdges(x@graph)!=0) {
           lwd.Matrix <- x@zMin
           lwd.Matrix <- ceiling(lwd.max*lwd.Matrix/max(lwd.Matrix))
-          z <- agopen(x@graph,name="lwdGraph")
+          z <- agopen(x@graph,
+                     name="lwdGraph",
+                     nodeAttrs = nodeAttrs,
+                     attrs = attrs)
           eLength <- length(z@AgEdge)
           for (i in 1:eLength) {
             x <- as.numeric(z@AgEdge[[i]]@head)
@@ -308,7 +419,8 @@ setMethod("plot", signature(x = "pcAlgo"),
           }
           plot(z, main = main, ...)
         } else {
-          plot(x@graph, main = main, ...)
+          plot(x@graph, nodeAttrs = nodeAttrs, main = main,
+               attrs = attrs, ...)
         }
       })
 
@@ -329,13 +441,13 @@ zStat <- function(x,y, S, C, n)
 ## dyn.load("/u/kalisch/cCode/pcAlgo/parcorC.so")
 ##  res <- 0  
  
-  if (length(S) < 4) {
+##   if (length(S) < 4) {
     r <- pcorOrder(x,y, S, C)
-  } else {
-    k <- solve(C[c(x,y,S),c(x,y,S)])
-    r <- -k[1,2]/sqrt(k[1,1]*k[2,2])
+##  } else {
+##    k <- solve(C[c(x,y,S),c(x,y,S)])
+##    r <- -k[1,2]/sqrt(k[1,1]*k[2,2])
     ##      r <- .C("parcorC",as.double(res),as.integer(x-1),as.integer(y-1),as.integer(S-1),as.integer(length(S)),as.integer(dim(C)[1]),as.double(as.vector(C)))[[1]]
-  }
+##  }
   
   res <- sqrt(n- length(S) - 3) * ( 0.5*log( (1+r)/(1-r) ) )
   if (is.na(res)) res <- 0
@@ -480,7 +592,7 @@ getNextSet <- function(n,k,set) {
 }
 
 mcor <- function(dm, method =
-                  c("standard", "Qn", "QnStable", "ogkScaleTau2", "ogkQn"))
+                  c("standard", "Qn", "QnStable", "ogkScaleTau2", "ogkQn","shrink"))
 {
   ## Purpose: Compute correlation matrix (perhaps elementwise)
   ## ----------------------------------------------------------------------
@@ -538,8 +650,74 @@ mcor <- function(dm, method =
 	   cov2cor(covOGK(dm, n.iter = 2, sigmamu = Qn_mu,
 			  weight.fn = hard.rejection)$cov)
 	 },
-	 "standard" = cor(dm))
+	 "standard" = cor(dm),
+         "shrink"={
+           X <- dm
+           CM <- cor(X)
+           n <- nrow(X)
+           p <- ncol(X)
+           g <- 0
+           S1 <- 0
+           S2 <- 0
+           scor3 <- CM
+
+           for(k in 2:p){
+             S1 <- S1+(CM[1,k])^2
+             S2 <- S2+(1-(CM[1,k])^2)^2
+           } 
+
+           g <-2*S1/(2*S1+(2/n)*S2)
+           
+           for(i in 2:p){
+             scor3[1,i] <- g*CM[1,i]
+             scor3[i,1] <- g*CM[i,1]
+           } 
+           
+           scor3
+          }
+         )
+
+        
 }
+
+pcSelect.presel <- function(y,dm, alpha, alphapre, corMethod = "standard", verbose = 0, directed=FALSE)
+{
+  ## Purpose: Find columns in dm, that have nonzero parcor with y given
+  ## any other set of columns in dm with use of some kind of preselection
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - y: Response Vector (length(y)=nrow(dm))
+  ## - dm: Data matrix (rows: samples, cols: nodes)
+  ## - alpha: Significance level of individual partial correlation tests
+  ## - corMethod: "standard" or "Qn" for standard or robust correlation
+  ##              estimation
+  ## - alphapre: Significance level in preselective use of pcSelect
+  ## ----------------------------------------------------------------------
+  ## Author: Philipp Ruetimann, Date: 5 Mar 2008
+
+  tmp <- pcSelect(y,dm,alphapre,corMethod,verbose,directed)
+  n <- nrow(dm)
+  pcs <- tmp$G
+  zmi <- tmp$zMin
+  ppcs <- which(pcs==1)
+  Xnew <- dm[,ppcs]
+  if(length(ppcs)==1){Xnew <- matrix(Xnew,n,1)}
+  lang <- length(pcs)
+  tmp2 <- pcSelect(y,Xnew,alpha,corMethod,verbose,directed)
+  pcSnew <- tmp2$G
+  zminew <- tmp2$zMin
+  zmi[ppcs] <- zminew
+  k <- 1
+  for (i in 1:lang){
+    if(pcs[i]==1){
+      pcs[i] <- pcSnew[k]
+      k <- k+1
+    }
+  }
+  
+ list(pcs=pcs,Xnew=Xnew,zMin=zmi) 
+}
+
 
 corGraph <- function(dm, alpha = 0.05, Cmethod = "pearson")
 {
@@ -583,7 +761,7 @@ make.edge.df <- function(amat) {
   ## type (1="d",0="u") in lexikographic order
   ## ----------------------------------------------------------------------
   ## Arguments:
-  ## - amat: Adjacency matrix of DAG
+  ## - amat: Adjacency matrix of DAG [x_ij=1 means i->j]
   ## ----------------------------------------------------------------------
   ## Author: Markus Kalisch, Date: 31 Oct 2006, 15:43
 
@@ -763,16 +941,15 @@ find.sink <- function(gm) {
   ## a sink my have incident indirected edges, but no directed ones
   ## ----------------------------------------------------------------------
   ## Arguments:
-  ## - gm: Adjacency matrix
+  ## - gm: Adjacency matrix (gm_i_j is edge from j to i)
   ## ----------------------------------------------------------------------
   ## Author: Markus Kalisch, Date: 31 Oct 2006, 15:28
 
   ## treat undirected edges
   undir.nbrs <- which((gm==t(gm) & gm==1),arr.ind=TRUE)
   gm[undir.nbrs] <- 0
-  undir.nbrs <- unique(as.vector(undir.nbrs))
   ## treat directed edges
-  res <- union(which(apply(gm,1,sum)==0),undir.nbrs)
+  res <- which(apply(gm,2,sum)==0)
   res
 }
 
@@ -815,7 +992,7 @@ pdag2dag <- function(g) {
   if (numEdges(g)==0) {
     res <- g
   } else {
-    gm <- as(g,"matrix")
+    gm <- wgtMatrix(g) ## gm_i_j is edge from j to i
     gm[which(gm>0 & gm!=1)] <- 1
     p <- dim(gm)[1]
     
@@ -838,8 +1015,8 @@ pdag2dag <- function(g) {
             if (length(inc.to.x)>0) {
               real.inc.to.x <- as.numeric(row.names(a)[inc.to.x])
               real.x <- as.numeric(row.names(a)[x])
-              gm2[real.inc.to.x,real.x] <- rep(1,length(inc.to.x))
-              gm2[real.x,real.inc.to.x] <- rep(0,length(inc.to.x))
+              gm2[real.x,real.inc.to.x] <- rep(1,length(inc.to.x))
+              gm2[real.inc.to.x,real.x] <- rep(0,length(inc.to.x))
             }
             ## remove x and all edges connected to it
             a <- a[-x,-x]
@@ -852,15 +1029,18 @@ pdag2dag <- function(g) {
     if (go.on2==TRUE) {
       res <- as(amat2dag(gm),"graphNEL")
       warning("PDAG not extendible: Random DAG on skeleton drawn")
+      succ <- FALSE
     } else {
-      res <- as(gm2,"graphNEL")
+      res <- as(t(gm2),"graphNEL")
+      succ <- TRUE
     }
   }
-  res
+  list(graph=res,success=succ)
 }
 
 amat2dag <- function(amat) {
-  ## Purpose: Transform an adjacency matrix to a DAG (graph object)
+  ## Purpose: Transform the adjacency matrix of an PDAG to the adjacency
+  ## matrix of a DAG 
   ## ----------------------------------------------------------------------
   ## Arguments:
   ## - amat: adjacency matrix; x -> y if amat[x,y]=1,amat[y,x]=0
@@ -911,7 +1091,7 @@ udag2pdag <- function(gInput) {
     for (i in 1:dim(ind)[1]) {
       x <- ind[i,1]
       y <- ind[i,2]
-      allZ <- setdiff(which(g[y,]==1),x)
+      allZ <- setdiff(which(g[y,]==1),x) ## x-y-z
       
       if (length(allZ)>0) {
         for (j in 1:length(allZ)) {
@@ -930,7 +1110,7 @@ udag2pdag <- function(gInput) {
     ## Test whether this pdag allows a consistent extension
     res2 <- pdag2dag(as(pdag,"graphNEL"))
     
-    if (class(res2)=="graphNEL") {
+    if (res2$success) {
       ## Convert to complete pattern: use rules by Pearl
       old_pdag <- matrix(rep(0,p^2),nrow=p,ncol=p)
       while (sum(!(old_pdag==pdag))>0) {
@@ -1018,31 +1198,11 @@ udag2pdag <- function(gInput) {
 
       }
       res@graph <- as(pdag,"graphNEL")
+    } else {
+      res@graph <- res2$graph
     }
   }
   return(res)
-}
-
-##################################################
-## udag2cpdag
-##################################################
-udag2cpdag <- function(pc)
-{
-  ## Purpose: Transform the result of the undirected part of the
-  ## PC-algorithm to a CPDAG
-  ## ----------------------------------------------------------------------
-  ## Arguments:
-  ## - pc: pcAlgo-Object returned from undirected part of PC-algoritm
-  ## ----------------------------------------------------------------------
-  ## Author: Markus Kalisch, Date: 13 Sep 2006, 17:16
-  res <- pc
-  pc.directed <- udag2pdag(pc)
-  pc.dag <- pdag2dag(pc.directed@graph)
-  ## pc.cpdag <- dag2cpdag(as(pc.dag,"matrix"))
-  ## rownames(pc.cpdag) <- colnames(pc.cpdag) <- as.character(seq(1,p))
-  ## res@graph <- as(pc.cpdag,"graphNEL")
-  res@graph <- dag2cpdag(pc.dag)
-  res
 }
 
 shd <- function(g1,g2)
@@ -1093,4 +1253,107 @@ shd <- function(g1,g2)
   shd <- shd + sum((d + t(d))>0)/2
 
   shd
+}
+
+decHeur <- function(dat,gam=0.05,sim.method="t",est.method="o",n.sim=100,two.sided=FALSE,verbose=FALSE)
+{
+  ## Purpose: Test wether data could come from a N or a N+t3 mix
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## dat: data (col=variables, rows=samples)
+  ## gam: significance level for test
+  ## sim.method: "n" Normal, "t" N + 10% t3
+  ## est.method: "s" standard, "o" ogkQn
+  ## n.sim: Number of samples for simulation
+  ## two.sided: should two sided test be used?
+  ## ----------------------------------------------------------------------
+  ## Value:
+  ## tvec: simulated values of test statistics under H0
+  ## tval: value of test statistics for real data
+  ## outlier: is robust method suggested? (TRUE=YES)
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: 26 Feb 2008, 17:34
+
+  p <- ncol(dat)
+  n <- nrow(dat)
+  mu <- rep(0,p)
+  tstat <- function(dat) {mean(apply(dat,2,sd)/apply(dat,2,Qn))}
+  is.outlier <- function(a,tvec,tval,two.sided=FALSE)
+    {
+      ## Purpose: Decide whether the test statistics lies in the rejection
+      ## region of the distribution sampled by tvec using a test
+      ## on significance level a
+      ## ----------------------------------------------------------------------
+      ## Arguments:
+      ## a: significance level
+      ## tvec: sampled values from null distribution of test statistics
+      ## tval: actual value of test statistics
+      ## two.sided: if FALSE, only for big tval rejected
+      ## ----------------------------------------------------------------------
+      ## Value: use.rob: bool, TRUE if tval is in rejection region
+      ## ----------------------------------------------------------------------
+      ## Author: Markus Kalisch, Date: 27 Feb 2008, 10:22
+
+      n <- length(tvec)
+      tvec.sorted <- sort(tvec)
+
+
+      if (two.sided) {
+        ind.low <- 1+floor((n-1)*a/2)
+        ind.high <- 1+ceiling((n-1)*(1-a/2))
+        c.low <- tvec.sorted[ind.low]
+        c.high <- tvec.sorted[ind.high]
+        c.int <- c(c.low,c.high)
+        
+        if ((tval<c.low)|(tval>c.high)) {
+          use.rob <- TRUE
+        } else {
+          use.rob <- FALSE
+        }
+      } else {
+        ind.high.1 <- 1+ceiling((n-1)*(1-a))
+        c.high.1 <- tvec.sorted[ind.high.1]
+        c.int <- c.high.1
+        
+        if (tval>c.high.1) {
+          use.rob <- TRUE
+        } else {
+          use.rob <- FALSE
+        }
+      }
+      ##  list(use.rob=use.rob,c.int=c.int)
+      use.rob
+    }
+
+  t.start <- proc.time()[1]
+  ## estimate correlation matrix of data
+  if (est.method=="o") {
+    mc <- mcor(dat,method="ogkQn")
+  } else {
+    mc <- mcor(dat,method="standard")
+  }
+
+  ## run simulations
+  tvec <- rep(0,n.sim)
+  for (i in 1:n.sim) {
+    if (verbose) cat("Run ",i," out of ",n.sim,"\n")
+    if (sim.method=="t") {
+      d.sim <- rbind(mvrnorm(round(9*n/10),mu,mc),
+                     rmt(n-round(9*n/10),mu,mc,3))
+    } else {
+      d.sim <- mvrnorm(n,mu,mc)
+    }
+    tvec[i] <- tstat(d.sim)
+  }
+
+  ## compute actual value of test statistics
+  tval <- tstat(dat)
+
+  ## is tval in rejection region of sig.level gam?
+  use.rob <- is.outlier(gam,tvec,tval,two.sided=two.sided)
+  rtime <- proc.time()[1]-t.start
+  
+  ## return results
+  list(tvec=tvec,tval=tval,use.rob=use.rob)
+    
 }

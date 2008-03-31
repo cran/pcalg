@@ -25,7 +25,7 @@ D.M. Chickering, \emph{Learning Equivalence Classes of Bayesian-Network
   Structures}, Journal of Machine Learning Research 2 (2002), 445-398  
 }
 \author{Markus Kalisch (\email{kalisch@stat.math.ethz.ch})}
-\seealso{\code{\link{udag2pdag}},\code{\link{pdag2dag}},\code{\link{udag2cpdag}}}
+\seealso{\code{\link{udag2pdag}},\code{\link{pdag2dag}}}
 \examples{
 p <- 10 # number of random variables
 s <- 0.4 # sparsness of the graph

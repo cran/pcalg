@@ -18,7 +18,8 @@ pdag2dag(g)
   the skeleton of the PDAG is generated and a warning message is produced.
 }
 \value{
-  consistent DAG extension (graph object)
+  List with two entries: "graph" contains consistent DAG extension
+  (graph object) and "success" is \code{TRUE} iff the extension was possible.
 }
 \references{
   D.Dor, M.Tarsi, \emph{A simple algorithm to construct a
@@ -26,7 +27,7 @@ pdag2dag(g)
     Report R-185, Cognitive Systems Laboratory, UCLA, 1992} 
 }
 \author{Markus Kalisch (\email{kalisch@stat.math.ethz.ch})}
-\seealso{\code{\link{udag2pdag}},\code{\link{pdag2dag}},\code{\link{udag2cpdag}}}
+\seealso{\code{\link{udag2pdag}},\code{\link{pdag2dag}}}
 \examples{
 p <- 10 # number of random variables
 n <- 10000 # number of samples

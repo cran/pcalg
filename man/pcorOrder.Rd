@@ -3,7 +3,7 @@
 \title{Compute Partial Correlations}
 \description{
   This function computes partial correlations given a correlation matrix
-  using a recursive algorithm or matrix inversion.
+  using a recursive algorithm.
  }
 \usage{
 pcorOrder(i,j, k, C, cut.at = 0.9999999)
@@ -19,11 +19,7 @@ pcorOrder(i,j, k, C, cut.at = 0.9999999)
 \value{
   The partial correlation of i and j given the set k.
 }
-\details{If the size of the conditioning sets is less than four, the
-  partial correlations are computed recursively starting from the
-  correlation matrix. If the size of the conditioning sets is greater
-  than or equal to four, the partial correlations are computed by matrix
-  inversion. This chooses in both cases the fastest method.
+\details{The partial correlations are computed using a recusive formula.
   To avoid numeric problems in recursions, the
   partial correlation is set to \code{cut.at} (\eqn{= 0.9999999} by
   default; keep this value, unless you know better!), if it is above
