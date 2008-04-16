@@ -10,11 +10,13 @@ as well.
 
 }
 \usage{
-udag2pdag(gInput)
+udag2pdag(gInput,verbose)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{gInput}{pcAlgo-object containing skeleton and cond. ind. information}
+  \item{gInput}{pcAlgo-object containing skeleton and
+    cond. ind. information}
+  \item{verbose}{0: No output; 1: Details}
 }
 \details{
   The skeleton is extended to a PDAG using rules by Spirtes and Pearl

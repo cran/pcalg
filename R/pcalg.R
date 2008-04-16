@@ -224,7 +224,7 @@ pcAlgo <- function(dm, alpha, corMethod = "standard", verbose = 0, directed=FALS
             n.edgetests[ord+1] <- n.edgetests[ord+1]+1
             z <- zStat(x,y, nbrs[S], C,n)
             if(abs(z)<zMin[x,y]) zMin[x,y] <- abs(z)
-            if (verbose==2) cat(paste("x:",x,"y:",y,"S:"),nbrs[S],paste("z:",z,"\n"))
+            if (verbose>=2) cat(paste("x:",x,"y:",y,"S:"),nbrs[S],paste("z:",z,"\n"))
             if (abs(z) <= cutoff) {
 ##              ##  pnorm(abs(z), lower.tail = FALSE) is the P-value
               G[x,y] <- G[y,x] <- FALSE
@@ -270,7 +270,7 @@ pcAlgo <- function(dm, alpha, corMethod = "standard", verbose = 0, directed=FALS
       call = cl, n = n, max.ord = as.integer(ord-1),
       n.edgetests = n.edgetests, sepset = sepset,
       zMin = zMin)
-  if (directed) res <- udag2pdag(res)
+  if (directed) res <- udag2pdag(res,verbose=verbose-1)
   res
 }
 
@@ -937,8 +937,8 @@ dag2cpdag <- function(dag) {
 ## pdag2dag
 ##################################################
 find.sink <- function(gm) {
-  ## Purpose: Find sink of an adj matrix; return numeric(0) if there is none
-  ## a sink my have incident indirected edges, but no directed ones
+  ## Purpose: Find sink of an adj matrix; return numeric(0) if there is none;
+  ## a sink may have incident undirected edges, but no directed ones
   ## ----------------------------------------------------------------------
   ## Arguments:
   ## - gm: Adjacency matrix (gm_i_j is edge from j to i)
@@ -1071,18 +1071,19 @@ amat2dag <- function(amat) {
 ##################################################
 ## udag2pdag
 ##################################################
-udag2pdag <- function(gInput) {
+udag2pdag <- function(gInput,verbose=0) {
   ## Purpose: Transform the Skeleton of a pcAlgo-object to a PDAG using
   ## the rules of Pearl. The output is again a pcAlgo-object. 
   ## ----------------------------------------------------------------------
   ## Arguments:
   ## - gInput: pcAlgo object
+  ## - verbose: 0 - no output, 1 - detailed output
   ## ----------------------------------------------------------------------
   ## Author: Markus Kalisch, Date: Sep 2006, 15:03
 
   res <- gInput
   if (numEdges(gInput@graph)>0) {
-    g <- as(gInput@graph,"matrix")
+    g <- as(gInput@graph,"matrix") ## g_ij if i->j
     p <- dim(g)[1]
     pdag <- g
     ind <- which(g==1,arr.ind=TRUE)
@@ -1098,8 +1099,10 @@ udag2pdag <- function(gInput) {
           z <- allZ[j]
           if ((g[x,z]==0) & !((y %in% gInput@sepset[[x]][[z]]) |
                   (y %in% gInput@sepset[[z]][[x]]))) {
-            ## cat("\n",x,"->",y,"<-",z,"\n")
-            ## cat("Sxz=",gInput@sepset[[z]][[x]],"Szx=",gInput@sepset[[x]][[z]])
+            if (verbose==1) {
+              cat("\n",x,"->",y,"<-",z,"\n") 
+              cat("Sxz=",gInput@sepset[[z]][[x]],"Szx=",gInput@sepset[[x]][[z]])
+            }
             pdag[x,y] <- pdag[z,y] <- 1
             pdag[y,x] <- pdag[y,z] <- 0
           }
@@ -1125,7 +1128,7 @@ udag2pdag <- function(gInput) {
             if (length(indC)>0) {
               pdag[b,indC] <- 1
               pdag[indC,b] <- 0
-              ## cat("\nRule 1:",a,"->",b," und ",b,"-",indC,": ",b,"->",indC)
+              if (verbose==1) cat("\nRule 1:",a,"->",b," und ",b,"-",indC," wobei ",a," und ",indC," nicht verbunden: ",b,"->",indC,"\n")
             }
           }
           ## x11()
@@ -1142,7 +1145,8 @@ udag2pdag <- function(gInput) {
             if (length(indC)>0) {
               pdag[a,b] <- 1
               pdag[b,a] <- 0
-              ## cat("\nRule 2:",a,"->",b)
+              if (verbose==1) cat("\nRule 2: Kette ",a,"->",indC,"->",
+                    b,":",a,"->",b,"\n")
             }
           }
         }
@@ -1150,22 +1154,26 @@ udag2pdag <- function(gInput) {
         ## plot(as(pdag,"graphNEL"), main="After Rule2")
         
         ## rule 3
-        ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a -> b
+        ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a - b
         if (length(ind)>0) {
           for (i in 1:dim(ind)[1]) {
             a <- ind[i,1]
             b <- ind[i,2]
             indC <- which( (pdag[a,]==1 & pdag[,a]==1) & (pdag[,b]==1 & pdag[b,]==0))
-            g2 <- pdag[indC,indC]
-            if (length(g2)==1) {
-              g2 <- 0
-            } else {
-              diag(g2) <- rep(0,length(indC))
-            }
-            if (any(g2==0)) {
-              pdag[a,b] <- 1
-              pdag[b,a] <- 0
-              ## cat("\nRule 3:",a,"->",b)
+            if (length(indC)>=2) {
+              ## cat("R3: indC = ",indC,"\n")
+              g2 <- pdag[indC,indC]
+              ## print(g2)
+              if (length(g2)<=1) {
+                g2 <- 0
+              } else {
+                diag(g2) <- rep(1,length(indC)) ## no self reference
+              }
+              if (any(g2==0)) { ## if two nodes in g2 are not connected
+                pdag[a,b] <- 1
+                pdag[b,a] <- 0
+                if (verbose==1) cat("\nRule 3:",a,"->",b,"\n")
+              }
             }
           }
         }
@@ -1173,28 +1181,29 @@ udag2pdag <- function(gInput) {
         ## plot(as(pdag,"graphNEL"), main="After Rule3")
 
         ## rule 4
-        ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a - b
-        if (length(ind)>0) {
-          for (i in 1:dim(ind)[1]) {
-            a <- ind[i,1]
-            b <- ind[i,2]
-            indC <- which( (pdag[a,]==1 & pdag[,a]==1) & (pdag[,b]==0 & pdag[b,]==0))
-            l.indC <- length(indC)
-            if (l.indC>0) {
-              found <- FALSE
-              ic <- 0
-              while(!found & (ic < l.indC)) {
-                ic <- ic + 1
-                c <- indC[ic]
-                indD <- which( (pdag[c,]==1 & pdag[,c]==0) & (pdag[,b]==1 & pdag[b,]==0))
-                if (length(indD)>0) {
-                  found <- TRUE
-                  pdag[b,a] = 0
-                }
-              }
-            }
-          }
-        }
+##-         ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a - b
+##-         if (length(ind)>0) {
+##-           for (i in 1:dim(ind)[1]) {
+##-             a <- ind[i,1]
+##-             b <- ind[i,2]
+##-             indC <- which( (pdag[a,]==1 & pdag[,a]==1) & (pdag[,b]==0 & pdag[b,]==0))
+##-             l.indC <- length(indC)
+##-             if (l.indC>0) {
+##-               found <- FALSE
+##-               ic <- 0
+##-               while(!found & (ic < l.indC)) {
+##-                 ic <- ic + 1
+##-                 c <- indC[ic]
+##-                 indD <- which( (pdag[c,]==1 & pdag[,c]==0) & (pdag[,b]==1 & pdag[b,]==0))
+##-                 if (length(indD)>0) {
+##-                   found <- TRUE
+##-                   pdag[b,a] = 0
+##-                   if (verbose==1) cat("Rule 4 applied \n")
+##-                 }
+##-               }
+##-             }
+##-           }
+##-         }
 
       }
       res@graph <- as(pdag,"graphNEL")

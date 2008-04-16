@@ -1,6 +1,6 @@
 Package: pcalg
-Version: 0.1-6
-Date: 2008-3-31
+Version: 0.1-7
+Date: 2008-4-16
 Author: Markus Kalisch, Martin Maechler
 Maintainer: Markus Kalisch <kalisch@stat.math.ethz.ch>
 Title: Estimating the skeleton and equivalence class of a DAG
@@ -11,4 +11,4 @@ Description: Standard and robust estimation of the skeleton (ugraph)
  function pcSelect implements variable selection techniques.
 Depends: methods, MASS, graph, robustbase, Rgraphviz, ggm, mnormt
 License: GPL (>= 2)
-Packaged: Wed Apr  2 10:09:20 2008; kalisch
+Packaged: Wed Apr 16 13:50:27 2008; kalisch

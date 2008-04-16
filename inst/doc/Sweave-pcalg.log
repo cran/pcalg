@@ -1,4 +1,4 @@
-This is pdfTeXk, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=pdflatex 2007.3.5)  2 APR 2008 10:09
+This is pdfTeXk, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=pdflatex 2007.3.5)  16 APR 2008 13:50
 entering extended mode
  file:line:error style messages enabled.
  %&-line parsing enabled.
@@ -27,10 +27,10 @@ Package: a4wide 1994/08/30
 
 (/u/sfs/tex/tex/latex/a4.sty
 --- new A4 size; Martin Maechler, version Dec 1992
-)) (/usr/local64.sfs/app/R/R-2.6.2-inst/share/texmf/Sweave.sty
+)) (/usr/local64.sfs/app/R/R-2.7.0rc_2008-04-15-inst/share/texmf/Sweave.sty
 
-LaTeX Warning: You have requested package `/usr/local64.sfs/app/R/R-2.6.2-inst/
-share/texmf/Sweave',
+LaTeX Warning: You have requested package `/usr/local64.sfs/app/R/R-2.7.0rc_200
+8-04-15-inst/share/texmf/Sweave',
                but the package provides `Sweave'.
 
 Package: Sweave 
@@ -74,7 +74,7 @@ Style option: `fancyvrb' v2.6, with DG/SPQR fixes <1998/07/17> (tvz)
 \FV@OutFile=\write3
 
 No file fancyvrb.cfg.
-) (/usr/local64.sfs/app/R/R-2.6.2-inst/share/texmf/upquote.sty
+) (/usr/local64.sfs/app/R/R-2.7.0rc_2008-04-15-inst/share/texmf/upquote.sty
 Package: upquote 2003/08/11 v1.1 Covington's upright-quote modification to verb
 atim and verb
 
@@ -214,7 +214,7 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <6> on input line 13.
 LaTeX Font Info:    Try loading font information for TS1+aer on input line 19.
 
-(/usr/local64.sfs/app/R/R-2.6.2-inst/share/texmf/ts1aer.fd
+(/usr/local64.sfs/app/R/R-2.7.0rc_2008-04-15-inst/share/texmf/ts1aer.fd
 File: ts1aer.fd 
 )
 LaTeX Font Info:    Font shape `TS1/aer/m/n' in size <10> not available
@@ -229,7 +229,7 @@ File: Sweave-pcalg-004.pdf Graphic file (type pdf)
 LaTeX Font Info:    Try loading font information for TS1+aett on input line 103
 .
 
-(/usr/local64.sfs/app/R/R-2.6.2-inst/share/texmf/ts1aett.fd
+(/usr/local64.sfs/app/R/R-2.7.0rc_2008-04-15-inst/share/texmf/ts1aett.fd
 File: ts1aett.fd 
 )
 LaTeX Font Info:    Try loading font information for TS1+cmtt on input line 103
@@ -930,8 +930,8 @@ File: Sweave-pcalg-007.pdf Graphic file (type pdf)
 ) 
 Here is how much of TeX's memory you used:
  2159 strings out of 94073
- 30725 string characters out of 1161458
- 71456 words of memory out of 1500000
+ 30881 string characters out of 1161458
+ 71674 words of memory out of 1500000
  5403 multiletter control sequences out of 10000+50000
  22267 words of font info for 54 fonts, out of 1200000 for 2000
  645 hyphenation exceptions out of 8191
@@ -948,7 +948,7 @@ X/02.07/texmf-dist/fonts/type1/bluesky/cm/cmsltt10.pfb></hg/s/linux/9/app/teTeX
 .07/texmf-dist/fonts/type1/bluesky/cm/cmtt12.pfb></hg/s/linux/9/app/teTeX/02.07
 /texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></hg/s/linux/9/app/teTeX/0
 2.07/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb>
-Output written on Sweave-pcalg.pdf (5 pages, 124351 bytes).
+Output written on Sweave-pcalg.pdf (5 pages, 124665 bytes).
 PDF statistics:
  83 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 131072)
