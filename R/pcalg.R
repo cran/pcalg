@@ -1,3 +1,58 @@
+trueCov <- function(g) {
+  if (class(g)=="graphNEL") {
+    w <- wgtMatrix(g)
+  } else {
+    w <- g
+  }
+  ## find all parents
+  p <- ncol(w)
+  pa <- vector("list",p)
+  for (i in 1:p) pa[[i]] <- which(w[i,]!=0)
+  l.pa <- sapply(pa,length)
+
+  ## make EX-Matrix
+  ecov <- diag(1,p)
+  for (j in 1:(p-1)) {
+    for (i in (j+1):p) {
+      if (l.pa[i]>0) {
+        ecov[j,i] = sum(w[i,pa[[i]]]*ecov[j,pa[[i]]])
+      } else {
+        ecov[j,i] <- 0
+      }
+    }
+  }
+
+  ## make Covariance Matrix
+  xcov <- matrix(0,p,p)
+
+  for (i in 1:p) {
+    for (j in 1:i) {
+      case.id <- as.character((l.pa[i]!=0)*10+(l.pa[j]!=0))
+      switch(case.id,
+             "0" = {
+               ## l.pa[i]=0 & l.pa[j]=0
+               if (i!=j) {
+                 xcov[i,j] <- xcov[j,i] <- 0
+               } else {
+                 xcov[i,j] <- 1
+               }},
+             "1" = {
+               ## l.pa[i]=0 & l.pa[j] != 0
+               xcov[i,j] <- xcov[j,i] <- ecov[i,j]
+             },
+             "10" = {
+               ## l.pa[i]!=0 & l.pa[j] = 0
+               xcov[i,j] <- xcov[j,i] <- ecov[j,i]
+             },
+             "11" = {
+               ## l.pa[i]!=0 & l.pa[j] = 0
+               xcov[i,j] <- xcov[j,i] <-
+                 w[i,pa[[i]],drop=FALSE]%*%xcov[pa[[i]],pa[[j]]]%*%t(w[j,pa[[j]],drop=FALSE]) + ecov[j,i]
+             })
+    }
+  }
+  xcov
+}
 
 randomDAG <- function(n, prob, lB = 0.1, uB = 1) {
   ## Purpose: Randomly generate a DAG (graph object as in graph-package).
@@ -154,125 +209,6 @@ setClass("pcAlgo", representation =
               sepset= "list",
               zMin= "matrix"))
               
-
-pcAlgo <- function(dm, alpha, corMethod = "standard", verbose = 0, directed=FALSE) {
-  ## Purpose: Perform PC-Algorithm, i.e., estimate skeleton of DAG given data
-  ## Output is an unoriented graph object
-  ## ----------------------------------------------------------------------
-  ## Arguments:
-  ## - dm: Data matrix (rows: samples, cols: nodes)
-  ## - alpha: Significance level of individual partial correlation tests
-  ## - corMethod: "standard" or "Qn" for standard or robust correlation
-  ##              estimation
-  ## - verbose: 0-no output, 1-small output, 2-details
-  ## ----------------------------------------------------------------------
-  ## Author: Markus Kalisch, Date: 26 Jan 2006; Martin Maechler
-  ## backward compatibility
-  if (verbose==FALSE) verbose <- 0
-  if (verbose==TRUE) verbose <- 1
-
-  stopifnot((n <- nrow(dm)) >= 1,
-            (p <- ncol(dm)) >= 1)
-  cl <- match.call()
-  sepset <- vector("list",p)
-  zMin <- matrix(rep(Inf,p*p),nrow=p,ncol=p)
-  diag(zMin) <- rep(0,p)
-  for (iList in 1:p) sepset[[iList]] <- vector("list",p)
-  C <- mcor(dm, method = corMethod)
-  cutoff <- qnorm(1 - alpha/2)
-  n.edgetests <- numeric(1)# final length = max { ord}
-  ## G := complete graph :
-  G <- matrix(rep(TRUE,p*p), nrow = p, ncol = p)
-  diag(G) <- FALSE
-  seq_p <- 1:p
-
-  done <- FALSE
-  ord <- 0
-  while (!done && any(G)) {
-    n.edgetests[ord+1] <- 0
-    done <- TRUE
-    ind <- which(G, arr.ind = TRUE)
-    ## For comparison with C++ sort according to first row
-    ind <- ind[order(ind[,1]) ,]
-    remainingEdgeTests <- nrow(ind)
-    if(verbose>=1)
-        cat("Order=",ord,"; remaining edges:",remainingEdgeTests,"\n", sep='')
-    for (i in 1:remainingEdgeTests) {
-      if(verbose>=1) { if(i%%100==0) cat("|i=",i,"|iMax=",nrow(ind),"\n") }
-      x <- ind[i,1]
-      y <- ind[i,2]
-##      done <- !G[y,x] # i.e. (x,y) was not already deleted in its (y,x) "version"
-##      if(!done) {
-      if (G[y,x]) {
-        nbrsBool <- G[,x]
-        nbrsBool[y] <- FALSE
-        nbrs <- seq_p[nbrsBool]
-        length_nbrs <- length(nbrs)
-        ## if(verbose)
-        
-##        done <- length_nbrs < ord
-##        if (!done) {
-        if (length_nbrs >= ord) {
-          if (length_nbrs > ord) done <- FALSE
-          S <- seq(length = ord)
-
-          ## now includes special cases (ord == 0) or (length_nbrs == 1):
-          repeat { ## condition w.r.to all  nbrs[S] of size 'ord' :
-          ##  if (condIndFisherZ(x,y, nbrs[S], C,n, cutoff,verbose)) {
-## MM: want to use this: --- but it changes the result in some cases!!
-##            cat("X=",x,"|Y=",y,"|ord=",ord,"|nbrs=",nbrs[S],"|iMax=",nrow(ind),"\n")
-            n.edgetests[ord+1] <- n.edgetests[ord+1]+1
-            z <- zStat(x,y, nbrs[S], C,n)
-            if(abs(z)<zMin[x,y]) zMin[x,y] <- abs(z)
-            if (verbose>=2) cat(paste("x:",x,"y:",y,"S:"),nbrs[S],paste("z:",z,"\n"))
-            if (abs(z) <= cutoff) {
-##              ##  pnorm(abs(z), lower.tail = FALSE) is the P-value
-              G[x,y] <- G[y,x] <- FALSE
-              sepset[[x]][[y]] <- nbrs[S]
-              break
-            }
-            else {
-              nextSet <- getNextSet(length_nbrs, ord, S)
-              if(nextSet$wasLast)
-                  break
-              S <- nextSet$nextSet
-            }
-          }
-
-        } } ## end if(!done)
-
-    } ## end for(i ..)
-    ord <- ord+1
-##    n.edgetests[ord] <- remainingEdgeTests
-  }
-
-  if(verbose>=1) { cat("Final graph adjacency matrix:\n"); print(symnum(G)) }
-
-  ## transform matrix to graph object :
-  if (sum(G) == 0) {
-    Gobject <- new("graphNEL", nodes = as.character(seq_p))
-  }
-  else {
-    colnames(G) <- rownames(G) <- as.character(seq_p)
-    Gobject <- as(G,"graphNEL")
-  }
-
-  for (i in 1:(p-1)) {
-    for (j in 2:p) {
-      zMin[i,j] <- zMin[j,i] <- min(zMin[i,j],zMin[j,i])
-    }
-  }
-### TODO:
-### - for each edge[i,j], save the largest P-value ``seen''
-### - for each [i,j],     save (the size of) the neighborhood << as option only!
-  res <- new("pcAlgo",
-      graph = Gobject,
-      call = cl, n = n, max.ord = as.integer(ord-1),
-      n.edgetests = n.edgetests, sepset = sepset,
-      zMin = zMin)
-  if (directed) res <- udag2pdag(res,verbose=verbose-1)
-  res
-}
 
 pcSelect <- function(y,dm, alpha, corMethod = "standard", verbose = 0, directed=FALSE) {
   ## Purpose: Find columns in dm, that have nonzero parcor with y given
@@ -979,64 +915,6 @@ adj.check <- function(gm,x) {
   res
 }
 
-pdag2dag <- function(g) {
-  ## Purpose: Generate a consistent extension of a PDAG to a DAG; if this
-  ## is not possible, a random extension of the skeleton is returned and
-  ## a warning is issued.
-  ## ----------------------------------------------------------------------
-  ## Arguments:
-  ## - g: PDAG (graph object)
-  ## ----------------------------------------------------------------------
-  ## Author: Markus Kalisch, Date: Sep 2006, 15:21
-
-  if (numEdges(g)==0) {
-    res <- g
-  } else {
-    gm <- wgtMatrix(g) ## gm_i_j is edge from j to i
-    gm[which(gm>0 & gm!=1)] <- 1
-    p <- dim(gm)[1]
-    
-    gm2 <- gm
-    a <- gm
-    go.on <- TRUE
-    go.on2 <- FALSE
-    while(length(a)>1 & sum(a)>0 & go.on) {
-      go.on <- FALSE
-      go.on2 <- TRUE
-      sinks <- find.sink(a)
-      if (length(sinks)>0) {
-        counter <- 1
-        while(counter<=length(sinks) & go.on2==TRUE) {
-          x <- sinks[counter]
-          if (adj.check(a,x)) {
-            go.on2 <- FALSE
-            ## orient edges
-            inc.to.x <- which(a[,x]==1 & a[x,]==1) ## undirected
-            if (length(inc.to.x)>0) {
-              real.inc.to.x <- as.numeric(row.names(a)[inc.to.x])
-              real.x <- as.numeric(row.names(a)[x])
-              gm2[real.x,real.inc.to.x] <- rep(1,length(inc.to.x))
-              gm2[real.inc.to.x,real.x] <- rep(0,length(inc.to.x))
-            }
-            ## remove x and all edges connected to it
-            a <- a[-x,-x]
-          }
-          counter <- counter+1
-        }
-      }
-      go.on <- !go.on2
-    }
-    if (go.on2==TRUE) {
-      res <- as(amat2dag(gm),"graphNEL")
-      warning("PDAG not extendible: Random DAG on skeleton drawn")
-      succ <- FALSE
-    } else {
-      res <- as(t(gm2),"graphNEL")
-      succ <- TRUE
-    }
-  }
-  list(graph=res,success=succ)
-}
 
 amat2dag <- function(amat) {
   ## Purpose: Transform the adjacency matrix of an PDAG to the adjacency
@@ -1366,3 +1244,1181 @@ decHeur <- function(dat,gam=0.05,sim.method="t",est.method="o",n.sim=100,two.sid
   list(tvec=tvec,tval=tval,use.rob=use.rob)
     
 }
+
+################################################################################
+## New in V8
+## uses also library(vcd)
+################################################################################
+ci.test <- function(x,y,S=NULL,dm.df) {
+  stopifnot(class(dm.df)=="data.frame",ncol(dm.df)>1)
+  tab <- table(dm.df[,c(x,y,S)])
+  if ((ncol(tab) < 2) | (nrow(tab)<2)) {
+    res <- 1
+  } else {
+    if (length(S)==0) {
+      res <- fisher.test(tab,simulate.p.value=TRUE)$p.value
+    } else {
+      res <- coindep_test(tab,3:(length(S)+2))$p.value
+    }
+  }
+  res
+}
+
+pcAlgo <- function(dm = NA, C = NA, n=NA, alpha, corMethod = "standard", verbose = FALSE,
+                   directed=FALSE, G=NULL, datatype='continuous',NAdelete=TRUE,
+                   m.max=Inf,u2pd="rand") {
+  ## Purpose: Perform PC-Algorithm, i.e., estimate skeleton of DAG given data
+  ## Output is an unoriented graph object
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - dm: Data matrix (rows: samples, cols: nodes)
+  ## - C: correlation matrix (only for continuous)
+  ## - n: sample size
+  ## - alpha: Significance level of individual partial correlation tests
+  ## - corMethod: "standard" or "Qn" for standard or robust correlation
+  ##              estimation
+  ## - G: the adjacency matrix of the graph from which the algorithm
+  ##      should start (logical)
+  ## - datatype: distinguish between discrete and continuous data
+  ## - NAdelete: delete edge if pval=NA (for discrete data)
+  ## - m.max: maximal size of conditioning set
+  ## - u2pd: Function for converting udag to pdag
+  ##   "rand": udag2pdagu
+  ##   "relaxed": udag2pdagRelaxed
+  ##   "retry": udag2pdagSpecial
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: 26 Jan 2006; Martin Maechler
+  ## Modifications: Sarah Gerster, Date: July 2007
+  
+  if (any(is.na(dm))) {
+    stopifnot(all(!is.na(C)),!is.na(n), (p <- ncol(C))>0)
+  } else {
+    n <- nrow(dm)
+    p <- ncol(dm)
+  }
+  n <- as.integer(n)
+  
+  cl <- match.call()
+  sepset <- vector("list",p)
+  n.edgetests <- numeric(1)# final length = max { ord}
+  if (is.null(G)) {
+    ## G := complete graph :
+    G <- matrix(rep(TRUE,p*p), nrow = p, ncol = p)
+    diag(G) <- FALSE
+  } else {
+    if (!(identical(dim(G),c(p,p)))) {
+      stop("Dimensions of the dataset and G do not agree.")
+    }
+  }
+  seq_p <- 1:p
+  for (iList in 1:p) sepset[[iList]] <- vector("list",p)
+  zMin <- matrix(rep(Inf,p*p),nrow=p,ncol=p)
+
+  done <- FALSE
+  ord <- 0
+  
+  if (datatype=='continuous') {
+    diag(zMin) <- rep(0,p)
+    if (any(is.na(C))) C <- mcor(dm, method = corMethod)
+    cutoff <- qnorm(1 - alpha/2)
+    while (!done && any(G) && ord<=m.max) {
+      n.edgetests[ord+1] <- 0
+      done <- TRUE
+      ind <- which(G, arr.ind = TRUE)
+      ## For comparison with C++ sort according to first row
+      ind <- ind[order(ind[,1]) ,]
+      remainingEdgeTests <- nrow(ind)
+      if(verbose)
+        cat("Order=",ord,"; remaining edges:",remainingEdgeTests,"\n", sep='')
+      for (i in 1:remainingEdgeTests) {
+        if(verbose) { if(i%%100==0) cat("|i=",i,"|iMax=",nrow(ind),"\n") }
+        x <- ind[i,1]
+        y <- ind[i,2]
+        if (G[y,x]) {
+          nbrsBool <- G[,x]
+          nbrsBool[y] <- FALSE
+          nbrs <- seq_p[nbrsBool]
+          length_nbrs <- length(nbrs)
+          if (length_nbrs >= ord) {
+            if (length_nbrs > ord) done <- FALSE
+            S <- seq(length = ord)
+            repeat { ## condition w.r.to all  nbrs[S] of size 'ord'
+              n.edgetests[ord+1] <- n.edgetests[ord+1]+1
+              z <- zStat(x,y, nbrs[S], C,n)
+              if (verbose) cat(paste("x:",x,"y:",y,"S:"),nbrs[S],paste("z:",z,"\n"))
+              if(abs(z)<zMin[x,y]) zMin[x,y] <- abs(z)
+              if (abs(z) <= cutoff) {
+                G[x,y] <- G[y,x] <- FALSE
+                sepset[[x]][[y]] <- nbrs[S]
+                break
+              } else {
+                nextSet <- getNextSet(length_nbrs, ord, S)
+                if(nextSet$wasLast)
+                  break
+                S <- nextSet$nextSet
+              }
+            }
+          }
+        } ## end if(!done)
+
+      } ## end for(i ..)
+      ord <- ord+1
+      ##    n.edgetests[ord] <- remainingEdgeTests
+    } ## while
+
+    for (i in 1:(p-1)) {
+      for (j in 2:p) {
+        zMin[i,j] <- zMin[j,i] <- min(zMin[i,j],zMin[j,i])
+      }
+    }
+#########      
+#########
+#########
+######### DISCRETE DATA ######################################################
+  } else {
+    if (datatype=='discrete') {
+      dm.df <- as.data.frame(dm)
+      while (!done && any(G) && ord<=m.max) {
+        n.edgetests[ord+1] <- 0
+        done <- TRUE
+        ind <- which(G, arr.ind = TRUE)
+        ## For comparison with C++ sort according to first row
+        ind <- ind[order(ind[,1]) ,]
+        remainingEdgeTests <- nrow(ind)
+        if(verbose)
+          cat("Order=",ord,"; remaining edges:",remainingEdgeTests,"\n", sep='')
+        for (i in 1:remainingEdgeTests) {
+          if(verbose) { if(i%%100==0) cat("|i=",i,"|iMax=",nrow(ind),"\n") }
+          x <- ind[i,1]
+          y <- ind[i,2]
+          if (G[y,x]) {
+            nbrsBool <- G[,x]
+            nbrsBool[y] <- FALSE
+            nbrs <- seq_p[nbrsBool]
+            length_nbrs <- length(nbrs)
+            if (length_nbrs >= ord) {
+              if (length_nbrs > ord) done <- FALSE
+              S <- seq(length = ord)
+              repeat { ## condition w.r.to all  nbrs[S] of size 'ord'
+                n.edgetests[ord+1] <- n.edgetests[ord+1]+1
+                prob <- ci.test(x,y, nbrs[S], dm.df)
+                if (verbose) cat("x=",x," y=",y," S=",nbrs[S],":",prob,"\n")
+                if (is.na(prob)) prob <- ifelse(NAdelete,1,0)
+                if(prob >= alpha) { # independent
+                  G[x,y] <- G[y,x] <- FALSE                    
+                  sepset[[x]][[y]] <- nbrs[S]                
+                  break
+                } else {
+                  nextSet <- getNextSet(length_nbrs, ord, S)
+                  if(nextSet$wasLast)
+                    break
+                  S <- nextSet$nextSet
+                }
+              }
+            }
+          } ## end if(!done)
+
+        } ## end for(i ..)
+        ord <- ord+1
+        ##    n.edgetests[ord] <- remainingEdgeTests
+      } ## while
+    } else {
+      stop("Datatype must be 'continuous' or 'discrete'.")
+    }
+  }
+
+  if(verbose) { cat("Final graph adjacency matrix:\n"); print(symnum(G)) }
+  
+  ## transform matrix to graph object :
+  if (sum(G) == 0) {
+    Gobject <- new("graphNEL", nodes = as.character(seq_p))
+  } else {
+    colnames(G) <- rownames(G) <- as.character(seq_p)
+    Gobject <- as(G,"graphNEL")
+  }
+  
+  res <- new("pcAlgo",
+             graph = Gobject,
+             call = cl, n = n, max.ord = as.integer(ord-1),
+             n.edgetests = n.edgetests, sepset = sepset,
+             zMin = zMin)
+  if (directed) {
+    res <- switch (u2pd,
+                   "rand" = udag2pdag(res),
+                   "retry" = udag2pdagSpecial(res)$pcObj,
+                   "relaxed" = udag2pdagRelaxed(res))
+  }
+  res
+}
+
+flipEdges <- function(amat,ind) {
+  res <- amat
+  if (length(ind)>0) {
+    for (i in 1:nrow(ind)) {
+      x <- ind[i,]
+      res[x[1],x[2]] <- amat[x[2],x[1]]
+      res[x[2],x[1]] <- amat[x[1],x[2]]
+    }
+  }
+  res
+}
+
+pdag2dag <- function(g,keepVstruct=TRUE) {
+  ## Purpose: Generate a consistent extension of a PDAG to a DAG; if this
+  ## is not possible, a random extension of the skeleton is returned and
+  ## a warning is issued.
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - g: PDAG (graph object)
+  ## - keepVstruct: TRUE - vStructures are kept
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: Sep 2006, 15:21
+  
+  if (numEdges(g)==0) {
+    succ <- TRUE
+    res <- g
+  } else {
+    gm <- wgtMatrix(g) ## gm_i_j is edge from j to i
+    gm[which(gm>0 & gm!=1)] <- 1
+    p <- dim(gm)[1]
+    
+    gm2 <- gm
+    a <- gm
+    go.on <- TRUE
+    go.on2 <- FALSE
+    while(length(a)>1 & sum(a)>0 & go.on) {
+      go.on <- FALSE
+      go.on2 <- TRUE
+      sinks <- find.sink(a)
+      if (length(sinks)>0) {
+        counter <- 1
+        while(counter<=length(sinks) & go.on2==TRUE) {
+          x <- sinks[counter]
+          if (!keepVstruct | adj.check(a,x)) {
+            go.on2 <- FALSE
+            ## orient edges
+            inc.to.x <- which(a[,x]==1 & a[x,]==1) ## undirected
+            if (length(inc.to.x)>0) {
+              real.inc.to.x <- as.numeric(row.names(a)[inc.to.x])
+              real.x <- as.numeric(row.names(a)[x])
+              gm2[real.x,real.inc.to.x] <- rep(1,length(inc.to.x))
+              gm2[real.inc.to.x,real.x] <- rep(0,length(inc.to.x))
+            }
+            ## remove x and all edges connected to it
+            a <- a[-x,-x]
+          }
+          counter <- counter+1
+        }
+      }
+      go.on <- !go.on2
+    }
+    if (go.on2==TRUE) {
+      res <- as(amat2dag(gm),"graphNEL")
+      warning("PDAG not extendible: Random DAG on skeleton drawn")
+      succ <- FALSE
+    } else {
+      res <- as(t(gm2),"graphNEL")
+      succ <- TRUE
+    }
+  }
+  list(graph=res,success=succ)
+}
+
+udag2pdagSpecial <- function(gInput,verbose=0,n.max=100) {
+  ## Purpose: Transform the Skeleton of a pcAlgo-object to a PDAG using
+  ## the rules of Pearl. The output is again a pcAlgo-object. Ambiguous
+  ## v-structures are reoriented until extendable or max number of tries
+  ## is reached. If still not extendable, a DAG is produced starting from the
+  ## current PDAG even if introducing new v-structures.
+  ##
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - gInput: pcAlgo object
+  ## - verbose: 0 - no output, 1 - detailed output
+  ## - n.max: Maximal number of tries to reorient v-strucutres
+  ## ----------------------------------------------------------------------
+  ## Values:
+  ## - pcObj: Oriented pc-Object
+  ## - evisit: Matrix counting the number of orientation attemps per edge
+  ## - xtbl.orig: Is original graph with v-structure extendable
+  ## - xtbl: Is final graph with v-structure extendable
+  ## - amat0: Adj.matrix of original graph with v-structures
+  ## - amat1: Adj.matrix of graph with v-structures after reorienting
+  ##          edges from double edge visits
+  ## - status:
+  ##   0: original try is extendable
+  ##   1: reorienting double edge visits helps
+  ##   2: orig. try is not extendable; reorienting double visits don't help;
+  ##      result is acyclic, has orig. v-structures, but perhaps
+  ##      additional v-structures
+  ## - counter: Number of reorientation tries until success or max.tries
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: Sep 2006, 15:03
+  counter <- 0
+  res <- gInput
+  status <- 0
+  evisit <- amat0 <- amat1 <- matrix(0,p,p)
+  xtbl <- xtbl.orig <- TRUE
+  if (numEdges(gInput@graph)>0) {
+    g <- as(gInput@graph,"matrix") ## g_ij if i->j
+    p <- dim(g)[1]
+    pdag <- g
+    ind <- which(g==1,arr.ind=TRUE)
+    ## ind <- unique(t(apply(ind,1,sort)))
+
+    
+    ## Create minimal pattern
+    for (i in 1:dim(ind)[1]) {
+      x <- ind[i,1]
+      y <- ind[i,2]
+      allZ <- setdiff(which(g[y,]==1),x) ## x-y-z
+      
+      if (length(allZ)>0) {
+        for (j in 1:length(allZ)) {
+          z <- allZ[j]
+          if ((g[x,z]==0) & !((y %in% gInput@sepset[[x]][[z]]) |
+                  (y %in% gInput@sepset[[z]][[x]]))) {
+            if (verbose==1) {
+              cat("\n",x,"->",y,"<-",z,"\n") 
+              cat("Sxz=",gInput@sepset[[z]][[x]],"Szx=",gInput@sepset[[x]][[z]])
+            }
+            ## check if already in other direction directed
+            if (pdag[x,y]==0 & pdag[y,x]==1) { 
+              evisit[x,y] <- evisit[x,y] + 1
+              evisit[y,x] <- evisit[y,x] + 1
+            }
+            if (pdag[z,y]==0 & pdag[y,z]==1) {
+              evisit[z,y] <- evisit[z,y] + 1
+              evisit[y,z] <- evisit[y,z] + 1
+            }
+            pdag[x,y] <- pdag[z,y] <- 1
+            pdag[y,x] <- pdag[y,z] <- 0
+          } ## if
+        } ## for 
+      } ## if
+    } ## for
+
+    amat0 <- pdag
+    ## Test whether this pdag allows a consistent extension
+    res2 <- pdag2dag(as(pdag,"graphNEL"))
+    xtbl <- res2$success
+    xtbl.orig <- xtbl
+    
+    if (!xtbl & (max(evisit)>0)) {
+      tmp.ind2 <- unique(which(evisit>0,arr.ind=TRUE))
+      ind2 <- unique(t(apply(tmp.ind2,1,sort)))
+      ## print(ind2)
+      n <- nrow(ind2)
+      n.max <- min(2^n-1,n.max)
+      counter <- 0
+      ## xtbl is FALSE because of if condition
+      while((counter<n.max) & !xtbl) {
+        ## if (counter%%100 == 0) cat("\n counter=",counter,"\n")
+        counter <- counter + 1
+        dgBase <- digitsBase(counter)
+        dgBase <- dgBase[length(dgBase):1]
+        ## print(dgBase)
+        indBase <- matrix(0,1,n)
+        indBase[1,1:length(dgBase)] <- dgBase
+        ## indTmp <- ind2[ss[[counter]],,drop=FALSE]
+        indTmp <- ind2[(indBase==1),,drop=FALSE]
+        ## print(indTmp)
+        pdagTmp <- flipEdges(pdag,indTmp)
+        resTmp <- pdag2dag(as(pdagTmp,"graphNEL"))
+        xtbl <- resTmp$success
+      }
+      pdag <- pdagTmp
+      status <- 1
+    }
+    amat1 <- pdag
+    
+    if (xtbl) {
+      ## Convert to complete pattern: use rules by Pearl
+      old_pdag <- matrix(rep(0,p^2),nrow=p,ncol=p)
+      while (sum(!(old_pdag==pdag))>0) {
+        old_pdag <- pdag
+        ## rule 1
+        ind <- which((pdag==1 & t(pdag)==0), arr.ind=TRUE) ## a -> b
+        if (length(ind)>0) {
+          for (i in 1:dim(ind)[1]) {
+            a <- ind[i,1]
+            b <- ind[i,2]
+            indC <- which( (pdag[b,]==1 & pdag[,b]==1) & (pdag[a,]==0 & pdag[,a]==0))
+            if (length(indC)>0) {
+              pdag[b,indC] <- 1
+              pdag[indC,b] <- 0
+              if (verbose==1) cat("\nRule 1:",a,"->",b," und ",b,"-",indC," wobei ",a," und ",indC," nicht verbunden: ",b,"->",indC,"\n")
+            }
+          }
+          ## x11()
+          ## plot(as(pdag,"graphNEL"), main="After Rule1")
+        }
+        
+        ## rule 2
+        ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a -> b
+        if (length(ind)>0) {
+          for (i in 1:dim(ind)[1]) {
+            a <- ind[i,1]
+            b <- ind[i,2]
+            indC <- which( (pdag[a,]==1 & pdag[,a]==0) & (pdag[,b]==1 & pdag[b,]==0))
+            if (length(indC)>0) {
+              pdag[a,b] <- 1
+              pdag[b,a] <- 0
+              if (verbose==1) cat("\nRule 2: Kette ",a,"->",indC,"->",
+                    b,":",a,"->",b,"\n")
+            }
+          }
+        }
+        ## x11()
+        ## plot(as(pdag,"graphNEL"), main="After Rule2")
+        
+        ## rule 3
+        ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a - b
+        if (length(ind)>0) {
+          for (i in 1:dim(ind)[1]) {
+            a <- ind[i,1]
+            b <- ind[i,2]
+            indC <- which( (pdag[a,]==1 & pdag[,a]==1) & (pdag[,b]==1 & pdag[b,]==0))
+            if (length(indC)>=2) {
+              ## cat("R3: indC = ",indC,"\n")
+              g2 <- pdag[indC,indC]
+              ## print(g2)
+              if (length(g2)<=1) {
+                g2 <- 0
+              } else {
+                diag(g2) <- rep(1,length(indC)) ## no self reference
+              }
+              if (any(g2==0)) { ## if two nodes in g2 are not connected
+                pdag[a,b] <- 1
+                pdag[b,a] <- 0
+                if (verbose==1) cat("\nRule 3:",a,"->",b,"\n")
+              }
+            }
+          }
+        }
+      }
+      res@graph <- as(pdag,"graphNEL")
+    } else {
+      res@graph <- dag2cpdag(pdag2dag(as(pdag,"graphNEL"),keepVstruct=FALSE)$graph)
+      status <- 2
+      ## res@graph <- res2$graph
+    }
+  }
+  return(list(pcObj=res,evisit=evisit,xtbl=xtbl,xtbl.orig=xtbl.orig,amat0=amat0,amat1=amat1,status=status,counter=counter))
+}
+
+udag2pdagRelaxed <- function(gInput,verbose=0) {
+  ## Purpose: Transform the Skeleton of a pcAlgo-object to a PDAG using
+  ## the rules of Pearl. The output is again a pcAlgo-object. There is
+  ## NO CHECK whether the resulting PDAG is really extendable.
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - gInput: pcAlgo object
+  ## - verbose: 0 - no output, 1 - detailed output
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: Sep 2006, 15:03
+
+  res <- gInput
+  if (numEdges(gInput@graph)>0) {
+    g <- as(gInput@graph,"matrix") ## g_ij if i->j
+    p <- dim(g)[1]
+    pdag <- g
+    ind <- which(g==1,arr.ind=TRUE)
+    
+    ## Create minimal pattern
+    for (i in 1:dim(ind)[1]) {
+      x <- ind[i,1]
+      y <- ind[i,2]
+      allZ <- setdiff(which(g[y,]==1),x) ## x-y-z
+      
+      if (length(allZ)>0) {
+        for (j in 1:length(allZ)) {
+          z <- allZ[j]
+          if ((g[x,z]==0) & !((y %in% gInput@sepset[[x]][[z]]) |
+                  (y %in% gInput@sepset[[z]][[x]]))) {
+            if (verbose==1) {
+              cat("\n",x,"->",y,"<-",z,"\n") 
+              cat("Sxz=",gInput@sepset[[z]][[x]],"Szx=",gInput@sepset[[x]][[z]])
+            }
+            pdag[x,y] <- pdag[z,y] <- 1
+            pdag[y,x] <- pdag[y,z] <- 0
+          }
+        }
+      }
+    }
+    
+    ## Test whether this pdag allows a consistent extension
+    ## res2 <- pdag2dag(as(pdag,"graphNEL"))
+    
+    ## Convert to complete pattern: use rules by Pearl
+    old_pdag <- matrix(rep(0,p^2),nrow=p,ncol=p)
+    while (sum(!(old_pdag==pdag))>0) {
+      old_pdag <- pdag
+      ## rule 1
+      ind <- which((pdag==1 & t(pdag)==0), arr.ind=TRUE) ## a -> b
+      if (length(ind)>0) {
+        for (i in 1:dim(ind)[1]) {
+          a <- ind[i,1]
+          b <- ind[i,2]
+          indC <- which( (pdag[b,]==1 & pdag[,b]==1) & (pdag[a,]==0 & pdag[,a]==0))
+          if (length(indC)>0) {
+            pdag[b,indC] <- 1
+            pdag[indC,b] <- 0
+            if (verbose==1) cat("\nRule 1:",a,"->",b," und ",b,"-",indC," wobei ",a," und ",indC," nicht verbunden: ",b,"->",indC,"\n")
+          }
+        }
+        ## x11()
+        ## plot(as(pdag,"graphNEL"), main="After Rule1")
+      }
+      
+      ## rule 2
+      ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a -> b
+      if (length(ind)>0) {
+        for (i in 1:dim(ind)[1]) {
+          a <- ind[i,1]
+          b <- ind[i,2]
+          indC <- which( (pdag[a,]==1 & pdag[,a]==0) & (pdag[,b]==1 & pdag[b,]==0))
+          if (length(indC)>0) {
+            pdag[a,b] <- 1
+            pdag[b,a] <- 0
+            if (verbose==1) cat("\nRule 2: Kette ",a,"->",indC,"->",
+                  b,":",a,"->",b,"\n")
+          }
+        }
+      }
+      ## x11()
+      ## plot(as(pdag,"graphNEL"), main="After Rule2")
+      
+      ## rule 3
+      ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a - b
+      if (length(ind)>0) {
+        for (i in 1:dim(ind)[1]) {
+          a <- ind[i,1]
+          b <- ind[i,2]
+          indC <- which( (pdag[a,]==1 & pdag[,a]==1) & (pdag[,b]==1 & pdag[b,]==0))
+          if (length(indC)>=2) {
+            ## cat("R3: indC = ",indC,"\n")
+            g2 <- pdag[indC,indC]
+            ## print(g2)
+            if (length(g2)<=1) {
+              g2 <- 0
+            } else {
+              diag(g2) <- rep(1,length(indC)) ## no self reference
+            }
+            if (any(g2==0)) { ## if two nodes in g2 are not connected
+              pdag[a,b] <- 1
+              pdag[b,a] <- 0
+              if (verbose==1) cat("\nRule 3:",a,"->",b,"\n")
+            }
+          }
+        }
+      }
+      ## x11()
+      ## plot(as(pdag,"graphNEL"), main="After Rule3")
+
+      ## rule 4
+      ##-         ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a - b
+      ##-         if (length(ind)>0) {
+      ##-           for (i in 1:dim(ind)[1]) {
+      ##-             a <- ind[i,1]
+      ##-             b <- ind[i,2]
+      ##-             indC <- which( (pdag[a,]==1 & pdag[,a]==1) & (pdag[,b]==0 & pdag[b,]==0))
+      ##-             l.indC <- length(indC)
+      ##-             if (l.indC>0) {
+      ##-               found <- FALSE
+      ##-               ic <- 0
+      ##-               while(!found & (ic < l.indC)) {
+      ##-                 ic <- ic + 1
+      ##-                 c <- indC[ic]
+      ##-                 indD <- which( (pdag[c,]==1 & pdag[,c]==0) & (pdag[,b]==1 & pdag[b,]==0))
+      ##-                 if (length(indD)>0) {
+      ##-                   found <- TRUE
+      ##-                   pdag[b,a] = 0
+      ##-                   if (verbose==1) cat("Rule 4 applied \n")
+      ##-                 }
+      ##-               }
+      ##-             }
+      ##-           }
+      ##-         }
+
+    }
+    res@graph <- as(pdag,"graphNEL")
+
+  }
+  return(res)
+}
+
+beta.special <- function(dat=NA,x.pos,y.pos,verbose=0,a=0.01,myDAG=NA,myplot=FALSE,perfect=FALSE,method="local",collTest=TRUE,pcObj=NA,all.dags=NA,u2pd="rand")
+{
+  ## Purpose: Estimate the causal effect of x on y; the pcObj and all DAGs
+  ## can be precomputed 
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - dat: data
+  ## - x.pos, y.pos: Column of x and y in d.mat
+  ## - verbose: 0=no comments, 1=progress in BB, 2=detail on estimates
+  ## - a: significance level of tests for finding CPDAG
+  ## - myDAG: needed if bootstrp==FALSE
+  ## - myplot: plot estimated graph
+  ## - perfect: True cor matrix is calculated from myDAG
+  ## - method: "local" - local (all combinations of parents in regr.)
+  ##           "global" - all DAGs
+  ## - collTest: True - Exclude orientations of undirected edges that
+  ##   introduce a new collider
+  ## - pcObj: Fit of PC Algorithm (semidirected); if this is available, no
+  ##   new fit is done
+  ## - all.dags: All DAGs in the format of function allDags; if this is
+  ##   available, no new function call allDags is done
+  ## - u2pd: Function for converting udag to pdag
+  ##   "rand": udag2pdag
+  ##   "relaxed": udag2pdagRelaxed
+  ##   "retry": udag2pdagSpecial
+  ## ----------------------------------------------------------------------
+  ## Value: causal values
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: 21 Nov 2007, 11:18
+
+##  dat=d.mat;x.pos;y.pos;verbose=0;a=0.01;myDAG=NA;myplot=FALSE;perfect=FALSE;method="global";collTest=TRUE;pcObj=NA;all.dags=NA;trueLocal=TRUE;u2pd="rand"
+  
+  tmpColl <- FALSE
+
+  ## Covariance matrix: Perfect case / standard case
+  if (perfect) {
+    if (class(myDAG)!="graphNEL") stop("For perfect-option the true DAG is needed!")
+    mcov <- trueCov(myDAG)
+    mcor <- cov2cor(mcov)
+  } else {
+    mcov <- cov(dat)
+  }
+
+  ## estimate skeleton and CPDAG of given data
+  if (class(pcObj)!="pcAlgo") {
+    if (perfect) {
+      res <- pcAlgo.Perfect(mcor, corMethod = "standard",directed=TRUE,u2pd=u2pd)
+    } else {
+      res <- pcAlgo(dat, alpha = a, corMethod = "standard",directed=TRUE,u2pd=u2pd)
+    }
+  } else {
+    res <- pcObj
+  }
+
+  ## prepare adjMatrix and skeleton
+  amat <- wgtMatrix(res@graph)
+  amat[which(amat!=0)] <- 1 ## i->j if amat[j,i]==1
+  amatSkel <- amat + t(amat)
+  amatSkel[amatSkel!=0] <- 1
+  
+  if (method=="local") {
+  ##############################
+  ## local method
+  ## Main Input: mcov
+  ##############################
+    ## find unique parents of x
+    wgt.est <- wgtMatrix(res@graph)
+    tmp <- wgt.est-t(wgt.est)
+    tmp[which(tmp<0)] <- 0
+    wgt.unique <- tmp
+    pa1 <- which(wgt.unique[x.pos,]!=0)
+    if (y.pos %in% pa1) {
+      ## x is parent of y -> zero effect
+      beta.hat <- 0
+    } else { ## y.pos not in pa1
+      ## find ambiguous parents of x
+      wgt.ambig <- wgt.est-wgt.unique
+      pa2 <- which(wgt.ambig[x.pos,]!=0)
+      if (verbose==2) {
+        cat("\n\nx=",x.pos,"y=",y.pos,"\n")
+        cat("pa1=",pa1,"\n")
+        cat("pa2=",pa2,"\n")
+      }
+      
+      ## estimate beta
+      if (length(pa2)==0) {
+        beta.hat <- lm.cov(mcov,y.pos,c(x.pos,pa1))
+        if (verbose==2) {cat("Fit - y:",y.pos,"x:",c(x.pos,pa1),
+              "|b.hat=",beta.hat)}
+      } else {
+        beta.hat <- NA
+        ii <- 1
+        ## no member of pa2
+        pa2.f <- pa2
+        pa2.t <- NA
+        ## check for new collider
+        if (collTest) {
+          tmpColl <- check.new.coll(amat,amatSkel,x.pos,pa1,pa2.t,pa2.f)
+        }
+        if (!tmpColl | !collTest) {
+          beta.hat[ii] <- lm.cov(mcov,y.pos,c(x.pos,pa1))
+          if (verbose==2) {cat("\ny:",y.pos,"x:",c(x.pos,pa1),"|b.hat=",
+                beta.hat[ii])}
+        } else {
+          ## cat("\nx:",x.pos," pa1:",pa1," pa2.t:",pa2.t," pa2.f:",pa2.f)
+        }
+        ## exactly one member of pa2
+        for (i2 in 1:length(pa2)) {
+          ## check for new collider
+          pa2.f <- pa2[-i2]
+          pa2.t <- pa2[i2]
+          if (collTest) {
+            tmpColl <- check.new.coll(amat,amatSkel,x.pos,pa1,pa2.t,pa2.f)
+          }
+          if (!tmpColl | !collTest) {
+            ii <-  ii+1
+            if (y.pos %in% pa2.t) {
+              ## cat("Y in Parents: ",y.pos," in ",pa2.t,"\n")
+              beta.hat[ii] <- 0
+            } else {
+              beta.hat[ii] <- lm.cov(mcov,y.pos,c(x.pos,pa1,pa2[i2]))
+            }
+            if (verbose==2) {cat("\ny:",y.pos,"x:",c(x.pos,pa1,pa2[i2]),
+                  "|b.hat=",beta.hat[ii])}
+          } else {
+            ## cat("\nx:",x.pos," pa1:",pa1," pa2.t:",pa2.t," pa2.f:",pa2.f)
+          }
+        }
+        ## higher order subsets
+        if (length(pa2)>1) {
+          for (i in 2:length(pa2)) {
+            pa.tmp <- combn(pa2,i,simplify=TRUE)
+            n.comb <- ncol(pa.tmp)
+            for (j in 1:n.comb) {
+              pa2.f <- setdiff(pa2,pa.tmp[,j])
+              pa2.t <- pa.tmp[,j]
+              ## teste auf neuen collider
+              if (collTest) {
+                tmpColl <- check.new.coll(amat,amatSkel,x.pos,pa1,pa2.t,pa2.f)
+              }
+              if (!tmpColl | !collTest) {
+                ii <- ii+1
+                if (y.pos %in% pa2.t) {
+                  cat("Y in Parents: ",y.pos," in ",pa2.t,"\n")
+                  beta.hat[ii] <- 0
+                } else {
+                  beta.hat[ii] <- lm.cov(mcov,y.pos,c(x.pos,pa1,pa.tmp[,j]))
+                }
+                if (verbose==2) {cat("\ny:",y.pos,"x:",c(x.pos,pa1,pa.tmp[,j]),
+                      "|b.hat=",beta.hat[ii])}
+              } else {
+                ## cat("\nx:",x.pos," pa1:",pa1," pa2.t:",pa2.t," pa2.f:",pa2.f)
+              }
+            }
+          }
+        }
+      } ## if pa2
+    } ## if y in pa1
+  } else {
+  ##############################
+  ## global method
+  ## Main Input: mcov
+  ##############################
+    p <- numNodes(res@graph)
+    am.pdag <- wgtMatrix(res@graph)
+    am.pdag[am.pdag!=0] <- 1
+    ## find all DAGs if not provided externally
+    if (is.na(all.dags)) {
+      ad <- allDags(am.pdag,am.pdag,NULL)
+    } else {
+      ad <- all.dags
+    }
+    n.dags <- nrow(ad)
+    beta.hat <- rep(NA,n.dags)
+    if (n.dags>0) {
+      if (myplot) {
+        x11()
+        par(mfrow=c(ceiling(sqrt(n.dags)), round(sqrt(n.dags)) ))
+      }
+      for (i in 1:n.dags) {
+        ## compute effect for every DAG
+        gDag <- as(matrix(ad[i,],p,p),"graphNEL")
+        if (myplot) plot(gDag)
+        rev.pth <- sp.between(gDag,as.character(y.pos),
+                              as.character(x.pos))[[1]]$path
+        if (length(rev.pth)>1) {
+          beta.hat[i] <- 0
+        } else {
+          pth <- sp.between(gDag,as.character(x.pos),
+                            as.character(y.pos))[[1]]$path
+          if (length(pth)<2) {
+            beta.hat[i] <- 0
+          } else {
+            wgt.unique <- t(matrix(ad[i,],p,p)) ## wgt.est is wgtMatrix of DAG
+            pa1 <- which(wgt.unique[x.pos,]!=0)
+            if (y.pos %in% pa1) {
+              cat("Y in Parents: ",y.pos," in ",pa1,"\n")
+              beta.hat[i] <- 0
+            } else {
+              beta.hat[i] <- lm.cov(mcov,y.pos,c(x.pos,pa1))
+            }
+            if (verbose==2) {cat("Fit - y:",y.pos,"x:",c(x.pos,pa1),
+                  "|b.hat=",beta.hat,"\n")}
+          } ## if length(pth)
+        } ## if rev.pth
+      } ## for n.dags
+    } ## if n.dags
+  } ## if method
+  beta.hat
+}
+
+
+beta.special.pcObj <- function(x.pos,y.pos,pcObj,mcov=NA,amat=NA,amatSkel=NA,
+                               t.amat=NA)
+{
+  ## Purpose: Estimate the causal effect of x on y; the pcObj has to be
+  ## precomputed. This method is intended to be a fast version of
+  ##
+  ## beta.special(dat=NA,x.pos,y.pos,verbose=0,a=NA,myDAG=NA,myplot=FALSE,
+  ## perfect=FALSE,method="local",collTest=TRUE,pcObj=pcObj,all.dags=NA,u2pd="relaxed")
+  ##
+  ## Thus, this is a faster version for the local method given a
+  ## precomputed PC-Algo Object (relaxed udag2pdag, so CPDAG might not
+  ## be a real CPDAG; this does not matter, since we try not to extend).
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - x.pos, y.pos: Column of x and y in d.mat
+  ## - pcObj: Fit of pc Algorithm (semidirected); if this is available, no
+  ##   new fit is done
+  ## - mcov: covariance matrix of pcObj fit
+  ## - amat,amatSkel,g2,t.amat are variants of the adjacency matrix that
+  ##   are used internally but can be precomputed; the relevant code
+  ##   is commented out
+  ## ----------------------------------------------------------------------
+  ## Value: List with two elements
+  ## - beta.res: beta.causal values 
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: 21 Nov 2007, 11:18
+
+  if (is.na(amat) | is.na(amatSkel) | is.na(t.amat)) {
+  ## Code for computing precomputable variables
+    ## prepare adjMatrix and skeleton
+    amat <- wgtMatrix(pcObj@graph)
+    amat[which(amat!=0)] <- 1 ## i->j if amat[j,i]==1
+    t.amat <- t(amat)
+    amatSkel <- amat + t.amat
+    amatSkel[amatSkel!=0] <- 1
+  }
+
+  ## find unique parents of x
+  tmp <- amat-t.amat
+  tmp[which(tmp<0)] <- 0
+  wgt.unique <- tmp
+  pa1 <- which(wgt.unique[x.pos,]!=0)
+  if (y.pos %in% pa1) {
+    cat("Y in Parents: ",y.pos," in ",pa1,"\n")
+    beta.hat <- 0
+  } else { ## y.pos not in pa1
+    ## find ambiguous parents of x
+    wgt.ambig <- amat-wgt.unique
+    pa2 <- which(wgt.ambig[x.pos,]!=0)
+    pa2 <- setdiff(pa2,y.pos)
+    ## estimate beta
+    if (length(pa2)==0) {
+      beta.hat <- lm.cov(mcov,y.pos,c(x.pos,pa1))
+    } else {
+      beta.hat <- NA
+      ii <- 1
+      ## no member of pa2
+      ## check for new collider
+      pa2.f <- pa2
+      pa2.t <- NA
+      tmpColl <- check.new.coll(amat,amatSkel,x.pos,pa1,pa2.t,pa2.f)
+      if (!tmpColl) {
+        beta.hat[ii] <- lm.cov(mcov,y.pos,c(x.pos,pa1))
+      }
+      ## exactly one member of pa2
+      for (i2 in 1:length(pa2)) {
+        ## check for new collider
+        pa2.f <- pa2[-i2]
+        pa2.t <- pa2[i2]
+        tmpColl <- check.new.coll(amat,amatSkel,x.pos,pa1,pa2.t,pa2.f)
+        if (!tmpColl) {
+          ii <-  ii+1
+          if (y.pos %in% pa2.t) {
+            cat("Y in Parents: ",y.pos," in ",pa2.t,"\n")
+            beta.hat[ii] <- 0
+          } else {
+            beta.hat[ii] <- lm.cov(mcov,y.pos,c(x.pos,pa1,pa2[i2]))
+          }
+        }
+      }
+      ## higher order subsets
+      if (length(pa2)>1) {
+        for (i in 2:length(pa2)) {
+          pa.tmp <- combn(pa2,i,simplify=TRUE)
+          n.comb <- ncol(pa.tmp)
+          for (j in 1:n.comb) {
+            ## teste auf neuen collider
+            pa2.f <- setdiff(pa2,pa.tmp[,j])
+            pa2.t <- pa.tmp[,j]
+            tmpColl <- check.new.coll(amat,amatSkel,x.pos,pa1,pa2.t,pa2.f)
+            if (!tmpColl) {
+              ii <- ii+1
+              if (y.pos %in% pa2.t) {
+                cat("Y in Parents: ",y.pos," in ",pa2.t,"\n")
+                beta.hat[ii] <- 0
+              } else {
+                beta.hat[ii] <- lm.cov(mcov,y.pos,c(x.pos,pa1,pa.tmp[,j]))
+              }
+            }
+          }
+        }
+      } ## if pa2
+    } ## length(pa2)
+  } ## y.pos %in% pa2
+  beta.hat
+}
+
+lm.cov <- function(C,y,x) {
+  ## C: covariance matrix
+  ## y: column of response
+  ## x: columns of expl. vars
+  sig <- C[x,x]
+  beta <- solve(sig)%*%C[x,y,drop=FALSE]
+  beta[1]
+}
+
+causalEffect <- function(g,y,x) {
+  ## Compute true causal effect of x on y in g
+  wmat <- wgtMatrix(g)
+  p <- ncol(wmat)
+  vec <- matrix(0,p,1)
+  vec[x] <- 1
+  if ((y-x)>1) {
+    for (i in (x+1):y) vec[i] <- wmat[i,]%*%vec
+    beta.true <- vec[y]
+  } else {
+    beta.true <- wmat[y,x]
+  }
+  beta.true
+}
+
+check.new.coll <- function(amat,amatSkel,x,pa1,pa2.t,pa2.f) {
+  ## Check if undirected edges that are pointed to x create a new v-structure
+  ## Additionally check, if edges that are pointed away from x create
+  ## new v-structure; i.e. x -> pa <- papa would be problematic
+  ## pa1 are definit parents of x
+  ## pa2 are undirected "parents" of x
+  ## pa2.t are the nodes in pa2 that are directed towards pa2
+  ## pa2.f are the nodes in pa2 that are directed away from pa2
+  ## Value is TRUE, if new collider is introduced
+  res <- FALSE
+  if ((length(pa2.t)>0) & any(!is.na(pa2.t))) {
+    ## check whether all pa1 and all pa2.t are connected;
+    ## if no, there is a new collider
+    if ((length(pa1)>0) & any(!is.na(pa1))) {
+      res <- (min(amatSkel[pa1,pa2.t])==0) ## TRUE if new collider
+    }
+    ## in addition, all pa2.t have to be connected
+    if ((length(pa2.t)>1) & (!res)) {
+      tmp <- amatSkel[pa2.t,pa2.t]
+      diag(tmp) <- 1
+      res2 <- (min(tmp)==0) ## TRUE if new collider
+      res <- (res|res2)
+    }
+  }
+  if (!res & ((length(pa2.f)>0) & any(!is.na(pa2.f)))) {
+    ## consider here only the DIRECTED Parents of pa2.f
+    ## remove undirected edges
+    amatTmp <- amat
+    amatTmp <- amatTmp-t(amatTmp)
+    amatTmp[amatTmp<0] <- 0
+    tmp <- amatTmp[pa2.f,,drop=FALSE]
+    ## find parents of pa2.f
+    papa <- setdiff(which(apply(tmp,2,sum)!=0),x)
+    ## if any node in papa is not directly connected to x, there is a new
+    ## collider
+    if (length(papa)==0) {
+      res3 <- FALSE
+    } else {
+      res3 <- (min(amatSkel[x,papa])==0) ## TRUE if new collider
+    }
+    res <- (res|res3)
+  }
+  res
+}
+    
+allDags <- function(gm,a,tmp,verb=FALSE)
+{
+  ## Purpose: Find all DAGs for a given PDAG
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - gm: Adjacency matrix of initial PDAG; only 0-1 entries
+  ##   i -> j iff gm(j,i)=1
+  ## - a: copy of gm
+  ## - tmp: NULL
+  ## ----------------------------------------------------------------------
+  ## Value:
+  ## - one 0/1 adj.matrix per row
+  ## Reversion to graph: as(matrix(res[i,],p,p),"graphNEL")
+  ## Reversion to wgtMatrix (i->j iff a[j,i]=1): t(matrix(res[i,],p,p))
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date:  7 Apr 2008, 14:08
+  if (sum(a) == 0) {
+    if (verb) {
+      cat("Last Call - Final Graph: \n")
+      print(gm)
+      cat("####################\n")
+    }
+    tmp2 <- rbind(tmp,c(t(gm)))
+    if (all(!duplicated(tmp2))) tmp <- tmp2
+  } else {
+    sinks <- find.sink(a)
+    if (verb) {
+      cat("Main Call: ################## \n")
+        print(gm)
+      print(a)
+      cat("Sinks: ",sinks,"\n")
+    }
+    n.sinks <- length(sinks)
+    if (n.sinks > 0) {
+      for (i in 1:n.sinks) {
+        if (verb) cat("Try removing",sinks[i]," in a.\n")
+        gm2 <- gm
+        a2 <- a
+        x <- sinks[i]
+        if (adj.check(a,x)) {
+          inc.to.x <- which(a[, x] == 1 & a[x, ] == 1)
+          if (length(inc.to.x) > 0) {
+            real.inc.to.x <- as.numeric(row.names(a)[inc.to.x])
+            real.x <- as.numeric(row.names(a)[x])
+            gm2[real.x, real.inc.to.x] <- rep(1, length(inc.to.x))
+            gm2[real.inc.to.x, real.x] <- rep(0, length(inc.to.x))
+          }
+          a2 <- a[-x,-x]
+          if (verb) {
+            cat("Removed sink",as.numeric(row.names(a)[x]),"in g (",
+                sinks[i],"in a).\n")
+            cat("New graphs: \n")
+            print(gm2)
+            print(a)
+          }
+          tmp <- allDags(gm2,a2,tmp,verb)
+        }
+      }
+    }
+  }
+  tmp
+}
+
+pcAlgo.Perfect <- function(C, cutoff=0.00000001, corMethod = "standard", verbose = 0, directed=FALSE,u2pd="rand") {
+  ## Purpose: Perform PC-Algorithm, i.e., estimate skeleton of DAG given data
+  ## Output is an unoriented graph object
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - C: True Correlation matrix
+  ## - alpha: Significance level of individual partial correlation tests
+  ## - corMethod: "standard" or "Qn" for standard or robust correlation
+  ##              estimation
+  ## - verbose: 0-no output, 1-small output, 2-details
+  ## - u2pd: Function for converting udag to pdag
+  ##   "rand": udag2pdag
+  ##   "relaxed": udag2pdagRelaxed
+  ##   "retry": udag2pdagSpecial
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: 26 Jan 2006; Martin Maechler
+  ## backward compatibility
+  if (verbose==FALSE) verbose <- 0
+  if (verbose==TRUE) verbose <- 1
+  p <- nrow(C)
+  cl <- match.call()
+  sepset <- vector("list",p)
+  pcMin <- matrix(rep(Inf,p*p),nrow=p,ncol=p)
+  diag(pcMin) <- rep(0,p)
+  for (iList in 1:p) sepset[[iList]] <- vector("list",p)
+  n.edgetests <- numeric(1)# final length = max { ord}
+  ## G := complete graph :
+  G <- matrix(rep(TRUE,p*p), nrow = p, ncol = p)
+  diag(G) <- FALSE
+  seq_p <- 1:p
+
+  done <- FALSE
+  ord <- 0
+  while (!done && any(G)) {
+    n.edgetests[ord+1] <- 0
+    done <- TRUE
+    ind <- which(G, arr.ind = TRUE)
+    ## For comparison with C++ sort according to first row
+    ind <- ind[order(ind[,1]) ,]
+    remainingEdgeTests <- nrow(ind)
+    if(verbose>=1)
+        cat("Order=",ord,"; remaining edges:",remainingEdgeTests,"\n", sep='')
+    for (i in 1:remainingEdgeTests) {
+      if(verbose>=1) { if(i%%100==0) cat("|i=",i,"|iMax=",nrow(ind),"\n") }
+      x <- ind[i,1]
+      y <- ind[i,2]
+##      done <- !G[y,x] # i.e. (x,y) was not already deleted in its (y,x) "version"
+##      if(!done) {
+      if (G[y,x]) {
+        nbrsBool <- G[,x]
+        nbrsBool[y] <- FALSE
+        nbrs <- seq_p[nbrsBool]
+        length_nbrs <- length(nbrs)
+        ## if(verbose)
+        
+##        done <- length_nbrs < ord
+##        if (!done) {
+        if (length_nbrs >= ord) {
+          if (length_nbrs > ord) done <- FALSE
+          S <- seq(length = ord)
+
+          ## now includes special cases (ord == 0) or (length_nbrs == 1):
+          repeat { ## condition w.r.to all  nbrs[S] of size 'ord' :
+          ##  if (condIndFisherZ(x,y, nbrs[S], C,n, cutoff,verbose)) {
+## MM: want to use this: --- but it changes the result in some cases!!
+##            cat("X=",x,"|Y=",y,"|ord=",ord,"|nbrs=",nbrs[S],"|iMax=",nrow(ind),"\n")
+            n.edgetests[ord+1] <- n.edgetests[ord+1]+1
+            pc.val <- pcorOrder(x,y,nbrs[S],C)
+            if (abs(pc.val)<pcMin[x,y]) pcMin[x,y] <- abs(pc.val)
+            if (verbose==2) cat(paste("x:",x,"y:",y,"S:"),nbrs[S],paste("pc:",pc.val,"\n"))
+            if (abs(pc.val) <= cutoff) {
+##              ##  pnorm(abs(z), lower.tail = FALSE) is the P-value
+              G[x,y] <- G[y,x] <- FALSE
+              sepset[[x]][[y]] <- nbrs[S]
+              break
+            }
+            else {
+              nextSet <- getNextSet(length_nbrs, ord, S)
+              if(nextSet$wasLast)
+                  break
+              S <- nextSet$nextSet
+            }
+          }
+
+        } } ## end if(!done)
+
+    } ## end for(i ..)
+    ord <- ord+1
+##    n.edgetests[ord] <- remainingEdgeTests
+  }
+
+  if(verbose>=1) { cat("Final graph adjacency matrix:\n"); print(symnum(G)) }
+
+  ## transform matrix to graph object :
+  if (sum(G) == 0) {
+    Gobject <- new("graphNEL", nodes = as.character(seq_p))
+  }
+  else {
+    colnames(G) <- rownames(G) <- as.character(seq_p)
+    Gobject <- as(G,"graphNEL")
+  }
+
+  for (i in 1:(p-1)) {
+    for (j in 2:p) {
+      pcMin[i,j] <- pcMin[j,i] <- min(pcMin[i,j],pcMin[j,i])
+    }
+  }
+
+  res <- new("pcAlgo",
+      graph = Gobject,
+      call = cl, n = as.integer(1), max.ord = as.integer(ord-1),
+      n.edgetests = n.edgetests, sepset = sepset,
+      zMin = pcMin)
+
+  if (directed) {
+    res <- switch (u2pd,
+                   "rand" = udag2pdag(res),
+                   "retry" = udag2pdagSpecial(res)$pcObj,
+                   "relaxed" = udag2pdagRelaxed(res))
+  }
+  res
+}
+

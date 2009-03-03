@@ -6,11 +6,13 @@
 This function extends a PDAG to a DAG, if this is possible.
 }
 \usage{
-pdag2dag(g)
+pdag2dag(g,keepVstruct=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{g}{input PDGA (graph object)}
+  \item{keepVstruct}{If TRUE, the v-structures in g are kept. O/w they
+    are ignored and an arbitrary extension is generated.}
 }
 \details{
   The PDAG is consistently extended using an algorithm by Dor and Tarsi
@@ -45,6 +47,5 @@ gPDAG <- udag2pdag(gSkel)
 
 gDAG <- pdag2dag(gPDAG@graph)
 }
-\keyword{multivariate}
-\keyword{models}
+
 \keyword{graphs}

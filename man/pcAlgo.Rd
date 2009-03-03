@@ -8,22 +8,39 @@
   \bold{G}raph) from data using the PC-algorithm. Alternatively, one can
   directly infer the equivalence class of the underlying structure,
   which is uniquely represented by its CPDAG (\bold{C}ompleted
-  \bold{P}artially \bold{D}irected \bold{A}cyclic \bold{G}raph).
+  \bold{P}artially \bold{D}irected \bold{A}cyclic \bold{G}raph). For
+  continuous or discrete data.
 }
 \usage{
-pcAlgo(dm, alpha, corMethod = "standard", verbose = 0, directed = FALSE)
+pcAlgo(dm = NA, C = NA, n=NA, alpha, corMethod = "standard", verbose =
+FALSE, directed=FALSE, G=NULL, datatype='continuous',NAdelete=TRUE,
+m.max=Inf,u2pd="rand")
 }
 \arguments{
-  \item{dm}{data matrix; rows correspond to samples, cols correspond to nodes.}
+  \item{dm}{data matrix; rows correspond to samples, cols correspond to
+    nodes.}
+  \item{C}{correlation matrix; this is an alternative for specifying the
+    data matrix.}
+  \item{n}{sample size; this is only needed if the data matrix is not
+    provided.}
   \item{alpha}{significance level for the individual partial correlation tests.}
   \item{corMethod}{a character string speciyfing the method for
     (partial) correlation estimation.
-    "standard", "Qn" or "ogkQn" for standard and robust (based on
-    the Qn scale estimator without and with OGK) correlation estimation}
-  \item{verbose} {0-no output, 1-small output, 2-details (using 1 and 2
-  makes the function very much slower)}
+    "standard", "QnStable", "Qn" or "ogkQn" for standard and robust (based on
+    the Qn scale estimator without and with OGK) correlation
+    estimation. For robust estimation, we recommend QnStable.}
+  \item{verbose}{0-no output, 1-small output, 2-details;using 1 and 2
+  makes the function very much slower}
   \item{directed}{If \code{FALSE}, the underlying skeleton is computed;
     if \code{TRUE}, the underlying CPDAG is computed}
+  \item{G}{the adjacency matrix of the graph from which the algorithm
+    should start (logical)}
+  \item{datatype}{distinguish between discrete and continuous data}
+  \item{NAdelete}{delete edge if pval=NA (for discrete data)}
+  \item{m.max}{maximal size of conditioning set}
+  \item{u2pd}{Function used for converting skeleton to cpdag. "rand"
+    (use udag2pdag); "relaxed" (use udag2pdagRelaxed); "retry" (use
+    udag2pdagSpecial)}
 }
 \value{
   An object of \code{\link{class}} \code{"pcAlgo"} (see
@@ -34,8 +51,11 @@ pcAlgo(dm, alpha, corMethod = "standard", verbose = 0, directed = FALSE)
   underlying DAG. 
 }
 \details{
-  The algorithm starts with a complete undirected graph. In a first
-  sweep, an edge ij is kept only if \eqn{H_0: Cor(X_i,X_j) = 0} can be
+  The algorithm starts with a complete undirected graph or with G (if
+  given). The following text explains the continuous case. For the
+  discrete case, replace (partial) correlation tests by (conditional)
+  independence tests. In a first sweep, an edge ij is kept only if
+  \eqn{H_0: Cor(X_i,X_j) = 0} can be 
   rejected on significance level \code{alpha}.  All ordered pairs ij of
   nodes  of the
   resulting graph are then swept again.  An edge ij is kept only if
@@ -110,8 +130,8 @@ par(op)
 ## generate data containing severe outliers
 d.mixmat <- rmvDAG(n, myDAG, errDist = "mix", mix=0.3)
 ## Compute "classical" and robust estimate of skeleton :
-pcC <- pcAlgo(d.mixmat, 0.01, corMeth = "standard")
-pcR <- pcAlgo(d.mixmat, 0.01, corMeth = "Qn")
+pcC <- pcAlgo(d.mixmat, alpha = 0.01, corMeth = "standard")
+pcR <- pcAlgo(d.mixmat, alpha = 0.01, corMeth = "Qn")
 str(pcR, max = 2)
 (c.Cg <- compareGraphs(myDAG, pcC@graph))
 (c.Rg <- compareGraphs(myDAG, pcR@graph))#-> (.201 0 1) much better

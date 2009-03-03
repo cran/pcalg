@@ -24,7 +24,18 @@ export(randomDAG,
        pdag2dag,
        amat2dag,
        udag2pdag,
-       shd)
+       shd,
+       trueCov,
+       ci.test,
+       udag2pdagSpecial,
+       udag2pdagRelaxed,
+       beta.special,
+       beta.special.pcObj,
+       lm.cov,
+       causalEffect,
+       check.new.coll,
+       allDags,
+       pcAlgo.Perfect)
 
 exportClasses("pcAlgo")
 

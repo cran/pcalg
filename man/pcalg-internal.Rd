@@ -7,6 +7,14 @@
 \alias{labelEdges}
 \alias{make.edge.df}
 \alias{orderEdges}
+\alias{flipEdges}
+\alias{lm.cov}
+\alias{causalEffect}
+\alias{check.new.coll}
+\alias{pcAlgo.Perfect}
+\alias{trueCov}
+\alias{allDags}
+\alias{ci.test}
 %
 \title{Internal Pcalg Functions}
 \description{

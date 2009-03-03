@@ -46,21 +46,20 @@ In order to decide whether data has worse outliers than a given reference
 distribution, we proceed as follows.  We compute a robust estimate of the
 covariance matrix of the data (e.g. OGK with Qn-estimator) and simulate
 (several times) data from the reference distribution with this covariance
-matrix. For each dimension $i \ (1\leq i \leq p)$, we compute the ratio of
-standard deviation $\sigma_i$ and a robust version of it $s_i$ (e.g.,
+matrix. For each dimension \eqn{i \ (1 \leq i \leq p)}, we compute the ratio of
+standard deviation \eqn{\sigma_i} and a robust version of it $s_i$ (e.g.,
 Qn-estimator) and compute the average over all dimensions. (Since the main
 input for the PC-algorithm are correlation estimates which can be expressed
 in terms of scale estimates, we base our test
 statistics on scale estimates.) Thus, we obtain the distribution of this
-averaged ratio $R= \frac{1}{p} \sum_{i=1}^{p} \sigma_i / s_i$ under the
+averaged ratio \eqn{R= \frac{1}{p} \sum_{i=1}^{p} \sigma_i / s_i} under the
 null hypothesis that the data can be explained by the reference
 distribution with given covariance matrix. We now can test this null
 hypothesis by using the ratio computed with the current data set
-$r=\frac{1}{p} \sum_{i=1}^{p} \hat{\sigma_i}/\hat{s_i}$ on a given
+\eqn{r=\frac{1}{p} \sum_{i=1}^{p} \hat{\sigma_i}/\hat{s_i}} on a given
 significance level.
 }
-\references{
-}
+
 \seealso{\code{\link{pcAlgo}} which can be used with standard and robust
   correlation estimate.
 }
@@ -86,4 +85,5 @@ decHeur(datC,gam,sim.method,est.method,n.sim=n.sim,two.sided=FALSE,verbose=TRUE)
 }
 \keyword{multivariate}
 \keyword{models}
+\keyword{robust}
 \keyword{graphs}

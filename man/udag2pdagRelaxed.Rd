@@ -1,15 +1,15 @@
-\name{udag2pdag}
-\alias{udag2pdag}
+\name{udag2pdagRelaxed}
+\alias{udag2pdagRelaxed}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Extend a pcAlgo-object containing a skeleton to a PDAG}
 \description{
 This function extends a pcAlgo-object containing a skeleton and
 corresponding conditional independence information to a Partially
 Directed Acyclic Graph (PDAG). The result is a pcAlgo-object 
-as well.
+as well. There is no check whether the result is extendible to a DAG
 }
 \usage{
-udag2pdag(gInput,verbose)
+udag2pdagRelaxed(gInput,verbose)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -19,7 +19,7 @@ udag2pdag(gInput,verbose)
 }
 \details{
   The skeleton is extended to a PDAG using rules by Spirtes and Pearl
-  (see References).
+  (see References). There is no test whether the result is really extendible.
 }
 \value{
   \item{pcObj}{Oriented pc-Object}

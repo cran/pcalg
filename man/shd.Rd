@@ -44,5 +44,5 @@ g2 <- randomDAG(10, prob = 0.2)
 ## comute SHD
 shd.val <- shd(g1,g2)
 }
-\keyword{misc}
+\keyword{graphs}
 

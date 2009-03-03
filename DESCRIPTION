@@ -1,14 +1,15 @@
 Package: pcalg
-Version: 0.1-7
-Date: 2008-4-16
+Version: 0.1-8
+Date: 2009-3-03
 Author: Markus Kalisch, Martin Maechler
 Maintainer: Markus Kalisch <kalisch@stat.math.ethz.ch>
 Title: Estimating the skeleton and equivalence class of a DAG
 Description: Standard and robust estimation of the skeleton (ugraph) 
  and the equivalence class of a Directed Acyclic Graph (DAG) via the 
  PC-Algorithm. The equivalence class is represented by its (unique) 
- Completetd Partially Directed Acyclic Graph (CPDAG). Moreover, the
- function pcSelect implements variable selection techniques.
-Depends: methods, MASS, graph, robustbase, Rgraphviz, ggm, mnormt
+ Completetd Partially Directed Acyclic Graph (CPDAG). The
+ function pcSelect implements variable selection techniques. beta.special
+ computes the "causal" effect (see Description).
+Depends: methods, MASS, graph, robustbase, Rgraphviz, ggm, mnormt, vcd, RBGL, sfsmisc
 License: GPL (>= 2)
-Packaged: Wed Apr 16 13:50:27 2008; kalisch
+Packaged: Fri Mar  6 08:56:35 2009; kalisch
