@@ -15,6 +15,12 @@
 \alias{trueCov}
 \alias{allDags}
 \alias{ci.test}
+\alias{reach}
+\alias{discr.path}
+\alias{ucp}
+\alias{upd}
+\alias{find.upd}
+
 %
 \title{Internal Pcalg Functions}
 \description{

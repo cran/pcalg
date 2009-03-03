@@ -35,7 +35,14 @@ export(randomDAG,
        causalEffect,
        check.new.coll,
        allDags,
-       pcAlgo.Perfect)
+       pcAlgo.Perfect,
+       reach,
+       discr.path,
+       ucp,
+       upd,
+       find.upd,
+       udag2pag,
+       plotAG)
 
 exportClasses("pcAlgo")
 

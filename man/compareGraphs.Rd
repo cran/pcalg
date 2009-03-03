@@ -26,7 +26,7 @@ compareGraphs(gl, gt)
   Special cases:
   \itemize{
     \item If the true graph contains no edges, the tpr is defined to be
-    one.
+    zero.
     \item Similarly, if the true graph contains no gaps, the fpr is
     defined to be one.
     \item

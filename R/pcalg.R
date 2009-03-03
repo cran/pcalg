@@ -481,6 +481,7 @@ compareGraphs <- function(gl,gt) {
   p <- dim(ml)[2]
 
   mt[mt != 0] <- rep(1,sum(mt != 0))
+  ml[ml != 0] <- rep(1,sum(ml != 0))
 
   ## FPR: #misplaced edges/#true gaps
   diffm <- ml-mt
@@ -1264,9 +1265,10 @@ ci.test <- function(x,y,S=NULL,dm.df) {
   res
 }
 
-pcAlgo <- function(dm = NA, C = NA, n=NA, alpha, corMethod = "standard", verbose = FALSE,
-                   directed=FALSE, G=NULL, datatype='continuous',NAdelete=TRUE,
-                   m.max=Inf,u2pd="rand") {
+pcAlgo <- function(dm = NA, C = NA, n=NA, alpha, corMethod =
+                   "standard", verbose = FALSE, directed=FALSE,
+                   G=NULL, datatype='continuous',NAdelete=TRUE,
+                   m.max=Inf,u2pd="rand",psepset=FALSE) {
   ## Purpose: Perform PC-Algorithm, i.e., estimate skeleton of DAG given data
   ## Output is an unoriented graph object
   ## ----------------------------------------------------------------------
@@ -1286,9 +1288,11 @@ pcAlgo <- function(dm = NA, C = NA, n=NA, alpha, corMethod = "standard", verbose
   ##   "rand": udag2pdagu
   ##   "relaxed": udag2pdagRelaxed
   ##   "retry": udag2pdagSpecial
+  ## - psepset: Also check possible sep sets.
   ## ----------------------------------------------------------------------
   ## Author: Markus Kalisch, Date: 26 Jan 2006; Martin Maechler
   ## Modifications: Sarah Gerster, Date: July 2007
+  ## Modifications: Diego Colombo, Date: Sept 2009
   
   if (any(is.na(dm))) {
     stopifnot(all(!is.na(C)),!is.na(n), (p <- ncol(C))>0)
@@ -1427,6 +1431,64 @@ pcAlgo <- function(dm = NA, C = NA, n=NA, alpha, corMethod = "standard", verbose
     }
   }
 
+  if (psepset) {
+    amat <- G
+    amat[amat==TRUE] <- 1
+    amat[amat==FALSE] <- 0
+    ind <- which(amat==1, arr.ind=TRUE)
+    ##Orient colliders
+    for (i in 1:dim(ind)[1]) {
+      x <- ind[i,1]
+      y <- ind[i,2]
+      allZ <- setdiff(which(amat[y,]==1),x) ## x-y-z
+      
+      if (length(allZ)>0) {
+        for (j in 1:length(allZ)) {
+          z <- allZ[j]
+          if ((amat[x,z]==0) & !((y %in% sepset[[x]][[z]]) |
+                     (y %in% sepset[[z]][[x]]))) {
+            if (verbose >= 2) {
+              cat("\n",x,"*->",y,"<-*",z,"\n") 
+              cat("Sxz=",sepset[[z]][[x]],"and","Szx=",sepset[[x]][[z]],"\n")
+            }
+
+            ##x o-> y <-o z
+            amat[x,y] <- amat[z,y] <- 2
+
+          } ## if
+        } ## for 
+      } ## if
+    } ## for
+
+    ## Compute poss. sepsets
+    for (x in 1:p) {
+      attr(x,'class') <- 'possibledsep'
+      if (any(amat[x,]!=0)){
+        tf1 <- setdiff(reach(x,-1,-1,amat),x)
+        for (y in seq_p[amat[x,]!=0]) {
+          ##tf = possible_d_sep(amat,x,y)
+          tf <- setdiff(tf1,y)
+          ## test
+          if (length(tf)>0) {
+            z <- abs(zStat(x,y,tf,C,n))
+            if (z < zMin[x,y]) zMin[x,y] <- z
+            if (z <= cutoff) {
+              ##delete x-y 
+              amat[x, y] <- amat[y, x] <- 0
+              ##save pos d-sepset in sepset
+              sepset[[x]][[y]] <- tf
+            }
+            if (verbose>=2) {
+              cat("Possible-D-Sep of", x, "and", y, "is", tf, " - z = ",z,"\n")
+            }
+          }
+        }
+      }
+    }
+    G[amat==0] <- FALSE
+    G[amat==1] <- TRUE
+  } ## end if(psepset)
+  
   if(verbose) { cat("Final graph adjacency matrix:\n"); print(symnum(G)) }
   
   ## transform matrix to graph object :
@@ -2024,7 +2086,7 @@ beta.special <- function(dat=NA,x.pos,y.pos,verbose=0,a=0.01,myDAG=NA,myplot=FAL
     beta.hat <- rep(NA,n.dags)
     if (n.dags>0) {
       if (myplot) {
-        x11()
+        ## x11()
         par(mfrow=c(ceiling(sqrt(n.dags)), round(sqrt(n.dags)) ))
       }
       for (i in 1:n.dags) {
@@ -2299,7 +2361,7 @@ allDags <- function(gm,a,tmp,verb=FALSE)
   tmp
 }
 
-pcAlgo.Perfect <- function(C, cutoff=0.00000001, corMethod = "standard", verbose = 0, directed=FALSE,u2pd="rand") {
+pcAlgo.Perfect <- function(C, cutoff=0.00000001, corMethod = "standard", verbose = 0, directed=FALSE,u2pd="rand",psepset=FALSE) {
   ## Purpose: Perform PC-Algorithm, i.e., estimate skeleton of DAG given data
   ## Output is an unoriented graph object
   ## ----------------------------------------------------------------------
@@ -2313,8 +2375,10 @@ pcAlgo.Perfect <- function(C, cutoff=0.00000001, corMethod = "standard", verbose
   ##   "rand": udag2pdag
   ##   "relaxed": udag2pdagRelaxed
   ##   "retry": udag2pdagSpecial
+  ## - psepset: Also check possible sep sets.
   ## ----------------------------------------------------------------------
   ## Author: Markus Kalisch, Date: 26 Jan 2006; Martin Maechler
+  ## Modification: Diego Colombo, Sept 2009
   ## backward compatibility
   if (verbose==FALSE) verbose <- 0
   if (verbose==TRUE) verbose <- 1
@@ -2390,6 +2454,68 @@ pcAlgo.Perfect <- function(C, cutoff=0.00000001, corMethod = "standard", verbose
 ##    n.edgetests[ord] <- remainingEdgeTests
   }
 
+  if (psepset) {
+    amat <- G
+    amat[amat==TRUE] <- 1
+    amat[amat==FALSE] <- 0
+    ind <- which(amat==1, arr.ind=TRUE)
+    ##Orient colliders
+    for (i in 1:dim(ind)[1]) {
+      x <- ind[i,1]
+      y <- ind[i,2]
+      allZ <- setdiff(which(amat[y,]==1),x) ## x-y-z
+      
+      if (length(allZ)>0) {
+        for (j in 1:length(allZ)) {
+          z <- allZ[j]
+          if ((amat[x,z]==0) & !((y %in% sepset[[x]][[z]]) |(y %in% sepset[[z]][[x]]))) {
+            if (verbose == 2) {
+              cat("\n",x,"*->",y,"<-*",z,"\n") 
+              cat("Sxz=",sepset[[z]][[x]],"and","Szx=",sepset[[x]][[z]],"\n")
+            }
+            
+            ##x o-> y <-o z
+            amat[x,y] <- amat[z,y] <- 2
+            
+          } ## if
+        } ## for 
+      } ## if
+    } ## for
+
+    ## Compute poss. sepsets
+    for (x in 1:p) {
+      attr(x,'class') <- 'possibledsep'
+      if (any(amat[x,]!=0)){
+        tf1 <- setdiff(reach(x,-1,-1,amat),x)
+        for (y in seq_p[amat[x,]!=0]) {
+          ##tf = possible_d_sep(amat,x,y)
+          tf <- setdiff(tf1,y)
+          ## test
+          if (length(tf)>0) {
+            pc.val <- pcorOrder(x,y,tf,C)
+            if (abs(pc.val)<pcMin[x,y]){
+              pcMin[x,y] <- abs(pc.val)
+            }
+            if (abs(pc.val) <= cutoff) {
+              ##delete x-y
+              amat[x,y] <- amat[y,x] <- 0
+              ##save pos d-sepset in sepset
+              sepset[[x]][[y]] <- tf
+              if (verbose==2){
+                cat("Delete edge",x,"-",y,"\n")
+              }
+            }
+            if (verbose == 2) {
+              cat("Possible-D-Sep of", x, "and", y, "is", tf, " - pc = ",pc.val,"\n")
+            }
+          }
+        }
+      }
+    }
+    G[amat==0] <- FALSE
+    G[amat==1] <- TRUE
+  } ## end if(psepset)
+
   if(verbose>=1) { cat("Final graph adjacency matrix:\n"); print(symnum(G)) }
 
   ## transform matrix to graph object :
@@ -2422,3 +2548,813 @@ pcAlgo.Perfect <- function(C, cutoff=0.00000001, corMethod = "standard", verbose
   res
 }
 
+##Function that computes the Possible d-sepset, done by Spirtes
+reach <- function(a,b,c,adjacency)
+{
+                                        #reachable      set of vertices;
+                                        #edgeslist      array[1..maxvertex] of list of edges
+                                        #more           Boolean
+                                        #reachable      list of vertices
+                                        #numvertex      integer
+                                        #labeled        array (by depth) of list of edges that have been labeled
+
+  makeedge = function(x,y)(list(list(x,y)))      
+
+  legal <- function(t,...) {UseMethod("legal")}
+
+  legal.possibledsep = function(t,u,v,r,s) {
+    if (((adjacency[r[[1]],r[[2]]] == 2) && 
+         (adjacency[s,r[[2]]] == 2) && 
+         (r[[1]] != s)) ||
+        ((adjacency[r[[1]],s] != 0) && 
+         (r[[1]] != s))){
+      edgeslist[[r[[2]]]]  <<- setdiff(edgeslist[[r[[2]]]],s)
+      makeedge(r[[2]],s)}}
+
+  legal.discriminating = function(t,u,v,r,s) {
+    if ((length(intersect(s,c(t,u,v))) == 0) &&    # s not in the triangle t,u,v
+        (adjacency[s,r[[2]]] == 2) &&            # s collides with r edge at r[[2]]
+        (r[[1]] != s) &&                           # s is not on the r edge
+        (adjacency[u,r[[2]]] == 3) &&
+        (adjacency[r[[2]],u] == 2)){
+      edgeslist[[r[[2]]]]  <<- setdiff(edgeslist[[r[[2]]]],s)
+      makeedge(r[[2]],s)}}
+
+  initialize <- function(x,...) {UseMethod("initialize")}
+
+  initialize.possibledsep <- function(x,y,z) {mapply(makeedge,x=a,y=edgeslist[[a]])}
+
+  initialize.discriminating <- function(x,y,z) {mapply(makeedge,x=a,y=setdiff(which(adjacency[,a] == 2),c(b,c)))}
+  
+  labeled = list()
+  numvertex = dim(adjacency)[1]
+  edgeslist = list()
+  for (i in 1:numvertex) edgeslist = c(edgeslist,list(which(adjacency[,i] != 0)))
+  labeled[[1]] = initialize(a,b,c)
+  edgeslist[[a]] = list()
+  depth = 2
+  repeat
+    {more = FALSE
+     labeled[[depth]] = list()
+     for (i in 1:length(labeled[[depth-1]])) {
+       edgestemp = edgeslist[[labeled[[depth-1]][[i]][[2]]]]
+       if (length(edgestemp) == 0) break
+       for (j in 1:length(edgestemp))
+         {labeled[[depth]] = 
+            union(legal(a,b,c,labeled[[depth-1]][[i]],edgestemp[[j]]),labeled[[depth]])}}
+     if (length(labeled[[depth]]) != 0){
+       more = TRUE
+       depth = depth  + 1} else break}
+  return(unique(unlist(labeled)))
+}
+
+##Useful for R 4
+
+discr.path <- function(path=NA, n=NA, pag=NA ,gInput=NA ,verb=NA)
+{
+  ## Purpose: find a discriminating path and if it exists orient
+  ## the edge like in Rule 4. We start with a, b and c like
+  ## in R4 and we go recursively to the left up to we find a d,
+  ## such that there is a discriminating path between d and c for b
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - path: path[1]=c=gamma, path[2]=b=beta, path[3]=a=alpha: like in R 4
+  ## - n: length of path
+  ## - pag: adjacencies matrix
+  ## - gInput: pc object (same input as FCI)
+  ## - verb: 0 no comments, 1 detailed decription
+  ## ----------------------------------------------------------------------
+  ## Author: Diego Colombo, Date:  6 Mar 2009, 11:10
+
+  if (n<=dim(pag)[1]){
+    res <- pag
+    c <- path[1]
+    b <- path[2]
+    a <- path[3]
+    first.pos <- path[n]
+    del.pos <- path[n-1]
+    ##all d with d *--> first.pos
+    indD <- which (res[first.pos,]!=0 & res[,first.pos]==2)
+    ##delete del.pos from indD
+    indD <- setdiff(indD,del.pos)
+    if (length(indD)>0){
+      for (k in 1:length(indD)){
+        d <- indD[k]
+        ##check if we have already oriented the edge b o--* c
+        ##res[c,b]==1 means that we have made no orientation, but if
+        ##res[c,b]!=1 means that we have oriented and we don't look
+        ##at other possible paths
+        if ((res[c,b]==1) & !(d %in% path)){
+          ##check if c and d are adjacent
+          ##if no there exists a discr. path
+          if (res[c,d]==0 & res[d,c]==0){
+            ##check whether b is in Sepset(c,d)      
+            if ((b %in% gInput@sepset[[c]][[d]]) |
+                (b %in% gInput@sepset[[d]][[c]])){
+              if(verb==1){
+                cat("Rule 4: There is a discriminating path between:",d,"and",c,"for",b,"and",b, "is in Sepset of",c,"and",d,":",b,"->",c,"\n")
+              }
+              ##b --> c
+              res[b,c] <- 2
+              res[c,b] <- 3
+            }
+            else {
+              if(verb==1){
+                cat("Rule 4: There is a discriminating path between:",d,"and",c,"for",b,"and",b, "is not in Sepset of",c,"and",d,":",a,"<->",b,"<->",c,"\n")
+              }
+              ##a <--> b <--> c
+              res[a,b] <- res[b,c] <- res[c,b] <- 2
+              ##res[b,a]==2 from definition of a and b
+            }
+          }
+          ##else if d and c are adjacent
+          else {
+            ##if d is a collider on the path
+            ##and a parent of c
+            if (res[first.pos,d]==2 & res[d,c]==2 & res[c,d]==3){
+              new.path <- c(path,d)
+              m <- length(new.path)
+              res <- discr.path(path=new.path, n=m, pag=res, gInput=gInput, verb=verb)
+            }
+            ##else there exists no discr. path for this d
+            else {
+              res <- res
+            }
+          }## else
+        }## if
+      }## for k
+    }## if length(indTheta)
+  }## if
+  return(res)
+}
+
+
+
+##Useful for R 5
+ucp <- function(path=NA, pag=NA, n=NA, verb=NA)
+{
+  ## Purpose: find recursively if there exists an uncovered circle path
+  ## and if TRUE orient the graph like in R5
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - path:a subgraph of pag for which we will find an ucp
+  ## - pag: matrix representing the connections between tha whole graph
+  ## - n: number of elements in path
+  ## - verb: 0 no comments, 1 detailed decription
+  ## ----------------------------------------------------------------------
+  ## Author: Diego Colombo, Date:  9 Feb 2009, 10:09
+
+  
+  if (n<=dim(pag)[1]){
+    res <- pag
+    ##all x with path[n-2] o-o x
+    indX <- which((res[path[n-2],]==1 & res[,path[n-2]]==1))
+    if (length(indX)>0){
+      for (k in 1:length(indX)){
+        x <- indX[k]
+        ##res[path[1],path[n]]!=3 control to check if we have
+        ##already directed this path
+        if (!(x %in% path) & res[path[1],path[n]]!=3){
+          new.path <- c(path[c(1:(n-2))],x,path[n-1],path[n])
+          if (res[x,path[n-1]]==1 & res[path[n-1],x]==1){
+            ##check uncovered feature
+            check.uncov <- 0
+            for (l in 1:(n-1)){
+              if (res[new.path[l],new.path[l+2]]==0 & res[new.path[l+2],new.path[l]]==0){
+                check.uncov <- check.uncov
+              }
+              else {
+                check.uncov <- check.uncov + 1
+              }
+            }
+            if (check.uncov==0){
+              ##there exists an uncovered circle path
+              res[new.path[1],new.path[n+1]] <- res[new.path[n+1],new.path[1]] <- 3  ##a -- b
+              for (j in 1:n){
+                res[new.path[j],new.path[j+1]] <- res[new.path[j+1],new.path[j]] <- 3 ##each edge on the path --
+              }
+              if(verb==1) {
+                cat("Rule 5: There exists an uncovered circle path between",new.path[1],"and",new.path[n+1],":",new.path[1],"-", new.path[n+1],"and for each edge on the path",new.path,"\n")
+              }
+            }
+            else {
+              ##recursion
+              ##check that alpha and new.path[3] are not connected
+              if (res[new.path[1],new.path[3]]==0 & res[new.path[3],new.path[1]]==0){
+                res <- ucp(path=new.path, pag=res, n=length(new.path), verb=verb)
+              }
+            }
+          }
+          else {
+            res <- ucp(path=new.path, pag=res, n=length(new.path), verb=verb)
+          }
+        }##if delta %in% path
+      }##for k
+    }## if length(indDelta)
+  }##if
+  return(res)
+}
+
+
+
+##Useful for R 9
+upd <- function(path=NA, pag=NA, n=NA, verb=NA)
+{
+  ## Purpose:find recursively an uncovered potentially directed path
+  ## in pag and orient the edge like in R9
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - path: a subgraph of pag for which we will find an upd, like in R 9
+  ## - pag: matrix representing the connections between tha whole graph
+  ## - n: number of elements in path
+  ## - verb: 0 no comments, 1 detailed decription
+  ## ----------------------------------------------------------------------
+  ## Author: Diego Colombo, Date:  9 Feb 2009, 11:33
+
+  if (n<=dim(pag)[1]){
+    res <- pag
+    c <- path[1]
+    a <- path[2]
+    b <- path[n-1]
+    d <- path[n]
+    ##find all x such that d @--@ x (@== potentially directed)
+    ##and not adjacent to b
+    indX <- which((res[d,]==2 | res[d,]==1) & (res[,d]==1 | res[,d]==3) & (res[b,]==0 & res[,b]==0))
+    if (length(indX)>0){
+      for (j in 1:length(indX)){
+        x <- indX[j]
+        ##res[c,a]!=3 control to see if we have already directed
+        ##the path a *--> c
+        ##and check that x @--@ c
+        if ((!(x %in% path)) & (res[c,a]!=3)){
+          new.path <- c(path[c(2:n)],x,path[1])
+          if ((res[x,c]==1 | res[x,c]==2) & (res[c,x]==1 | res[c,x]==3)){    
+            ##check uncovered feature
+            check.uncov <- 0
+            for (l in 1:(n-1)){
+              if (res[new.path[l],new.path[l+2]]==0 & res[new.path[l+2],new.path[l]]==0){
+                check.uncov <- check.uncov
+              }
+              else {
+                check.uncov <- check.uncov + 1
+              }
+            }
+            if (check.uncov==0){
+              res[c,a] <- 3
+              if (verb==1) {
+                cat("Rule 9: There exists an upd between",new.path,":",a,"->",c,"\n")
+              }
+            }
+            else {
+              rec.path <- c(path,x)
+              res <- upd(path=rec.path, pag=res, n=length(rec.path), verb=verb)
+            }
+          }## if
+          else {
+            rec.path <- c(path,x)
+            res <- upd(path=rec.path, pag=res, n=length(rec.path), verb=verb)
+          }
+        }## if
+      }## for j
+    }## if length(indDelta)
+  }## if
+  return(res)
+}
+
+
+
+
+##Useful for R 10
+find.upd <- function(path=NA, a=NA, n=NA, pag=NA, verb=NA)
+{
+  ## Purpose: find if there exists an uncovered potentially
+  ## directed path between the first and the last element in path
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - path: like in R 10, that is first element adjacent to alpha and
+  ##   last element beta or theta
+  ## - a: alpha
+  ## - n: length of pag
+  ## - pag: adjacencies matrix
+  ## - verb: 0 no comments, 1 detailed decription
+  ## ----------------------------------------------------------------------
+  ## Author: Diego Colombo, Date:  9 Feb 2009, 14:00
+
+  if (n<=dim(pag)[1]){
+    final <- path[n]
+    mittle <- path[n-1]
+    uncov.path <- NA
+    res <- FALSE
+    if (n==2){
+      if(path[1]==path[n]){
+        uncov.path <- path
+        res <- TRUE
+      }
+      else {
+        if ((pag[path[1],path[2]]==1 | pag[path[1],path[2]]==2) & (pag[path[2],path[1]]==1 | pag[path[2],path[1]]==3)){
+          uncov.path <- path
+          res <- TRUE
+        }
+      }
+    }
+    else {
+      ##find all b s.t. mittle @-@ b (@ potentially directed)
+      indB <- which((pag[mittle,]==1 | pag[mittle,]==2) & (pag[,mittle]==1 | pag[,mittle]==3))
+      indB <- setdiff(indB,a)
+      if (length(indB)>0){
+        counter <- 0
+        while ((!res) & (counter < length(indB))){
+          counter <- counter + 1
+          b <- indB[counter]
+          if (!(b %in% path)){
+            new.path <- c(path[1:(n-1)],b,path[n])
+            check.uncov <- 0
+            for (l in 1:(n-1)){
+              if (pag[new.path[l],new.path[l+2]]==0 & pag[new.path[l+2],new.path[l]]==0){
+                check.uncov <- check.uncov
+              }
+              else {
+                check.uncov <- check.uncov + 1
+              }
+            }
+            if (check.uncov==0){
+              ##check if b @-@ final
+              if ((pag[b,final]==1 | pag[b,final]==2) & (pag[final,b]==1 | pag[final,b]==3)){
+                uncov.path <- new.path
+                res <- TRUE
+              }
+              else {
+                tmp <- find.upd(path=new.path, n=length(new.path), pag=pag, verb=verb)
+                uncov.path <- tmp[[2]]
+                res <- tmp[[1]]
+              }
+            }
+            else {
+              tmp <- find.upd(path=new.path, n=length(new.path), pag=pag, verb=verb)
+              uncov.path <- tmp[[2]]
+              res <- tmp[[1]]
+            }
+          }##if
+        }##while
+      }##if
+    }##else
+  }##if
+  return(list(res=res,uncov.path=uncov.path))
+}
+
+
+
+
+udag2pag <- function(gInput, rules=rep(TRUE,10), verbose=TRUE) {
+  ## Purpose:Transform the Skeleton of a pcAlgo-object to a PAG using
+  ## the rules of Zhang. The output is an adjacency matrix.
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - gInput: pcAlgo object
+  ## - rules: array of length 10 wich contains TRUE or FALSE corrsponding
+  ##          to each rule. TRUE means the rule will be applied.
+  ##          If rules==FALSE only R0 (minimal pattern) will be used
+  ## - verbose: 0 - no output, 1 - detailed output
+  ## ----------------------------------------------------------------------
+  ## Author: Diego Colombo, Date:  6 Mar 2009, 11:27
+
+
+  ## Notation:
+  ## ----------------------------------------------------------------------
+  ## 0: no edge
+  ## 1: -o
+  ## 2: -> (arrowhead)
+  ## 3: - (tail)
+  ## a=alpha
+  ## b=beta
+  ## c=gamma
+  ## d=theta
+  
+  ##counter <- 0
+  ##res <- gInput
+  ##status <- 0
+  ##xtbl <- xtbl.orig <- TRUE
+  if (numEdges(gInput@graph)>0) {
+    g <- as(gInput@graph,"matrix") ## g_ij==1 if i *-o j
+    p <- dim(g)[1]
+    evisit <- amat0 <- amat1 <- matrix(0,p,p)
+    pag <- g
+    ind <- which(g==1, arr.ind=TRUE)
+    ## ind <- unique(t(apply(ind,1,sort)))
+
+    
+    ## Create minimal pattern
+    ## rule 0
+    for (i in 1:dim(ind)[1]) {
+      x <- ind[i,1]
+      y <- ind[i,2]
+      allZ <- setdiff(which(g[y,]==1),x) ## x-y-z
+      
+      if (length(allZ)>0) {
+        for (j in 1:length(allZ)) {
+          z <- allZ[j]
+          if ((g[x,z]==0) & !((y %in% gInput@sepset[[x]][[z]]) |
+                  (y %in% gInput@sepset[[z]][[x]]))) {
+            if (verbose==1) {
+              cat("\n",x,"*->",y,"<-*",z,"\n") 
+              cat("Sxz=",gInput@sepset[[z]][[x]],"and","Szx=",gInput@sepset[[x]][[z]],"\n")
+            }
+
+            ##x o-> y <-o z
+            pag[x,y] <- pag[z,y] <- 2
+
+          } ## if
+        } ## for 
+      } ## if
+    } ## for
+    
+
+    ## first while for R1-R4
+    old_pag1 <- matrix(rep(0,p^2),nrow=p,ncol=p)
+    while (sum(!(old_pag1==pag))>0) {
+      old_pag1 <- pag
+
+    
+      ## rule 1
+      if (rules[1]){
+        ind <- which((pag==2 & t(pag)!=0), arr.ind=TRUE) ## a *--> b
+        if (length(ind)>0) {
+          for (i in 1:dim(ind)[1]) {
+            a <- ind[i,1]
+            b <- ind[i,2]
+            ##all c with b o--* c und a not adjacent to c
+            indC <- which((pag[b,]!=0 & pag[,b]==1) & (pag[a,]==0 & pag[,a]==0))
+            indC <- setdiff(indC,a)
+            if (length(indC)>0) {
+              pag[b,indC] <- 2
+              pag[indC,b] <- 3
+              if (verbose==1) {
+                cat("Rule 1:",a,"*->",b,"o-*",indC,
+                    " where ",a," and ",indC," not connected: ",b,"->",indC,"\n")
+              }
+            }## if
+          }## for
+        }## if
+      }
+      
+      
+      
+      ## rule 2
+      if (rules[2]){
+        ind <- which((pag==1 & t(pag)!=0), arr.ind=TRUE) ## a *--o c
+        if (length(ind)>0) {
+          for (i in 1:dim(ind)[1]) {
+            a <- ind[i,1]
+            c <- ind[i,2]
+            ##all b with a --> b *--> c or a *--> b --> c
+            indB <- which( ((pag[a,]==2 & pag[,a]==3) & (pag[c,]!=0 & pag[,c]==2)) | ((pag[a,]==2 & pag[,a]!=0) & (pag[c,]==3 & pag[,c]==2)))
+            if (length(indB)>0) {
+              pag[a,c] <- 2
+              if (verbose==1) {
+                cat("Rule 2:",a,"->",indB,"*->",
+                    c,"or",a,"*->",indB,"->",c,"and",a,"*-o",c,":",a,"*->",c,"\n")
+              }
+            }## if
+          }## for
+        }## if
+      }
+      
+      
+      
+      ## rule 3
+      if (rules[3]){
+        ind <- which((pag!=0 & t(pag)==1), arr.ind=TRUE) ## b o--* d
+        if (length(ind)>0) {
+          for (i in 1:dim(ind)[1]) {
+            b <- ind[i,1]
+            d <- ind[i,2]
+            ##all a and c with a *--> b and a *--o d, c *--> b and c *--o d
+            indAC <- which( (pag[b,]!=0 & pag[,b]==2) & (pag[,d]==1 & pag[d,]!=0))
+            ##check if there are a and c which are not adjacent
+            if (length(indAC)>=2){
+              counter <- 0
+              while ((counter<(length(indAC)-1)) & (pag[d,b]!=2)){
+                counter <- counter + 1
+                ii <- counter
+                while ((ii<length(indAC)) & (pag[d,b]!=2)){
+                  ii <- ii + 1
+                  if (pag[indAC[counter],indAC[ii]]==0 & pag[indAC[ii],indAC[counter]]==0){
+                    pag[d,b] <- 2
+                    if (verbose==1){
+                      cat("Rule 3:",d,"*->",b,"\n")
+                    }
+                  }
+                }
+              }
+            }
+            ## if (length(indAC)>1){
+            ## for(j in 1:(length(indAC)-1)){
+            ## for(k in (j+1):(length(indAC))){
+            ## if(pag[indAC[j],indAC[k]]==0 & pag[indAC[k],indAC[j]]==0){
+            ## pag[d,b] <- 2
+            ## if (verbose==1) {
+            ## cat("Rule 3:",d,"*->",b,"\n")
+            ## }
+            ## }## if
+            ##}## for
+            ##}## for
+            ##}## if
+          }## for
+        }## if
+      }
+      
+      
+      ## rule 4
+      if (rules[4]){
+        ind <- which((pag!=0 & t(pag)==1), arr.ind=TRUE) ## b o--* c
+        if (length(ind)>0){
+          for (i in 1:dim(ind)[1]){
+            b <- ind[i,1]
+            c <- ind[i,2]
+            ##all a with a <--* b o--* c and a --> c
+            indA <- which( (pag[b,]==2 & pag[,b]!=0) & (pag[c,]==3 & pag[,c]==2))
+            if (length(indA)>0){
+              for (j in 1:length(indA)){
+                a <- indA[j]
+                path <- c(c,b,a)
+                n <- length(path)
+                pag <- discr.path(path=path, n=n , pag=pag, gInput=gInput, verb=verbose)
+              }## for j
+            }## if length(indA)
+          }## for i
+        }## if length(ind)
+      }
+    }## while
+
+
+
+    ## second while for R5-R10
+    old_pag2 <- matrix(rep(0,p^2),nrow=p,ncol=p)
+    while (sum(!(old_pag2==pag))>0) {
+      old_pag2 <- pag
+    
+  
+      ##rule 5
+      if (rules[5]){
+        ind <- which((pag==1 & t(pag)==1), arr.ind=TRUE) ## a o--o b
+        if (length(ind)>0){
+          for (i in 1:dim(ind)[1]){
+            a <- ind[i,1]
+            b <- ind[i,2]
+            ##all c s.t. a o--o c and c not adjacent to b
+            indC <- which((pag[a,]==1 & pag[,a]==1) & (pag[b,]==0 & pag[,b]==0))
+            ##delete b from indC
+            indC <- setdiff(indC,b)
+            ##all d s.t. d o--o b and d not adjacent to a
+            indD <- which((pag[b,]==1 & pag[,b]==1) & (pag[a,]==0 & pag[,a]==0))
+            ##delete a from indD
+            indD <- setdiff(indD,a)
+            if (length(indC)>0 & length(indD)>0){
+              for (j in 1:length(indC)){
+                c <- indC[j]
+                for (l in 1:length(indD)){
+                  d <- indD[l]
+                  if (pag[c,d]==1 & pag[d,c]==1){
+                    pag[a,b] <- pag[b,a] <- 3
+                    pag[a,c] <- pag[c,a] <- 3
+                    pag[c,d] <- pag[d,c] <- 3
+                    pag[d,b] <- pag[b,d] <- 3
+                    if (verbose==1) {
+                      cat("Rule 5: There exists an uncovered circle path between",a,"and",b,":",a,"-", b,"and",a,"-",c,"-",d,"-",b, "\n")
+                    }
+                  }
+                  else {
+                    path <- c(a,c,d,b)
+                    pag <- ucp(path=path, pag=pag, n=length(path), verb=verbose)
+                  }
+                }##for l
+              }##for j
+            }##if
+          }##for i
+        }##if
+      }
+      
+      
+      
+      ## rule 6
+      if (rules[6]){
+        ind <- which((pag!=0 & t(pag)==1), arr.ind=TRUE) ## b o--* c
+        if (length(ind)>0){
+          for (i in 1:dim(ind)[1]){
+            b <- ind[i,1]
+            c <- ind[i,2]
+            ##all a with a -- b o--* c
+            indA <- which(pag[b,]==3 & pag[,b]==3)
+            if (length(indA)>0){
+              pag[c,b] <- 3
+              if (verbose==1) {
+                cat("Rule 6:",a,"-",b,"o-*",c,":",b,"-*",c,"\n")
+              }
+            }
+          }## for i
+        }## if length(ind)
+      }
+      
+      
+      
+      ## rule 7
+      if (rules[7]){
+        ind <- which((pag!=0 & t(pag)==1), arr.ind=TRUE) ## b o--* c
+        if (length(ind)>0){
+          for (i in 1:dim(ind)[1]){
+            b <- ind[i,1]
+            c <- ind[i,2]
+            ##all a with a --o b and a,c not adjacent
+            indA <- which((pag[b,]==3 & pag[,b]==1) & (pag[c,]==0 & pag[,c]==0))
+            indA <- setdiff(indA,c)
+            if (length(indA)>0){
+              pag[c,b] <- 3
+              if (verbose==1) {
+                cat("Rule 7:",indA,"-o",b,"o-*",c,"and", indA," and", c," are not adjacent:",b,"-*",c,"\n")
+              }
+            }
+          }## for i
+        }## if length(ind)
+      }
+      
+      
+      ## rule 8
+      if (rules[8]){
+        ind <- which((pag==2 & t(pag)==1), arr.ind=TRUE) ## a o--> c
+        if (length(ind)>0){
+          for (i in 1:dim(ind)[1]){
+            a <- ind[i,1]
+            c <- ind[i,2]
+            ##all b with a --> b --> c or a --o b --> c
+            indB <- which(((pag[a,]==2 & pag[,a]==3) | (pag[a,]==1 & pag[,a]==3)) & (pag[c,]==3 & pag[,c]==2))
+            if (length(indB)>0){
+              pag[c,a] <- 3
+              if (verbose==1) {
+                cat("Rule 8:",a,"->",indB,"->",c,"or",a,"-o",indB,"->",c,"and",a,"o->",c,":",a,"->",c,"\n")
+              }
+            }
+          }## for i
+        }## if length(ind)
+      }
+      
+      
+      
+      ##rule 9
+      if (rules[9]){
+        ind <- which((pag==2 & t(pag)==1), arr.ind=TRUE) ## a o--> c
+        if (length(ind)>0){
+          for (i in 1:dim(ind)[1]){
+            a <- ind[i,1]
+            c <- ind[i,2]
+            ##find all beta s.t. a @--@ b is potentially directed
+            ##and beta is not connected to c
+            indB <- which((pag[a,]==2 | pag[a,]==1) & (pag[,a]==1 | pag[,a]==3) & (pag[c,]==0 & pag[,c]==0))
+            indB <- setdiff(indB,c)
+            if (length(indB)>0){
+              for (k in 1:length(indB)){   
+                b <- indB[k]
+                ##find all d such that c <--o a @-@ b @-@ d and d and a not adjacent
+                indD <- which((pag[b,]==2 | pag[b,]==1) & (pag[,b]==1 | pag[,b]==3) & (pag[a,]==0 & pag[,a]==0))
+                indD <- setdiff(indD,a)
+                if (length(indD)>0){
+                  for (l in 1:length(indD)){
+                    d <- indD[l]
+                    ##pag[c,a]!=3 check if we have already oriented this edge
+                    if (pag[c,a]!=3){
+                      if ((pag[c,d]==1 | pag[c,d]==3) & (pag[d,c]==1 | pag[d,c]==2)){
+                        pag[c,a] <- 3
+                        if (verbose==1){
+                          cat("Rule 9, There exists an upd between",a,"and",c,":",a," ->", c, "\n")
+                        }
+                      }
+                      else {
+                        path <- c(c,a,b,d)
+                        pag <- upd(path=path, pag=pag, n=length(path), verb=verbose)
+                      }
+                    }
+                  }##for l
+                }## if lenth(indD)
+              }##for k
+            }##if lenfth(indB)
+          }##for i
+        }## if length(ind)
+      }
+
+
+      ##rule 10
+      if (rules[10]){
+        ind <- which((pag==2 & t(pag)==1), arr.ind=TRUE) ## a o--> c
+        if (length(ind)>0){
+          for (i in 1:dim(ind)[1]){
+            a <- ind[i,1]
+            c <- ind[i,2]
+            ##find all b s.t. b --> c
+            indB <- which((pag[c,]==3 & pag[,c]==2))
+            if (length(indB)>=2){
+              for (j in 1:length(indB)){
+                b <- indB[j]
+                ##chose a d s.t. d --> c
+                indD <- setdiff(indB,b)
+                if (length(indD)>0 & pag[c,a]!=3){
+                  for (k in 1:length(indD)){
+                    d <- indD[k]
+                    ##case where mu=b and omega=theta and mu and omega not adj
+                    if ((pag[a,b]==1 | pag[a,b]==2) & (pag[b,a]==1 | pag[b,a]==3) & (pag[a,d]==1 | pag[a,d]==2) & (pag[d,a]==1 | pag[d,a]==3) & (pag[d,b]==0 & pag[b,d]==0)){
+                      pag[c,a] <- 3
+                      if (verbose==1){
+                        cat("Rule 10 with mu = beta = ",b,"and omega = theta =",d,":",a,"->",c,"\n")
+                      }
+                    }
+                    else {
+                      indA <- which((pag[a,]==1 | pag[a,]==2) & (pag[,a]==1 | pag[,a]==3), arr.ind=TRUE)
+                      indA <- setdiff(indA,c)
+                      if (length(indA>=2)){
+                        for (l in 1:length(indA)){
+                          first.pos <- indA[l]
+                          ##if (first.pos==b){
+                          ##indAA <- setdiff(indA,c(first.pos,d))
+                          ##}
+                          ##if (first.pos==d){
+                          ##indAA <- setdiff(indA,c(first.pos,b))
+                          ##}
+                          ##else {
+                          indAA <- setdiff(indA,first.pos)
+                          if ((length(indAA)>0) & (pag[c,a]!=3)){
+                            for (s in 1:length(indAA)){
+                              sec.pos <- indAA[s]
+                              p1 <- find.upd(path=c(first.pos,b), a=a, n=2, pag=pag, verb=verbose)
+                              p2 <- find.upd(path=c(sec.pos,d), a=a, n=2, pag=pag, verb=verbose)
+                              if (p1$res==TRUE & p2$res==TRUE){
+                                mu <- p1$uncov.path[1]
+                                omega <- p2$uncov.path[1]
+                                if ((mu!=omega) & (pag[mu,omega]==0) & (pag[omega,mu]==0)){
+                                  ##then orient
+                                  pag[c,a] <- 3
+                                  if (verbose==1) {
+                                    cat("Rule 10:",a,"->",c,"\n")
+                                  }
+                                }
+                              }
+                            }## for s
+                          }## if
+                          ##}## else
+                        }## for l
+                      }## if
+                    }##else
+                  }##for k
+                }##if
+              }##for j
+            }##if
+          }##for i
+        }##if
+      }
+    
+    }## while
+    
+  }## if
+
+  return(pag)
+
+}## function
+
+
+
+plotAG <- function(amat)
+{
+  ## Purpose: Plot ancestral graph
+  ## ATTENTION: Start with M-x R-devel; uses library(Rgraphviz)
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - amat: Adjacency matrix
+  ##   amat[i,j]=3 & amat[j,i]=1 iff i 1-3 j
+  ##   "0": no edge; "1": circle; "2": arrow; "3": tail
+  ## ----------------------------------------------------------------------
+  ## Author: Markus Kalisch, Date: 16 Feb 2009, 18:01
+
+  g <- as(amat,"graphNEL")
+  nn <- nodes(g)
+  p <- numNodes(g)
+  n.edges <- numEdges(g)
+  ah.list <- at.list <- rep("none",n.edges)
+  counter <- 0
+  list.names <- NULL
+  amat[amat==1] <- "odot"
+  amat[amat==2] <- "normal"
+  amat[amat==3] <- "none"
+  for (i in 1:(p-1)) {
+    for (j in (i+1):p) {
+      x <- nn[i]
+      y <- nn[j]
+      if (amat[x,y]!=0) {
+        counter <- counter + 1
+        ah.list[[counter]] <- amat[x,y]
+        at.list[[counter]] <- amat[y,x]
+        list.names <- c(list.names,paste(x,"~",y,sep=""))
+      }
+    }
+  }
+  names(ah.list) <- names(at.list) <- list.names
+  
+  edgeRenderInfo(g) <- list(arrowhead=ah.list,arrowtail=at.list)
+  renderGraph(layoutGraph(g))
+}

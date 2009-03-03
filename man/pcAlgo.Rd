@@ -14,7 +14,7 @@
 \usage{
 pcAlgo(dm = NA, C = NA, n=NA, alpha, corMethod = "standard", verbose =
 FALSE, directed=FALSE, G=NULL, datatype='continuous',NAdelete=TRUE,
-m.max=Inf,u2pd="rand")
+m.max=Inf,u2pd="rand",psepset=FALSE)
 }
 \arguments{
   \item{dm}{data matrix; rows correspond to samples, cols correspond to
@@ -41,10 +41,11 @@ m.max=Inf,u2pd="rand")
   \item{u2pd}{Function used for converting skeleton to cpdag. "rand"
     (use udag2pdag); "relaxed" (use udag2pdagRelaxed); "retry" (use
     udag2pdagSpecial)}
+  \item{psepset}{If true, also possible separation sets are tested.}
 }
 \value{
   An object of \code{\link{class}} \code{"pcAlgo"} (see
-  \code{\link[pcAlgo]{pcAlog-class}}) containing an undirected graph
+  \code{\linkS4class{pcAlgo}}) containing an undirected graph
   (object of \code{\link{class}} \code{"graph"}, see 
   \code{\link[graph]{graph-class}} from the package \pkg{graph})
   (without weigths) as estimate of the skeleton or the CPDAG of the
@@ -75,6 +76,9 @@ m.max=Inf,u2pd="rand")
   specified method (\code{corMethod}).  The partial correlation tests
   are based on Fisher's z-transformation.  For more details on the
   methods for computing the correlations see \code{\link{mcor}}.
+
+  Note that the algorithm works with columns' position of the
+  adjacency matrix and not with the names of the variables. 
 }
 \references{
   P. Spirtes, C. Glymour and R. Scheines (2000)
