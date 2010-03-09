@@ -6,7 +6,7 @@
   pcSelect again on the reduced data set.
 }
 \usage{
-pcSelect.presel(y,dm, alpha, alphapre, corMethod = "standard", verbose = 0, directed=FALSE)
+pcSelect.presel(y, dm, alpha, alphapre, corMethod = "standard", verbose = 0, directed=FALSE)
 }
 \arguments{
   \item{y}{Response Vector (length(y)=nrow(dm))}

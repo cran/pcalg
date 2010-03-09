@@ -11,6 +11,13 @@
 
 \maketitle
 \section{General Introduction}
+
+This vignette is not up to date! It will soon be updated. Please use
+\texttt{skeleton, pc, fci} instead of \texttt{pcAlgo}. Also use
+\texttt{ida, idaFast} instead of \texttt{beta.special,
+  beta.special.pcObj}. Until the new vignette is ready, we show the old
+vignette for your convenience.\\
+
 In this document, we will give a short overview of the R-package
 \texttt{pcalg}. The package can be used to analyze dependencies among
 random variables. The main functions are

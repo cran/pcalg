@@ -6,7 +6,7 @@
   for the case of a large number of variables.
 }
 \usage{
-mcor(dm, method= c("standard", "Qn","QnStable", "ogkScaleTau2", "ogkQn","shrink"))
+mcor(dm,  method= c("standard",  "Qn", "QnStable",  "ogkScaleTau2",  "ogkQn", "shrink"))
 }
 \arguments{
   \item{dm}{numeric matrix of data; rows are samples, columns are variables.}

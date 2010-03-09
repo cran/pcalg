@@ -89,13 +89,16 @@ m.max=Inf,u2pd="rand",psepset=FALSE)
     directed acyclic graphs with the PC-algorithm};
     JMLR, Vol. 8, 613-636, 2007.
 }
-\seealso{\code{\link{randomDAG}} for generating a random DAG;
-  \code{\link{rmvDAG}} for generating data according to a DAG;
-  \code{\link{compareGraphs}} for comparing undirected graphs in terms of
-  TPR, FPR and TDR.  Further, \code{\link[graph]{randomGraph}} (in
-  package \pkg{graph}) for other random graph
-  models. \code{\link{udag2pdag}} for converting the skeleton to a CPDAG.
-}
+
+\seealso{\code{\link{pcAlgo-class}} for a description of the class that
+  is returned by this function; \code{\link{randomDAG}} for generating a
+  random DAG; \code{\link{rmvDAG}} for generating data according to a
+  DAG; \code{\link{compareGraphs}} for comparing undirected graphs in
+  terms of TPR, FPR and TDR.  Further, \code{\link[graph]{randomGraph}}
+  (in package \pkg{graph}) for other random graph
+  models. \code{\link{udag2pdag}} for converting the skeleton to a
+  CPDAG.  }
+
 \author{
   Markus Kalisch (\email{kalisch@stat.math.ethz.ch}) and Martin Maechler.
 }

@@ -1,7 +1,7 @@
 library(pcalg)
 
 p <- 10
-
+set.seed(21)
 reps <- 10
 res <- rep(FALSE,reps)
 for (i in 1:reps) {

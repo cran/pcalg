@@ -20,7 +20,8 @@
 \alias{ucp}
 \alias{upd}
 \alias{find.upd}
-
+\alias{legal.psep}
+\alias{gAlgo-class}
 %
 \title{Internal Pcalg Functions}
 \description{

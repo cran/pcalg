@@ -4,7 +4,8 @@
 \description{
   Generate multivariate data with dependency structure specified by a
   (given) DAG (\bold{D}irected \bold{A}cyclic \bold{G}raph) with nodes
-  corresponding to random variables.
+  corresponding to random variables. The DAG has to be
+  \bold{topologically ordered}.
 }
 \usage{
 rmvDAG(n, dag,

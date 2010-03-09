@@ -7,7 +7,7 @@
   onto another variable. 
 }
 \usage{
-beta.special(dat=NA,x.pos,y.pos,verbose=0,a=0.01,myDAG=NA,myplot=FALSE,perfect=FALSE,method="local",collTest=TRUE,pcObj=NA,all.dags=NA,u2pd="rand")
+beta.special(dat=NA, x.pos, y.pos, verbose=0, a=0.01, myDAG=NA, myplot=FALSE, perfect=FALSE, method="local", collTest=TRUE, pcObj=NA, all.dags=NA, u2pd="rand")
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -62,9 +62,9 @@ y.pos <- 5
 ## true value
 true.eff <- causalEffect(myDAG,y.pos,x.pos)
 ## value using oracle (true value should be element of this)
-est.eff.p <- beta.special(x.pos=x.pos,y.pos=y.pos,myDAG=myDAG,perfect=TRUE,method="global")
+est.eff.p <- beta.special(x.pos=x.pos, y.pos=y.pos, myDAG=myDAG, perfect=TRUE, method="global")
 ## value using data (true value should come close to some element of this)
-est.eff.e <- beta.special(dat=d.mat,x.pos=x.pos,y.pos=y.pos,perfect=FALSE,method="global",myplot=TRUE)
+est.eff.e <- beta.special(dat=d.mat, x.pos=x.pos, y.pos=y.pos, perfect=FALSE, method="global", myplot=TRUE)
 
 true.eff
 est.eff.p
@@ -89,10 +89,10 @@ y.pos <- 5
 ## true value
 true.eff <- causalEffect(myDAG,y.pos,x.pos)
 ## value using oracle (true value should be element of this)
-est.eff.p <- beta.special(x.pos=x.pos,y.pos=y.pos,myDAG=myDAG,perfect=TRUE,method="local")
+est.eff.p <- beta.special(x.pos=x.pos, y.pos=y.pos, myDAG=myDAG, perfect=TRUE, method="local")
 ## value using data (true value should come close to some element of this)
-est.eff.e <- beta.special(dat=d.mat,x.pos=x.pos,y.pos=y.pos,perfect=FALSE,method="local")
-plot(pcAlgo(d.mat,alpha=0.01,directed=TRUE))
+est.eff.e <- beta.special(dat=d.mat, x.pos=x.pos, y.pos=y.pos, perfect=FALSE, method="local")
+plot(pcAlgo(d.mat, alpha=0.01, directed=TRUE))
 
 true.eff
 est.eff.p

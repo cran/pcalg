@@ -4,7 +4,6 @@ import(MASS, graph, Rgraphviz, robustbase)
 export(randomDAG,
        wgtMatrix,
        rmvDAG,
-       decHeur,
        pcAlgo,
        pcSelect,
        pcSelect.presel,
@@ -42,9 +41,26 @@ export(randomDAG,
        upd,
        find.upd,
        udag2pag,
-       plotAG)
+       plotAG,
+       skeleton,
+       pc,
+       fci,
+       gSquareBin,
+       gSquareDis,
+       gaussCItest,
+       dsepTest,
+       disCItest,
+       binCItest,
+       dsep,
+       pdsep,
+       ida,
+       idaFast,
+       legal.psep,
+       qreach,
+       plotSG)
 
 exportClasses("pcAlgo")
-
+exportClasses("fciAlgo")
+exportClasses("gAlgo")
 exportMethods("summary","show","plot")
 

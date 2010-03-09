@@ -1,6 +1,5 @@
 (TeX-add-style-hook "Sweave-pcalg"
- (function
-  (lambda ()
+ (lambda ()
     (LaTeX-add-labels
      "fig:trueDAG"
      "fig:corGraph"
@@ -11,5 +10,5 @@
      "latex2e"
      "art10"
      "article"
-     "a4paper"))))
+     "a4paper")))
 
