@@ -98,7 +98,7 @@ fixedEdges = NULL, NAdelete = TRUE, m.max = Inf)
   P. Spirtes, C. Glymour and R. Scheines (2000)
   \emph{Causation, Prediction, and Search}, 2nd edition, MIT Press.
 
-  M. Kalisch and P. B\"uhlmann (2007)
+  M. Kalisch and P. Buehlmann (2007)
   \emph{Estimating high-dimensional
     directed acyclic graphs with the PC-algorithm},
     JMLR \bold{8} 613-636.
@@ -119,8 +119,10 @@ p <- 8
 set.seed(46)
 myDAG <- randomDAG(p, prob = 0.3)
 
+if (require(Rgraphviz)) {
 ## plot the DAG
 plot(myDAG, main = "randomDAG(10, prob = 0.2)")
+}
 
 ##################################################
 ## Using Gaussian Data
@@ -136,9 +138,12 @@ suffStat <- list(C = cor(d.mat), n = n)
 ## estimate skeleton
 alpha <- 0.01
 skel.fit <- skeleton(suffStat, indepTest, p, alpha)
+if (require(Rgraphviz)) {
 ## show estimated skeleton
+par(mfrow = c(1,2))
 plot(skel.fit, main = "Estimated Skeleton")
-x11(); plot(myDAG)
+plot(myDAG, main = "True DAG")
+}
 
 ##################################################
 ## Using d-separation oracle
@@ -150,8 +155,10 @@ suffStat <- list(g = myDAG, jp = johnson.all.pairs.sp(myDAG))
 ## estimate skeleton
 alpha <- 0.01 ## value is irrelevant as dsepTest returns either 0 or 1
 skel.fit <- skeleton(suffStat, indepTest, p, alpha)
+if (require(Rgraphviz)) {
 ## show estimated skeleton
 plot(skel.fit, main = "Estimated Skeleton")
+}
 
 ##################################################
 ## Using discrete data
@@ -165,9 +172,11 @@ suffStat <- list(dm = dat, nlev = c(3,2,3,4,2), adaptDF = FALSE)
 ## estimate skeleton 
 alpha <- 0.01 
 skel.fit <- skeleton(suffStat, indepTest, p, alpha, verbose = TRUE)
+if (require(Rgraphviz)) {
 ## show estimated skeleton
 plot(skel.fit, main = "Estimated Skeleton")
 rm(dat)
+}
 
 ##################################################
 ## Using binary data
@@ -181,9 +190,11 @@ suffStat <- list(dm = dat, adaptDF = FALSE)
 ## estimate skeleton
 alpha <- 0.01 
 skel.fit <- skeleton(suffStat, indepTest, p, alpha, verbose = TRUE)
+if (require(Rgraphviz)) {
 ## show estimated skeleton
 plot(skel.fit, main = "Estimated Skeleton")
 rm(dat)
+}
 }
 \keyword{multivariate}
 \keyword{models}

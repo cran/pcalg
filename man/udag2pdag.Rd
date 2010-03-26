@@ -31,7 +31,8 @@ udag2pdag(gInput,verbose)
   J. Pearl (2000), \emph{Causality}, Cambridge University Press.
 }
 \author{Markus Kalisch (\email{kalisch@stat.math.ethz.ch})}
-\seealso{\code{\link{pdag2dag}},\code{\link{dag2cpdag}},\code{\link{udag2pdag}},\code{\link{udag2pdagRelaxed}},\code{\link{udag2pdagSpecial}}}
+\seealso{\code{\link{pdag2dag}}, \code{\link{dag2cpdag}},
+  \code{\link{udag2pdag}}, \code{\link{udag2pdagRelaxed}}, \code{\link{udag2pdagSpecial}}}
 \examples{
 ## simulate data
 set.seed(123)
@@ -41,8 +42,13 @@ trueCPDAG <- dag2cpdag(myDAG)
 n <- 1000
 d.mat <- rmvDAG(n, myDAG, errDist = "normal")
 
+## define independence test (partial correlations)
+indepTest <- gaussCItest 
+## define sufficient statistics
+suffStat <- list(C = cor(d.mat), n = n)
 ## estimate skeleton
-resU <- pcAlgo(d.mat, alpha = 0.05, corMethod = "standard",directed=FALSE)
+resU <- skeleton(suffStat, indepTest, p, 0.05)
+
 ## orient edges using three different methods
 resD1 <- udag2pdagRelaxed(resU,verbose=0)
 resD2 <- udag2pdagSpecial(resU,verbose=0,n.max=100)

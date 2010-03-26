@@ -33,13 +33,13 @@ udag2pag(gInput, rules, verbose)
   != 0: i *-o j; M[i,j]=2, M[j,i]!=0: i*->j; M[i,j]=3, M[j,i]!=0: i*-j. 
 }
 \references{
-  J. Zhang (2008), On the completeness of orientation rules for causal
-  discovery in the presence of latent confounders and selection bias,
-  Artificial Intelligence 172, pp. 1873-1896
+  J. Zhang (2008). On the completeness of orientation rules for causal
+  discovery in the presence of latent confounders and selection bias.
+  \emph{Artificial Intelligence} \bold{172} 1873-1896.
 }
 \author{Diego Colombo (\email{colombo@stat.math.ethz.ch})}
 
-\seealso{\code{\link{pcAlgo}}}
+\seealso{\code{\link{pc}}}
 
 \examples{
 ## generate and draw random DAG
@@ -54,7 +54,9 @@ edL[[2]] <- list(edges=3,weights=c(1))
 edL[[3]] <- list(edges=5,weights=c(1))
 edL[[4]] <- list(edges=5,weights=c(1))
 g <- new("graphNEL", nodes=V, edgeL=edL,edgemode="directed")
+if (require(Rgraphviz)) {
 plot(g)
+}
 
 ## define the latent variable
 L <- 1
@@ -75,11 +77,13 @@ rules <- rep(TRUE,10)
 resP <- udag2pag(resD, rules=rules, verbose=1)
 colnames(resP) <- rownames(resP) <- nodes(g)[-L]
 
+if (require(Rgraphviz)) {
 ## plot the original DAG and the PAG
 op <- par(mfrow=c(1,2))
 plot(g, main="original (random) DAG")
 plotAG(resP)
 par(op)
+}
 }
 \keyword{multivariate}
 \keyword{models}

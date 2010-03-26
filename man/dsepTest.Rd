@@ -3,17 +3,16 @@
 \title{Test for d-separation in a DAG}
 \description{
   This function tests for d-separation of nodes in a DAG. The function
-  was organized in a way, so that it can 
+  is written, so that it can 
   easily be used in \code{\link{skeleton}}, \code{\link{pc}}, \code{\link{fci}}.
 }
 \usage{
 dsepTest(x, y, S, suffStat)
 }
 \arguments{
-  \item{x}{Position of node X in adjacency matrix}
-  \item{y}{Position of node Y in adjacency matrix}
-  \item{S}{Position of set of nodes in adjacency matrix on which is
-    conditioned}
+  \item{x}{Position of variable X in the adjacency matrix}
+  \item{y}{Position of variable Y in the adjacency matrix}
+  \item{S}{Positions of conditioning variables in the adjacency matrix}
   \item{suffStat}{A list with two elements: (1) Element "g" containing
     the Directed Acyclic Graph (object of \code{\link{class}}
     \code{"graph"}, see \code{\link[graph]{graph-class}} from the
@@ -28,19 +27,18 @@ dsepTest(x, y, S, suffStat)
 }
 
 \details{The function is based on \code{\link{dsep}}. For details on
-d-separation see the reference.}
+d-separation see the Lauritzen (2004).}
 
 \references{
-  Kalisch M. and P. B\"uhlmann (2007)
-  \emph{Estimating high-dimensional
-    directed acyclic graphs with the PC-algorithm};
-    JMLR, Vol. 8, 613-636, 2007.
+  S.L. Lauritzen (2004),
+  Graphical Models, \emph{Oxford University Press}.
+
 }
 
 \seealso{\code{\link{gaussCItest}}, \code{\link{disCItest}} and
   \code{\link{binCItest}} for similar functions for a conditional
-  independence test on gaussian variables, on discrete variables and
-  on binary variables, respectively.}
+  independence test for gaussian, discrete and
+  binary variables, respectively.}
 
 \author{
   Markus Kalisch (\email{kalisch@stat.math.ethz.ch})
@@ -50,8 +48,10 @@ p <- 8
 set.seed(45)
 myDAG <- randomDAG(p, prob = 0.3)
 
+if (require(Rgraphviz)) {
 ## plot the DAG
 plot(myDAG, main = "randomDAG(10, prob = 0.2)")
+}
 
 ## define sufficient statistics (d-separation oracle)
 suffStat <- list(g = myDAG, jp = johnson.all.pairs.sp(myDAG))

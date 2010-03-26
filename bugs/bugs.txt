@@ -1,0 +1,33 @@
+V 0.1-5
+##########
+(- fällig, + behoben)
++ Hilfe von pcorOrder gibt Matrixinversion für k>4 an; das wird aber nicht
+  gemacht - DOCH ABER IN DER FUNKTION zStat; habe die Matrixinversion
+  auskommentiert, weil es Singularitaetsprobleme gab.
+  ERGO: Hilfeseite aendern - BEHOBEN
++ In pdag2dag: Graph ohne Kanten als Input hat Fehler geliefert - BEHOBEN
++ In dag2cpdag: Falls input DAG keine Kante hatte, wurde die Anzahl Knoten
+  nicht lokal definiert; der globale Wert war falsch. - BEHOBEN
++ Das File /R/bugs/pdag2dagTest.R produziert einen Fehler in pdag2dag: Ein
+  PDAG, der nicht erweiterbar ist, wird ohne Fehlermeldung in einen
+  zyklischen Graphen erweitert. - BEHOBEN
+##########
+V 0.1-7
+##########
+- pdag2dag: Problem wenn Nodelabels aus Gross- und Kleinbuchstaben bestehen
+  (Loesungsvorschlag unter: pdag2dagNodeNames.R)
+##########
+V 0.1-9
+##########
++ udag2pdagSpecial: p wird erst verwendet und dann generiert - BEHOBEN
++ beta.special und beta.special.pcObj gehen unterschiedlich vor, wenn y im
+Elternset von x ist.(pa2 <- setdiff(pa2, y.pos) in beta.special.pcObj) -
+BEHOBEN (setdiff entfernt)
++ compareGraphs: Bei ml wurde nicht geprueft, ob Eintraege nur 0/1
+sind. Bei den von mir verwendeten Methoden war das garantiert, allgemein
+aber nicht. Dieser Sicherheitscheck wurde nun hinzugefuegt. - BEHOBEN
+##########
+V 1.0-2
+##########
++ randomDAG: Falls leerer graph generiert wird, kann er mit as(G,"matrix")
+nicht konvertiert werden. - BEHOBEN

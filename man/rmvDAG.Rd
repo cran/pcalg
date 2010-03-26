@@ -53,7 +53,8 @@ rmvDAG(n, dag,
   \eqn{X_i = e_i}.
 }
 \seealso{\code{\link{randomDAG}} for generating a random DAG;
-  \code{\link{pcAlgo}} for estimating the skeleton of a DAG that
+  \code{\link{skeleton}} and \code{\link{pc}} for estimating the
+  skeleton and the CPDAG of a DAG that
   corresponds to the data.
 }
 \author{
@@ -64,8 +65,10 @@ rmvDAG(n, dag,
 p <- 20
 rDAG <- randomDAG(p, prob = 0.2, lB=0.1, uB=1)
 
+if (require(Rgraphviz)) {
 ## plot the DAG
 plot(rDAG, main = "randomDAG(20, prob = 0.2, ..)")
+}
 
 ## generate 1000 samples of DAG using standard normal error distribution
 n <- 1000

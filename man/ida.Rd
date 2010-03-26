@@ -12,8 +12,8 @@
 ida(x.pos, y.pos, mcov, graphEst, method="local",  y.notparent = FALSE,  verbose=FALSE,  all.dags=NA)
 }
 \arguments{
-\item{x.pos}{Column index of \code{x} in the covariance matrix.}
-\item{y.pos}{Column index of \code{y} in the covariance matrix.}
+\item{x.pos}{Position of variable \code{x} in the covariance matrix.}
+\item{y.pos}{Position of variable \code{y} in the covariance matrix.}
 \item{mcov}{Covariance matrix that was used to estimate \code{graphEst}.}
 \item{graphEst}{Estimated CPDAG from the function
   \code{\link{pc}}. If the output of \code{\link{pc}} is \code{pc.fit},
@@ -22,7 +22,8 @@ ida(x.pos, y.pos, mcov, graphEst, method="local",  y.notparent = FALSE,  verbose
   the equivalence class of the CPDAG (slow). If method="local", the 
   algorithm only considers the local 
   neighborhood of \code{x} in the CPDAG (fast). See details below.}
-\item{y.notparent}{If TRUE, it is assumed that \code{y} cannot be a direct cause of \code{x}. See details below.}
+\item{y.notparent}{If y.notparent=TRUE, any edge between \code{x} and
+  \code{y} is assumed to be of the form \code{x->y}.}
 \item{verbose}{If TRUE, details on the regressions are given.}
 \item{all.dags}{All DAGs in the equivalence class of the 
   CPDAG can be precomputed by
@@ -88,7 +89,7 @@ At first sight, it is not clear that such a local configuration
 corresponds to a DAG in the equivalence class of the CPDAG, since it may be 
 impossible to direct the remaining undirected edges without creating a 
 directed cycle or a v-structure. However, Maathuis, Kalisch and 
-B\"uhlmann (2009) showed that there is 
+Buhlmann (2009) showed that there is 
 at least one DAG in the equivalence class for each such local configuration. 
 As a result, it follows that the  
 multisets of total causal effects of the
@@ -106,26 +107,28 @@ method are identical implies that summary measures of the multiset that
 only depend on the unique values (such as the minimum absolute value) can 
 be estimate by the local method. 
 
-If y.notparent=TRUE, any edge between \code{x} and \code{y} is assumed to
-be of the form \code{x->y}.
+
 }
 \value{
   A vector that represents the multiset containing the estimated possible total causal effects of \code{x} on \code{y}. 
 }
 \references{
-  M.H. Maathuis, M. Kalisch, P. B\"uhlmann (2009), Estimating
-    high-dimensional intervention effects from observational data,
-  \emph{Annals of Statistics} \bold{37}, 3133-3164.
+  M.H. Maathuis, M. Kalisch, P. Buhlmann (2009). Estimating
+    high-dimensional intervention effects from observational data.
+  \emph{Annals of Statistics} \bold{37}. 3133-3164.
 
-  M.H. Maathuis, D. Colombo, M. Kalisch, P. B\"uhlmann (2010), 
-  Predicting causal effects in large-scale systems from observational data, 
+  M.H. Maathuis, D. Colombo, M. Kalisch,
+  P. Buehlmann (2010). 
+  Predicting causal effects in large-scale systems from observational data.
   \emph{Nature Methods, to appear}. 
   
-  Pearl (2005), \emph{Causality. Models, reasoning and inference.} 
+  Pearl (2005). \emph{Causality. Models, reasoning and inference.} 
   Cambridge University Press, New York. 
 }
 \author{Markus Kalisch (\email{kalisch@stat.math.ethz.ch})}
-\seealso{\code{\link{pc}},\code{\link{idaFast}}}
+\seealso{\code{\link{pc}} for estimating a CPDAG, \code{\link{idaFast}}
+  for estimating the multiset of possible total causal effects for 
+  several target variables at the same time.}
 \examples{
 ## Simulate the true DAG
 set.seed(123)
@@ -144,10 +147,12 @@ indepTest <- gaussCItest
 suffStat <- list(C = cor(dat), n = n)
 pc.fit <- pc(suffStat, indepTest, p, alpha)
 
+if (require(Rgraphviz)) {
 ## plot the true and estimated graphs
 par(mfrow = c(1,2))
 plot(myDAG, main = "True DAG")
 plot(pc.fit, main = "Estimated CPDAG")
+}
 
 ## Supppose that we know the true CPDAG and covariance matrix
 ida(2,5,trueCov(myDAG),myCPDAG,method = "local")

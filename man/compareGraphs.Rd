@@ -13,11 +13,11 @@ compareGraphs(gl, gt)
   \item{gl}{estimated graph (graph object)}
   \item{gt}{true graph (graph object)}
 }
-\value{a named numeric vector with three numbers
+\value{A named numeric vector with three numbers:
   \item{tpr}{True Positive Rate: Number of correctly found edges (in
     estimated graph) divided by number of true edges (in true graph)}
   \item{fpr}{False Positive Rate: Number of incorrectly found edges
-    divided by number of true gaps}
+    divided by number of true gaps (in true graph)}
   \item{tdr}{True Discovery Rate: Number of correctly found edges divided
     by number of found edges (both in estimated graph)}
 }
@@ -55,10 +55,12 @@ gt <- new("graphNEL", nodes=V, edgeL=edL2, edgemode="undirected")
 gl <- addEdge("A","C", gt,1)
 
 ## compare the two graphs
+if (require(Rgraphviz)) {
 par(mfrow=c(2,1))
 plot(gt) ; title("True graph")
 plot(gl) ; title("Estimated graph")
 (cg <- compareGraphs(gl,gt))
+}
 \dontshow{
 stopifnot(cg == c(1, 1/2, 4/5))
 }

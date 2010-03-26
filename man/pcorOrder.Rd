@@ -19,11 +19,11 @@ pcorOrder(i,j, k, C, cut.at = 0.9999999)
 \value{
   The partial correlation of i and j given the set k.
 }
-\details{The partial correlations are computed using a recusive formula.
-  To avoid numeric problems in recursions, the
-  partial correlation is set to \code{cut.at} (\eqn{= 0.9999999} by
-  default; keep this value, unless you know better!), if it is above
-  (e.g., if 1) and to \code{-cut.at} if it is below (e.g., if -1).
+\details{The partial correlations are computed using a recusive formula
+  if the size of the conditioning set is one. For larger conditioning
+  sets, the pseudoinverse of parts of the correlation matrix is
+  computed. The pseudoinverse instead of the inverse is used in order to
+  avoid numerical problems.
 }
 \seealso{
   \code{\link{condIndFisherZ}} for testing zero partial correlation.

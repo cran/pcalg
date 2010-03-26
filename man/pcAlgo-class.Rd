@@ -77,6 +77,11 @@ suffStat <- list(C = cor(d.mat), n = n)
 alpha <- 0.01
 pc.fit <- pc(suffStat, indepTest, p, alpha)
 
+## use methods of class pcAlgo
+show(pc.fit)
+plot(pc.fit)
+summary(pc.fit)
+
 ## access slots of this object
 g <- pc.fit@graph
 ss <- pc.fit@sepset

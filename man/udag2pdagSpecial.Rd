@@ -63,8 +63,13 @@ trueCPDAG <- dag2cpdag(myDAG)
 n <- 1000
 d.mat <- rmvDAG(n, myDAG, errDist = "normal")
 
+## define independence test (partial correlations)
+indepTest <- gaussCItest 
+## define sufficient statistics
+suffStat <- list(C = cor(d.mat), n = n)
 ## estimate skeleton
-resU <- pcAlgo(d.mat, alpha = 0.05, corMethod = "standard",directed=FALSE)
+resU <- skeleton(suffStat, indepTest, p, 0.05)
+
 ## orient edges using three different methods
 resD1 <- udag2pdagRelaxed(resU,verbose=0)
 resD2 <- udag2pdagSpecial(resU,verbose=0,n.max=100)

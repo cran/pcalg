@@ -3,7 +3,8 @@
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Compute possible d-sep of node x}
 \description{
-  This function computes the possible d-sep in a PDAG. It is intended
+  This function computes the Possible-D-Sep of node x in a partially
+  directed acyclic graph (PDAG). It is intended
   for internal use only.
 }
 \usage{
@@ -20,14 +21,15 @@ qreach(x, amat, verbose = FALSE)
 }
 
 \value{
-  Vector of column positions indicating the nodes in possible d-sep of x.
+  Vector of column positions indicating the nodes in Possible-D-Sep of x.
 }
 \references{
   P. Spirtes, C. Glymour and R. Scheines (2000)
   \emph{Causation, Prediction, and Search}, 2nd edition, The MIT Press.
 }
 \author{Markus Kalisch (\email{kalisch@stat.math.ethz.ch})}
-\seealso{\code{\link{fci}}}
+\seealso{\code{\link{fci}} and \code{\link{pdsep}} which both use
+  this function.}
 
 
 

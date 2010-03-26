@@ -18,7 +18,7 @@ mcor(dm,  method= c("standard",  "Qn", "QnStable",  "ogkScaleTau2",  "ogkQn", "s
     correlation estimate respectively.} 
 }
 \value{
-  A correlation matrix estimated according to the specified method.
+  A correlation matrix estimated by the specified method.
 }
 \details{
   The "standard" method envokes a standard correlation estimator. "Qn"
@@ -26,15 +26,14 @@ mcor(dm,  method= c("standard",  "Qn", "QnStable",  "ogkScaleTau2",  "ogkQn", "s
   estimte. "QnStable" also uses the Qn scale estimator, but uses an
   improved way of transforming that into the correlation
   estimator. "ogkQn" envokes a correlation estimator based on Qn using
-  OGK. "shrink" is only useful when used wiht pcSelect. An optimal
+  OGK. "shrink" is only useful when used with pcSelect. An optimal
   shrinkage parameter is used. Only correlation between response and
   covariates is shrinked. 
 }
 \seealso{
-  \code{\link[robustbase]{Qn}}) and \code{\link[robustbase]{covOGK}}
+  \code{\link[robustbase]{Qn}} and \code{\link[robustbase]{covOGK}}
   from package \pkg{robustbase}.
-  \code{\link{pcorOrder}} for computing partial correlations and
-  \code{\link{condIndFisherZ}} for testing zero partial correlation.
+  \code{\link{pcorOrder}} for computing partial correlations.
 }
 
 \references{

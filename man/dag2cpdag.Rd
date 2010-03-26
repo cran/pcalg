@@ -14,21 +14,21 @@ dag2cpdag(dag)
 }
 \details{
   This function converts a DAG (graph object) to its corresponding
-  (unique) CPDAG (graph object). We use the algorithm used by
-  Chickering (see References).
+  (unique) CPDAG (graph object), using the algorithm of
+  Chickering (2002).
 }
 \value{
-  An adjacency matrix containing the CPDAG.
+  A graph object containing the CPDAG.
 }
 \references{
-D.M. Chickering, \emph{Learning Equivalence Classes of Bayesian-Network
-  Structures}, Journal of Machine Learning Research 2 (2002), 445-398  
+D.M. Chickering (2002), Learning Equivalence Classes of Bayesian-Network
+  Structures, \emph{Journal of Machine Learning Research} 2, 445-398.
 }
 \author{Markus Kalisch (\email{kalisch@stat.math.ethz.ch})}
-\seealso{\code{\link{udag2pdag}},\code{\link{pdag2dag}}}
+\seealso{\code{\link{udag2pdag}}, \code{\link{pdag2dag}}}
 \examples{
 p <- 10 # number of random variables
-s <- 0.4 # sparsness of the graph
+s <- 0.4 # sparseness of the graph
 
 ## generate random data
 set.seed(42)

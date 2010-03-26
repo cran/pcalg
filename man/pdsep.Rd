@@ -2,15 +2,9 @@
 \alias{pdsep}
 \title{Compute possible d-sep for each node and test and adapt graph accordingly}
 
-\description{ This function computes the possible d-sep for each
-  node. Then, each pair of nodes x and y which is connected by an edge
-  is tested for conditional independence given every subset in possible
-  d-sep of x or of y. The conditional independence is tested on
-  significance level alpha by using the test given in
-  \code{indepTest}. If the pair of nodes is judged to be independent
-  given set S, then S is recorded in the sepset of x,y and in the sepset
-  of y,x and the edge is deleted. Otherwise, the edge is not deleted and
-  no entry to the sepset is made.}
+\description{This function computes the Possible-D-Sep for each node
+  and tests conditional independence given all subsets of
+  Possible-D-Sep. The graph is updated accordingly. }
 
 \usage{
 pdsep(G, suffStat, indepTest, p, sepset, pMax, NAdelete = TRUE, verbose
@@ -59,21 +53,41 @@ pdsep(G, suffStat, indepTest, p, sepset, pMax, NAdelete = TRUE, verbose
     by size of conditioning set.}
 }
 
-\details{To make the code more efficient, only condtioning sets that
-  have not been tested in a previous call of \code{skeleton} are
-  tested. For example, subsets of the adjacency of a node without
-  additional nodes from possible d-sep are not considered alone, but
-  only in combination with nodes from possible d-sep. Within the nodes
-  of possible d-sep that are not in the adjacency of a node, all
-  possible subsets are tested.}
+\details{For a given graph G, a node y is in Possible-D-Sep(x) if x!=y
+  and there is an undirected path U between x and y in G such that for
+  every subpath a,b,c of U either b is a collider on the subpath, or b
+  is not a definite noncollider on U and a,b and c form a trianglein G.
+  
+  Each pair of nodes x and y which is connected by
+  an edge is tested for conditional independence given every subset in
+  Possible-D-Sep of x or of y. The conditional independence is tested on
+  significance level alpha by using the test given in
+  \code{indepTest}. If the pair of nodes is judged to be independent
+  given set S, then S is recorded in the sepset of x,y and in the sepset
+  of y,x and the edge is deleted. Otherwise, the edge is not deleted and
+  no entry to the sepset is made.
 
-\references{
-  S.L. Lauritzen (2004)
-  \emph{Graphical Models}, Oxford University Press, Chapter 3.2.2
+  To make the code more efficient, tests that have been done during
+  finding the skeleton are not done again.}
+
+\value{A list with several elements:
+  \item{G}{Updated adjecency matrix}
+  \item{sepset}{Updated sepset}
+  \item{pMax}{Updated matrix containing maximal p-values}
+  \item{allPdsep}{Possible-D-Sep for each node}
+  \item{max.ord}{Maximal order of conditioning sets during independence
+    tests}
+  \item{n.edgetests}{Number of conditional edgetests performed grouped
+    by size of conditioning set.}
 }
 
-\seealso{\code{\link{qreach}} for a fast way of finding possible d-sep
-    for a given node}
+\references{
+  P. Spirtes, C. Glymour and R. Scheines (2000).
+  \emph{Causation, Prediction, and Search}, 2nd edition. The MIT Press.
+}
+
+\seealso{\code{\link{qreach}} for a fast way of finding Possible-D-Sep
+    for a given node; \code{\link{fci}} which uses \code{\link{pdsep}}}
 
 \author{
   Markus Kalisch (\email{kalisch@stat.math.ethz.ch})

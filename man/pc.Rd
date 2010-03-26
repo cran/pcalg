@@ -1,6 +1,6 @@
 \name{pc}
 \alias{pc}
-\title{Estimate the equivalence class of a DAG (CPDAG) 
+\title{Estimate the equivalence class of a DAG
   using the PC algorithm}
 \description{
   Estimate the equivalence class of a directed acyclic
@@ -134,13 +134,12 @@ fixedEdges = NULL, NAdelete = TRUE, m.max = Inf, u2pd = "rand")
   edges are equivalent.
 }
 \references{
-  P. Spirtes, C. Glymour and R. Scheines (2000)
-  \emph{Causation, Prediction, and Search}, 2nd edition, The MIT Press.
+  P. Spirtes, C. Glymour and R. Scheines (2000).
+  \emph{Causation, Prediction, and Search}, 2nd edition. The MIT Press.
 
-  M. Kalisch and P. B\"uhlmann (2007)
-  \emph{Estimating high-dimensional
-    directed acyclic graphs with the PC-algorithm},
-    JMLR \bold{8} 613-636.
+  M. Kalisch and P. Buehlmann (2007). 
+  Estimating high-dimensional directed acyclic graphs with the PC-algorithm.
+  \emph{JMLR} \bold{8} 613-636.
 }
 \seealso{\code{\link{skeleton}} for estimating a skeleton of a DAG; 
   \code{\link{udag2pdag}} for converting the
@@ -157,8 +156,10 @@ p <- 8
 set.seed(45)
 myDAG <- randomDAG(p, prob = 0.3)
 
+if (require(Rgraphviz)) {
 ## plot the DAG
 plot(myDAG, main = "randomDAG(10, prob = 0.2)")
+}
 
 ##################################################
 ## Using Gaussian Data
@@ -174,10 +175,12 @@ suffStat <- list(C = cor(d.mat), n = n)
 ## estimate CPDAG
 alpha <- 0.01
 pc.fit <- pc(suffStat, indepTest, p, alpha)
+if (require(Rgraphviz)) {
 ## show estimated CPDAG
+par(mfrow=c(1,2))
 plot(pc.fit, main = "Estimated CPDAG")
-x11(); plot(myDAG)
-
+plot(myDAG, main = "True DAG")
+}
 ##################################################
 ## Using d-separation oracle
 ##################################################
@@ -188,9 +191,10 @@ suffStat <- list(g = myDAG, jp = johnson.all.pairs.sp(myDAG))
 ## estimate CPDAG
 alpha <- 0.01 ## value is irrelevant as dsepTest returns either 0 or 1
 fit <- pc(suffStat, indepTest, p, alpha)
+if (require(Rgraphviz)) {
 ## show estimated CPDAG
 plot(fit, main = "Estimated CPDAG")
-
+}
 ##################################################
 ## Using discrete data
 ##################################################
@@ -203,9 +207,11 @@ suffStat <- list(dm = dat, nlev = c(3,2,3,4,2), adaptDF = FALSE)
 ## estimate CPDAG
 alpha <- 0.01 
 pc.fit <- pc(suffStat, indepTest, p, alpha, verbose = TRUE)
+if (require(Rgraphviz)) {
 ## show estimated CPDAG
 plot(pc.fit, main = "Estimated CPDAG")
 rm(dat)
+}
 
 ##################################################
 ## Using binary data
@@ -219,9 +225,11 @@ suffStat <- list(dm = dat, adaptDF = FALSE)
 ## estimate CPDAG
 alpha <- 0.01 
 pc.fit <- pc(suffStat, indepTest, p, alpha, verbose = TRUE)
+if (require(Rgraphviz)) {
 ## show estimated CPDAG
 plot(pc.fit, main = "Estimated CPDAG")
 rm(dat)
+}
 }
 \keyword{multivariate}
 \keyword{models}

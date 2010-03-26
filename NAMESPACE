@@ -1,5 +1,7 @@
-importFrom(ggm, isAcyclic,transClos,topOrder)
-import(MASS, graph, Rgraphviz, robustbase)
+import(MASS, graph, robustbase)
+
+importFrom("ggm", isAcyclic,transClos,topOrder)
+importFrom("graphics", plot)
 
 export(randomDAG,
        wgtMatrix,

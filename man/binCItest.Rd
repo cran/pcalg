@@ -3,24 +3,23 @@
 \title{Test for (conditional) independence for binary data}
 \description{
   This function tests for (condtitional) independence between binary
-  random variables. The function was organized in a way, so that it can
-  easily be used in \code{\link{skeleton}}, \code{\link{pc}}, \code{\link{fci}}.
+  random variables. The function is written, so that it can be
+  easily used in \code{\link{skeleton}}, \code{\link{pc}} and \code{\link{fci}}.
 }
 \usage{
 binCItest(x, y, S, suffStat)
 }
 \arguments{
-  \item{x}{Position of node X in adjacency matrix}
-  \item{y}{Position of node Y in adjacency matrix}
-  \item{S}{Position of set of nodes in adjacency matrix on which is
-    conditioned}
+  \item{x}{Position of variable X in the adjacency matrix}
+  \item{y}{Position of variable Y in the adjacency matrix}
+  \item{S}{Position of conditioning variables in the adjacency matrix}
   \item{suffStat}{A list with two elements: (1) Element "dm" containing
-    the data matrix (columns are variables, rows are samples) and (3)
+    the data matrix (columns are variables, rows are samples) and (2)
     element "adaptDF" as a boolean variable indicating 
     whether to lower the degrees of freedom by one for each zero
     count. (The value for the degrees of freedom cannot go below 1.)}
 }
-\value{The p-value of the test is returned.
+\value{The p-value of the test.
 }
 
 \details{This function is based on \code{\link{gSquareBin}}; see its
@@ -28,8 +27,8 @@ binCItest(x, y, S, suffStat)
 
 \seealso{\code{\link{dsepTest}}, \code{\link{gaussCItest}} and
   \code{\link{disCItest}} for similar functions for a d-separation
-  oracle, conditional independence test on gaussian variables and
-  conditional independence test on discrete variables, respectively.}
+  oracle, a conditional independence test for gaussian variables and
+  a conditional independence test for discrete variables, respectively.}
 
 \author{
   Markus Kalisch (\email{kalisch@stat.math.ethz.ch})

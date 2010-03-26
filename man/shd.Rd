@@ -24,14 +24,10 @@ shd(g1,g2)
   estimator. "ogkQn" envokes a correlation estimator based on Qn using
   OGK. 
 }
-\seealso{
-  \link{pcAlgo}
-}
 
 \references{
-I. Tsamardinos, L.E. Brown and C.F. Aliferis (2006), "The Max-Min
-Hill-Climbing Bayesian Network Structure Learning Algorithm"; JMLR,
-Vol. 65, 31-78.
+I. Tsamardinos, L.E. Brown and C.F. Aliferis (2006). The Max-Min
+Hill-Climbing Bayesian Network Structure Learning Algorithm. \emph{JMLR} \bold{65} 31-78.
 }
 
 \author{

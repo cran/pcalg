@@ -9,18 +9,17 @@
 gSquareDis(x, y, S, dm, nlev, verbose = FALSE, adaptDF = FALSE)
 }
 \arguments{
-  \item{x}{Position of node X in adjacency matrix}
-  \item{y}{Position of node Y in adjacency matrix}
-  \item{S}{Position of set of nodes in adjacency matrix on which is
-    conditioned}
+  \item{x}{Position of variable X in the adjacency matrix}
+  \item{y}{Position of variable Y in the adjacency matrix}
+  \item{S}{Position of the conditioning variables in the adjacency set}
   \item{dm}{Data matrix (rows: samples, columns: variables) with binary
     entries}
   \item{nlev}{Vector with numbers of levels for each variable}
-  \item{verbose}{Additional output if TRUE}
+  \item{verbose}{If TRUE, detailed output is provided.}
   \item{adaptDF}{Lower the degrees of freedom by one for each zero
     count. The value for the degrees of freedom cannot go below 1.}
 }
-\value{The p-value of the test is returned.
+\value{The p-value of the test.
 }
 
 \details{The G^2 statistic is used to test for (conditional)
@@ -29,12 +28,14 @@ gSquareDis(x, y, S, dm, nlev, verbose = FALSE, adaptDF = FALSE)
   specialized alternative to this function.}
 
 \references{
-  R.E. Neapolitan (2004)
-  \emph{Learning Bayesian Networks}, Prentice Hall Series in Artificial
-  Intelligence, Chapter 10.3.1
+  R.E. Neapolitan (2004).
+  Learning Bayesian Networks. \emph{Prentice Hall Series in Artificial
+  Intelligence}. Chapter 10.3.1
 }
 \seealso{\code{\link{gSquareBin}} for a (conditional) independence test
-  for binary variables.
+  for binary variables. \code{\link{disCItest}} for a wrapper of this
+  function that can be easily included in \code{\link{skeleton}},
+  \code{\link{pc}} or \code{\link{fci}}. 
 }
 \author{
   Nicoletta Andri and Markus Kalisch (\email{kalisch@stat.math.ethz.ch}).

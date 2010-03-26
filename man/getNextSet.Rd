@@ -25,6 +25,7 @@ getNextSet(n,k,set)
   and memory is no problem, the function \code{\link[combinat]{combn}}
   from package \pkg{combinat} is an alternative.
 }
+\seealso{This function is used in \code{\link{skeleton}}.}
 \author{
   Markus Kalisch \email{kalisch@stat.math.ethz.ch} and Martin Maechler
 }

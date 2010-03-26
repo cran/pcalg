@@ -56,43 +56,36 @@ trueCov <- function(g) {
   xcov
 }
 
-randomDAG <- function(n, prob, lB = 0.1, uB = 1) {
-  ## Purpose: Randomly generate a DAG (graph object as in graph-package).
-  ## The resulting graph is topologically ordered from low to high node
-  ## numbers.
-  ## ----------------------------------------------------------------------
-  ## Arguments:
-  ## - n: Number of nodes
-  ## - prob: Probability of connecting a node to another node with higher
-  ##         topological ordering
-  ## - lB, uB: Lower and upper limit of weights between connected nodes
-  ##   (chosen uniformly at random)
-  ## ----------------------------------------------------------------------
-  ## Author: Markus Kalisch, Date: 26 Jan 2006, 15:59
-
-  stopifnot(n >= 2,
-            is.numeric(prob), length(prob) == 1, 0 <= prob, prob <= 1,
-            is.numeric(lB), is.numeric(uB), lB <= uB)
-  ## create DAG
-  V <- as.character(1:n)
-  edL <- as.list(V)
-  names(edL) <- V
-  for (i in seq(length = n-2)) {
-    listSize <- rbinom(1, n-i, prob)
-    edgeList <- sample(seq(i+1,n), size = listSize)
-    ## print(list(i=i,eseq=seq(i+1,n),listSize=listSize,elist=edgeList))
-    weightList <- runif(length(edgeList), min = lB, max = uB)
-    edL[[i]] <- list(edges = edgeList, weights = weightList)
-  }
-  if (rbinom(1,1, prob) == 1) {## then generate a last edge
-    edL[[n-1]] <- list(edges = n,
-                       weights = runif(1, min = lB, max = uB))
-  } else {
-    edL[[n-1]] <- list(edges = integer(0), weights = numeric(0))
-  }
-  edL[[n]] <- list(edges = integer(0), weights = numeric(0))
-
-  new("graphNEL", nodes = V, edgeL = edL, edgemode = "directed")
+randomDAG <- function (n, prob, lB = 0.1, uB = 1) 
+{
+    stopifnot(n >= 2, is.numeric(prob), length(prob) == 1, 0 <= 
+        prob, prob <= 1, is.numeric(lB), is.numeric(uB), lB <= 
+        uB)
+    V <- as.character(1:n)
+    edL <- as.list(V)
+    names(edL) <- V
+    nmbEdges <- 0
+    for (i in seq(length = n - 2)) {
+        listSize <- rbinom(1, n - i, prob)
+        nmbEdges <- nmbEdges + listSize
+        edgeList <- sample(seq(i + 1, n), size = listSize)
+        weightList <- runif(length(edgeList), min = lB, max = uB)
+        edL[[i]] <- list(edges = edgeList, weights = weightList)
+    }
+    if (rbinom(1, 1, prob) == 1) {
+        edL[[n - 1]] <- list(edges = n, weights = runif(1, min = lB, 
+            max = uB))
+    }
+    else {
+        edL[[n - 1]] <- list(edges = integer(0), weights = numeric(0))
+    }
+    edL[[n]] <- list(edges = integer(0), weights = numeric(0))
+    if (nmbEdges > 0) {
+      res <- new("graphNEL", nodes = V, edgeL = edL, edgemode = "directed")
+    } else {
+      res <- new("graphNEL", nodes = V, edgemode = "directed")
+    }
+    res
 }
 
 ## A version of this is also in	/u/maechler/R/MM/Pkg-ex/graph/weightmatrix.R
@@ -107,25 +100,25 @@ wgtMatrix <- function(g)
   ## Arguments: g: an object inheriting from (S4) class "graph"
   ## ----------------------------------------------------------------------
   ## Author: Martin Maechler, based on Seth Falcon's code;  Date: 12 May 2006
-  
-  ## MM: another buglet for the case of  "no edges":
-    if(numEdges(g) == 0) {
-      p <- length(nd <- nodes(g))
-      return( matrix(0, p,p, dimnames = list(nd, nd)) )
-    }
-    ## Usual case, when there are edges:
 
-    if(!"weight" %in% (edNms <- names(edgeDataDefaults(g))))
-        edgeDataDefaults(g, "weight") <- 1:1
-    ew <- edgeData(g, attr = "weight")
-    w <- unlist(ew)
-    ## we need the *transposed* matrix anyway:
-    tm <- t(as(g, "matrix"))
-    ## now is a 0/1 - matrix (instead of 0/wgts) with the 'graph' bug
-    if(any(w != 1)) ## fix it
-        tm[tm != 0] <- w
-    ## tm_[i,j]==1 iff i->j
-    tm
+  ## MM: another buglet for the case of  "no edges":
+  if(numEdges(g) == 0) {
+    p <- length(nd <- nodes(g))
+    return( matrix(0, p,p, dimnames = list(nd, nd)) )
+  }
+  ## Usual case, when there are edges:
+
+  if(!"weight" %in% (edNms <- names(edgeDataDefaults(g))))
+    edgeDataDefaults(g, "weight") <- 1:1
+  ew <- edgeData(g, attr = "weight")
+  w <- unlist(ew)
+  ## we need the *transposed* matrix anyway:
+  tm <- t(as(g, "matrix"))
+  ## now is a 0/1 - matrix (instead of 0/wgts) with the 'graph' bug
+  if(any(w != 1)) ## fix it
+    tm[tm != 0] <- w
+  ## tm_[i,j]==1 iff i->j
+  tm
 }
 
 rmvDAG <- function(n, dag, errDist = c("normal", "cauchy", "mix", "mixt3", "mixN100","t4"), mix = 0.1, errMat = NULL)
@@ -146,7 +139,7 @@ rmvDAG <- function(n, dag, errDist = c("normal", "cauchy", "mix", "mixt3", "mixN
   ## check input &  initialize variables
   stopifnot(is(dag, "graph"),
             (p <- length(nodes(dag))) >= 2)
-  
+
   ##  as(.,"matrix") now {for some versions of 'graph' pkg} is 0/1
   ## weightMatrix <- t(as(dag,"matrix"))
   weightMatrix <- wgtMatrix(dag)
@@ -160,37 +153,37 @@ rmvDAG <- function(n, dag, errDist = c("normal", "cauchy", "mix", "mixt3", "mixN
       stop("Input DAG must be topologically ordered!")
     }
   }
-  
+
   errDist <- match.arg(errDist)
 
   if(is.null(errMat)) {
     ## generate errors e_i
     errMat <-
-        switch(errDist,
-               "normal" = matrix(rnorm  (n*p),  nrow = n),
-               "cauchy" = matrix(rcauchy(n*p),  nrow = n),
-               "t4" =     matrix(rt(n*p, df=4), nrow = n),
-               "mix" = {
-                 cauchySamples <- rcauchy(round(mix*n*p))
-                 normSamples <- rnorm(n*p-length(cauchySamples))
+      switch(errDist,
+             "normal" = matrix(rnorm  (n*p),  nrow = n),
+             "cauchy" = matrix(rcauchy(n*p),  nrow = n),
+             "t4" =     matrix(rt(n*p, df=4), nrow = n),
+             "mix" = {
+               cauchySamples <- rcauchy(round(mix*n*p))
+               normSamples <- rnorm(n*p-length(cauchySamples))
 
-                 samples <- c(normSamples,cauchySamples)
-                 matrix(sample(samples,length(samples)), nrow = n)
-               },
-               "mixt3" = {
-                 t3Samples <- rt(round(mix*n*p),df=3)
-                 normSamples <- rnorm(n*p-length(t3Samples))
+               samples <- c(normSamples,cauchySamples)
+               matrix(sample(samples,length(samples)), nrow = n)
+             },
+             "mixt3" = {
+               t3Samples <- rt(round(mix*n*p),df=3)
+               normSamples <- rnorm(n*p-length(t3Samples))
 
-                 samples <- c(normSamples,t3Samples)
-                 matrix(sample(samples,length(samples)), nrow = n)
-               },
-               "mixN100" = {
-                 outlierSamples <- rnorm(round(mix*n*p),sd=10)
-                 normSamples <- rnorm(n*p-length(outlierSamples))
+               samples <- c(normSamples,t3Samples)
+               matrix(sample(samples,length(samples)), nrow = n)
+             },
+             "mixN100" = {
+               outlierSamples <- rnorm(round(mix*n*p),sd=10)
+               normSamples <- rnorm(n*p-length(outlierSamples))
 
-                 samples <- c(normSamples,outlierSamples)
-                 matrix(sample(samples,length(samples)), nrow = n)
-               })
+               samples <- c(normSamples,outlierSamples)
+               matrix(sample(samples,length(samples)), nrow = n)
+             })
   }
   else { ## check & use 'errMat' argument:
     stopifnot(!is.null(dim.eM <- dim(errMat)),
@@ -211,7 +204,7 @@ rmvDAG <- function(n, dag, errDist = c("normal", "cauchy", "mix", "mixt3", "mixN
     errMat
   }
 }
-              
+
 
 pcSelect <- function(y,dm, alpha, corMethod = "standard", verbose = 0, directed=FALSE) {
   ## Purpose: Find columns in dm, that have nonzero parcor with y given
@@ -254,7 +247,7 @@ pcSelect <- function(y,dm, alpha, corMethod = "standard", verbose = 0, directed=
     ind <- which(G)
     remainingEdgeTests <- length(ind)
     if(verbose>=1)
-        cat("Order=",ord,"; remaining edges:",remainingEdgeTests,"\n", sep='')
+      cat("Order=",ord,"; remaining edges:",remainingEdgeTests,"\n", sep='')
     for (i in 1:remainingEdgeTests) {
       if(verbose>=1) { if(i%%100==0) cat("|i=",i,"|iMax=",nrow(ind),"\n") }
       y <- 1
@@ -284,7 +277,7 @@ pcSelect <- function(y,dm, alpha, corMethod = "standard", verbose = 0, directed=
             else {
               nextSet <- getNextSet(length_nbrs, ord, S)
               if(nextSet$wasLast)
-                  break
+                break
               S <- nextSet$nextSet
             }
           }
@@ -298,7 +291,7 @@ pcSelect <- function(y,dm, alpha, corMethod = "standard", verbose = 0, directed=
   names(Gres) <- colnames(dm)
   res <- list(G=Gres,zMin=zMin[-1])
   res
-} 
+}
 
 zStat <- function(x,y, S, C, n)
 {
@@ -310,24 +303,24 @@ zStat <- function(x,y, S, C, n)
   ## - n: Samples used to estimate correlation matrix
   ## ----------------------------------------------------------------------
   ## Author: Martin Maechler, 22 May 2006; Markus Kalisch
-  
-## for C use:
-## dyn.load("/u/kalisch/cCode/pcAlgo/parcorC.so")
-##  res <- 0  
- 
-##   if (length(S) < 4) {
-    r <- pcorOrder(x,y, S, C)
-##  } else {
-##    k <- solve(C[c(x,y,S),c(x,y,S)])
-##    r <- -k[1,2]/sqrt(k[1,1]*k[2,2])
-    ##      r <- .C("parcorC",as.double(res),as.integer(x-1),as.integer(y-1),as.integer(S-1),as.integer(length(S)),as.integer(dim(C)[1]),as.double(as.vector(C)))[[1]]
-##  }
-  
+
+  ## for C use:
+  ## dyn.load("/u/kalisch/cCode/pcAlgo/parcorC.so")
+  ##  res <- 0
+
+  ##   if (length(S) < 4) {
+  r <- pcorOrder(x,y, S, C)
+  ##  } else {
+  ##    k <- solve(C[c(x,y,S),c(x,y,S)])
+  ##    r <- -k[1,2]/sqrt(k[1,1]*k[2,2])
+  ##      r <- .C("parcorC",as.double(res),as.integer(x-1),as.integer(y-1),as.integer(S-1),as.integer(length(S)),as.integer(dim(C)[1]),as.double(as.vector(C)))[[1]]
+  ##  }
+
   res <- sqrt(n- length(S) - 3) * ( 0.5*log( (1+r)/(1-r) ) )
   if (is.na(res)) res <- 0
-  
-##VERBOSE  cat(" (",x,",",y,") | ",S," : z-Stat = ",res,"\n", sep='')
-  
+
+  ##VERBOSE  cat(" (",x,",",y,") | ",S," : z-Stat = ",res,"\n", sep='')
+
   res
 }
 
@@ -359,7 +352,7 @@ condIndFisherZ <- function(x,y,S,C,n, cutoff,
   ## cat(" (",x,",",y,") | ",S," : T = ",T,"\n", sep='')
 
   if (is.na(T))
-      return(TRUE) ## <==>  T <- 0 # if problem, delete edge: be conservative
+    return(TRUE) ## <==>  T <- 0 # if problem, delete edge: be conservative
   ## else
   return(abs(T) <= cutoff) ## TRUE / FALSE
 }
@@ -399,10 +392,10 @@ compareGraphs <- function(gl,gt) {
   ## ----------------------------------------------------------------------
   ## Author: Markus Kalisch, Date: 26 Jan 2006, 17:35
 
-## When 'graph' returns the 'weight matrix' again:
-##   ml <- as(ugraph(gl), "matrix")
-##   mt <- as(ugraph(gt), "matrix")
-##   p <- dim(ml)[1]
+  ## When 'graph' returns the 'weight matrix' again:
+  ##   ml <- as(ugraph(gl), "matrix")
+  ##   mt <- as(ugraph(gt), "matrix")
+  ##   p <- dim(ml)[1]
   ml <- wgtMatrix(ugraph(gl))
   mt <- wgtMatrix(ugraph(gt))
   p <- dim(ml)[2]
@@ -424,10 +417,10 @@ compareGraphs <- function(gl,gt) {
   ## TDR: #correctly found edges/#found edges
   trueEstEdges <- (nmbTrueEdges-sum(diffm2 > 0)/2) ## #true edges-#not detected
   tdr <-
-      if (sum(ml == 1) == 0) { ## no edges detected
-        if (trueEstEdges == 0) 1 ## no edges in true graph
-        else 0
-      } else trueEstEdges/(sum(ml == 1)/2)
+    if (sum(ml == 1) == 0) { ## no edges detected
+      if (trueEstEdges == 0) 1 ## no edges in true graph
+      else 0
+    } else trueEstEdges/(sum(ml == 1)/2)
 
   ## return named vector:
   c(tpr = tpr, fpr = fpr, tdr = tdr)
@@ -450,13 +443,13 @@ getNextSet <- function(n,k,set) {
   if (!wasLast) {
     set[chInd] <- set[chInd] + 1
     if (chInd < k)
-        set[(chInd+1):k] <- seq(set[chInd]+1, set[chInd]+zeros)
+      set[(chInd+1):k] <- seq(set[chInd]+1, set[chInd]+zeros)
   }
   list(nextSet = set, wasLast = wasLast)
 }
 
 mcor <- function(dm, method =
-                  c("standard", "Qn", "QnStable", "ogkScaleTau2", "ogkQn","shrink"))
+                 c("standard", "Qn", "QnStable", "ogkScaleTau2", "ogkQn","shrink"))
 {
   ## Purpose: Compute correlation matrix (perhaps elementwise)
   ## ----------------------------------------------------------------------
@@ -528,20 +521,20 @@ mcor <- function(dm, method =
            for(k in 2:p){
              S1 <- S1+(CM[1,k])^2
              S2 <- S2+(1-(CM[1,k])^2)^2
-           } 
+           }
 
            g <-2*S1/(2*S1+(2/n)*S2)
-           
+
            for(i in 2:p){
              scor3[1,i] <- g*CM[1,i]
              scor3[i,1] <- g*CM[i,1]
-           } 
-           
+           }
+
            scor3
-          }
+         }
          )
 
-        
+
 }
 
 pcSelect.presel <- function(y,dm, alpha, alphapre, corMethod = "standard", verbose = 0, directed=FALSE)
@@ -578,8 +571,8 @@ pcSelect.presel <- function(y,dm, alpha, alphapre, corMethod = "standard", verbo
       k <- k+1
     }
   }
-  
- list(pcs=pcs,Xnew=Xnew,zMin=zmi) 
+
+  list(pcs=pcs,Xnew=Xnew,zMin=zmi)
 }
 
 
@@ -670,7 +663,7 @@ orderEdges <- function(amat) {
   stopifnot(isAcyclic(amat))
   ordered.nodes <- topOrder(amat) ##parents before children
   edge.df <- make.edge.df(amat)
-  
+
   eOrder <- 0
   while(any(is.na(edge.df$order))) {
     counter <- 0
@@ -773,7 +766,7 @@ dag2cpdag <- function(dag) {
   ## - dag: input DAG (graph object)
   ## ----------------------------------------------------------------------
   ## Author: Markus Kalisch, Date: 31 Oct 2006, 15:30
-  
+
   p <- numNodes(dag)
   ## transform DAG to adjacency matrix if any edges are present
   if (numEdges(dag)==0) {
@@ -781,7 +774,7 @@ dag2cpdag <- function(dag) {
   } else {
     dag <- as(dag,"matrix")
     dag[dag!=0] <- 1
-    
+
     ## dag is adjacency matrix
     e.df <- labelEdges(dag)
     cpdag <- matrix(rep(0,p*p),nrow=p,ncol=p)
@@ -847,7 +840,7 @@ adj.check <- function(gm,x) {
 
 amat2dag <- function(amat) {
   ## Purpose: Transform the adjacency matrix of an PDAG to the adjacency
-  ## matrix of a DAG 
+  ## matrix of a DAG
   ## ----------------------------------------------------------------------
   ## Arguments:
   ## - amat: adjacency matrix; x -> y if amat[x,y]=1,amat[y,x]=0
@@ -862,7 +855,7 @@ amat2dag <- function(amat) {
   ## permute skel
   ord <- sample(1:p)
   skel <- skel[ord,ord]
-  
+
   ## skel to dag
   for (i in 2:p) {
     for (j in 1:(i-1)) {
@@ -880,7 +873,7 @@ amat2dag <- function(amat) {
 ##################################################
 udag2pdag <- function(gInput,verbose=0) {
   ## Purpose: Transform the Skeleton of a pcAlgo-object to a PDAG using
-  ## the rules of Pearl. The output is again a pcAlgo-object. 
+  ## the rules of Pearl. The output is again a pcAlgo-object.
   ## ----------------------------------------------------------------------
   ## Arguments:
   ## - gInput: pcAlgo object
@@ -894,20 +887,20 @@ udag2pdag <- function(gInput,verbose=0) {
     p <- dim(g)[1]
     pdag <- g
     ind <- which(g==1,arr.ind=TRUE)
-    
+
     ## Create minimal pattern
     for (i in 1:dim(ind)[1]) {
       x <- ind[i,1]
       y <- ind[i,2]
       allZ <- setdiff(which(g[y,]==1),x) ## x-y-z
-      
+
       if (length(allZ)>0) {
         for (j in 1:length(allZ)) {
           z <- allZ[j]
           if ((g[x,z]==0) & !((y %in% gInput@sepset[[x]][[z]]) |
                   (y %in% gInput@sepset[[z]][[x]]))) {
             if (verbose==1) {
-              cat("\n",x,"->",y,"<-",z,"\n") 
+              cat("\n",x,"->",y,"<-",z,"\n")
               cat("Sxz=",gInput@sepset[[z]][[x]],"Szx=",gInput@sepset[[x]][[z]])
             }
             pdag[x,y] <- pdag[z,y] <- 1
@@ -916,10 +909,10 @@ udag2pdag <- function(gInput,verbose=0) {
         }
       }
     }
-    
+
     ## Test whether this pdag allows a consistent extension
     res2 <- pdag2dag(as(pdag,"graphNEL"))
-    
+
     if (res2$success) {
       ## Convert to complete pattern: use rules by Pearl
       old_pdag <- matrix(rep(0,p^2),nrow=p,ncol=p)
@@ -941,7 +934,7 @@ udag2pdag <- function(gInput,verbose=0) {
           ## x11()
           ## plot(as(pdag,"graphNEL"), main="After Rule1")
         }
-        
+
         ## rule 2
         ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a -> b
         if (length(ind)>0) {
@@ -959,7 +952,7 @@ udag2pdag <- function(gInput,verbose=0) {
         }
         ## x11()
         ## plot(as(pdag,"graphNEL"), main="After Rule2")
-        
+
         ## rule 3
         ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a - b
         if (length(ind)>0) {
@@ -988,29 +981,29 @@ udag2pdag <- function(gInput,verbose=0) {
         ## plot(as(pdag,"graphNEL"), main="After Rule3")
 
         ## rule 4
-##-         ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a - b
-##-         if (length(ind)>0) {
-##-           for (i in 1:dim(ind)[1]) {
-##-             a <- ind[i,1]
-##-             b <- ind[i,2]
-##-             indC <- which( (pdag[a,]==1 & pdag[,a]==1) & (pdag[,b]==0 & pdag[b,]==0))
-##-             l.indC <- length(indC)
-##-             if (l.indC>0) {
-##-               found <- FALSE
-##-               ic <- 0
-##-               while(!found & (ic < l.indC)) {
-##-                 ic <- ic + 1
-##-                 c <- indC[ic]
-##-                 indD <- which( (pdag[c,]==1 & pdag[,c]==0) & (pdag[,b]==1 & pdag[b,]==0))
-##-                 if (length(indD)>0) {
-##-                   found <- TRUE
-##-                   pdag[b,a] = 0
-##-                   if (verbose==1) cat("Rule 4 applied \n")
-##-                 }
-##-               }
-##-             }
-##-           }
-##-         }
+        ##-         ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a - b
+        ##-         if (length(ind)>0) {
+        ##-           for (i in 1:dim(ind)[1]) {
+        ##-             a <- ind[i,1]
+        ##-             b <- ind[i,2]
+        ##-             indC <- which( (pdag[a,]==1 & pdag[,a]==1) & (pdag[,b]==0 & pdag[b,]==0))
+        ##-             l.indC <- length(indC)
+        ##-             if (l.indC>0) {
+        ##-               found <- FALSE
+        ##-               ic <- 0
+        ##-               while(!found & (ic < l.indC)) {
+        ##-                 ic <- ic + 1
+        ##-                 c <- indC[ic]
+        ##-                 indD <- which( (pdag[c,]==1 & pdag[,c]==0) & (pdag[,b]==1 & pdag[b,]==0))
+        ##-                 if (length(indD)>0) {
+        ##-                   found <- TRUE
+        ##-                   pdag[b,a] = 0
+        ##-                   if (verbose==1) cat("Rule 4 applied \n")
+        ##-                 }
+        ##-               }
+        ##-             }
+        ##-           }
+        ##-         }
 
       }
       res@graph <- as(pdag,"graphNEL")
@@ -1032,11 +1025,11 @@ shd <- function(g1,g2)
   ## ----------------------------------------------------------------------
   ## Author: Markus Kalisch, Date:  1 Dec 2006, 17:21
 
-  # Idea: Transform g1 into g2
-  # Transform g1 and g2 into adjacency matrices
+                                        # Idea: Transform g1 into g2
+                                        # Transform g1 and g2 into adjacency matrices
   if (class(g1)=="pcAlgo") g1 <- g1@graph
   if (class(g2)=="pcAlgo") g2 <- g2@graph
-  
+
   if (class(g1)=="graphNEL") {
     m1 <- t(wgtMatrix(g1))
     m1[m1 != 0] <- rep(1, sum(m1 != 0))
@@ -1048,8 +1041,8 @@ shd <- function(g1,g2)
 
   p <- dim(m1)[2]
   shd <- 0
-  
-  # Remove superfluous edges from g1
+
+                                        # Remove superfluous edges from g1
   s1 <- m1 + t(m1)
   s2 <- m2 + t(m2)
   s1[which(s1==2)] <- 1
@@ -1059,12 +1052,12 @@ shd <- function(g1,g2)
   m1[inds] <- 0
   shd <- shd + sum(ds>0)/2
 
-  # Add missing edges to g1
+                                        # Add missing edges to g1
   ind <- which(ds<0)
   m1[ind] <- m2[ind]
   shd <- shd + length(ind)/2
 
-  # Compare Orientation
+                                        # Compare Orientation
   d <- abs(m1-m2)
   shd <- shd + sum((d + t(d))>0)/2
 
@@ -1119,8 +1112,8 @@ pcAlgo <- function(dm = NA, C = NA, n=NA, alpha, corMethod =
   ## Modifications: Sarah Gerster, Date: July 2007
   ## Modifications: Diego Colombo, Date: Sept 2009
 
-cat("This function is deprecated and is only kept for backward compatibility. Please use skeleton, pc, or fci instead\n")
-  
+  cat("This function is deprecated and is only kept for backward compatibility. Please use skeleton, pc, or fci instead\n")
+
   if (any(is.na(dm))) {
     stopifnot(all(!is.na(C)),!is.na(n), (p <- ncol(C))>0)
   } else {
@@ -1128,7 +1121,7 @@ cat("This function is deprecated and is only kept for backward compatibility. Pl
     p <- ncol(dm)
   }
   n <- as.integer(n)
-  
+
   cl <- match.call()
   sepset <- vector("list",p)
   n.edgetests <- numeric(1)# final length = max { ord}
@@ -1147,7 +1140,7 @@ cat("This function is deprecated and is only kept for backward compatibility. Pl
 
   done <- FALSE
   ord <- 0
-  
+
   if (datatype=='continuous') {
     diag(zMin) <- rep(0,p)
     if (any(is.na(C))) C <- mcor(dm, method = corMethod)
@@ -1202,7 +1195,7 @@ cat("This function is deprecated and is only kept for backward compatibility. Pl
         zMin[i,j] <- zMin[j,i] <- min(zMin[i,j],zMin[j,i])
       }
     }
-#########      
+#########
 #########
 #########
 ######### DISCRETE DATA ######################################################
@@ -1236,8 +1229,8 @@ cat("This function is deprecated and is only kept for backward compatibility. Pl
                 if (verbose) cat("x=",x," y=",y," S=",nbrs[S],":",prob,"\n")
                 if (is.na(prob)) prob <- ifelse(NAdelete,1,0)
                 if(prob >= alpha) { # independent
-                  G[x,y] <- G[y,x] <- FALSE                    
-                  sepset[[x]][[y]] <- nbrs[S]                
+                  G[x,y] <- G[y,x] <- FALSE
+                  sepset[[x]][[y]] <- nbrs[S]
                   break
                 } else {
                   nextSet <- getNextSet(length_nbrs, ord, S)
@@ -1268,14 +1261,14 @@ cat("This function is deprecated and is only kept for backward compatibility. Pl
       x <- ind[i,1]
       y <- ind[i,2]
       allZ <- setdiff(which(amat[y,]==1),x) ## x-y-z
-      
+
       if (length(allZ)>0) {
         for (j in 1:length(allZ)) {
           z <- allZ[j]
           if ((amat[x,z]==0) & !((y %in% sepset[[x]][[z]]) |
                      (y %in% sepset[[z]][[x]]))) {
             if (verbose >= 2) {
-              cat("\n",x,"*->",y,"<-*",z,"\n") 
+              cat("\n",x,"*->",y,"<-*",z,"\n")
               cat("Sxz=",sepset[[z]][[x]],"and","Szx=",sepset[[x]][[z]],"\n")
             }
 
@@ -1283,7 +1276,7 @@ cat("This function is deprecated and is only kept for backward compatibility. Pl
             amat[x,y] <- amat[z,y] <- 2
 
           } ## if
-        } ## for 
+        } ## for
       } ## if
     } ## for
 
@@ -1300,7 +1293,7 @@ cat("This function is deprecated and is only kept for backward compatibility. Pl
             z <- abs(zStat(x,y,tf,C,n))
             if (z < zMin[x,y]) zMin[x,y] <- z
             if (z <= cutoff) {
-              ##delete x-y 
+              ##delete x-y
               amat[x, y] <- amat[y, x] <- 0
               ##save pos d-sepset in sepset
               sepset[[x]][[y]] <- tf
@@ -1315,9 +1308,9 @@ cat("This function is deprecated and is only kept for backward compatibility. Pl
     G[amat==0] <- FALSE
     G[amat==1] <- TRUE
   } ## end if(psepset)
-  
+
   if(verbose) { cat("Final graph adjacency matrix:\n"); print(symnum(G)) }
-  
+
   ## transform matrix to graph object :
   if (sum(G) == 0) {
     Gobject <- new("graphNEL", nodes = as.character(seq_p))
@@ -1325,7 +1318,7 @@ cat("This function is deprecated and is only kept for backward compatibility. Pl
     colnames(G) <- rownames(G) <- as.character(seq_p)
     Gobject <- as(G,"graphNEL")
   }
-  
+
   res <- new("pcAlgo",
              graph = Gobject,
              call = cl, n = n, max.ord = as.integer(ord-1),
@@ -1362,7 +1355,7 @@ pdag2dag <- function(g,keepVstruct=TRUE) {
   ## - keepVstruct: TRUE - vStructures are kept
   ## ----------------------------------------------------------------------
   ## Author: Markus Kalisch, Date: Sep 2006, 15:21
-  
+
   if (numEdges(g)==0) {
     succ <- TRUE
     res <- g
@@ -1370,7 +1363,7 @@ pdag2dag <- function(g,keepVstruct=TRUE) {
     gm <- wgtMatrix(g) ## gm_i_j is edge from j to i
     gm[which(gm>0 & gm!=1)] <- 1
     p <- dim(gm)[1]
-    
+
     gm2 <- gm
     a <- gm
     go.on <- TRUE
@@ -1456,24 +1449,24 @@ udag2pdagSpecial <- function(gInput,verbose=0,n.max=100) {
     ind <- which(g==1,arr.ind=TRUE)
     ## ind <- unique(t(apply(ind,1,sort)))
 
-    
+
     ## Create minimal pattern
     for (i in 1:dim(ind)[1]) {
       x <- ind[i,1]
       y <- ind[i,2]
       allZ <- setdiff(which(g[y,]==1),x) ## x-y-z
-      
+
       if (length(allZ)>0) {
         for (j in 1:length(allZ)) {
           z <- allZ[j]
           if ((g[x,z]==0) & !((y %in% gInput@sepset[[x]][[z]]) |
                   (y %in% gInput@sepset[[z]][[x]]))) {
             if (verbose==1) {
-              cat("\n",x,"->",y,"<-",z,"\n") 
+              cat("\n",x,"->",y,"<-",z,"\n")
               cat("Sxz=",gInput@sepset[[z]][[x]],"Szx=",gInput@sepset[[x]][[z]])
             }
             ## check if already in other direction directed
-            if (pdag[x,y]==0 & pdag[y,x]==1) { 
+            if (pdag[x,y]==0 & pdag[y,x]==1) {
               evisit[x,y] <- evisit[x,y] + 1
               evisit[y,x] <- evisit[y,x] + 1
             }
@@ -1484,7 +1477,7 @@ udag2pdagSpecial <- function(gInput,verbose=0,n.max=100) {
             pdag[x,y] <- pdag[z,y] <- 1
             pdag[y,x] <- pdag[y,z] <- 0
           } ## if
-        } ## for 
+        } ## for
       } ## if
     } ## for
 
@@ -1493,7 +1486,7 @@ udag2pdagSpecial <- function(gInput,verbose=0,n.max=100) {
     res2 <- pdag2dag(as(pdag,"graphNEL"))
     xtbl <- res2$success
     xtbl.orig <- xtbl
-    
+
     if (!xtbl & (max(evisit)>0)) {
       tmp.ind2 <- unique(which(evisit>0,arr.ind=TRUE))
       ind2 <- unique(t(apply(tmp.ind2,1,sort)))
@@ -1521,7 +1514,7 @@ udag2pdagSpecial <- function(gInput,verbose=0,n.max=100) {
       status <- 1
     }
     amat1 <- pdag
-    
+
     if (xtbl) {
       ## Convert to complete pattern: use rules by Pearl
       old_pdag <- matrix(rep(0,p^2),nrow=p,ncol=p)
@@ -1543,7 +1536,7 @@ udag2pdagSpecial <- function(gInput,verbose=0,n.max=100) {
           ## x11()
           ## plot(as(pdag,"graphNEL"), main="After Rule1")
         }
-        
+
         ## rule 2
         ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a -> b
         if (length(ind)>0) {
@@ -1561,7 +1554,7 @@ udag2pdagSpecial <- function(gInput,verbose=0,n.max=100) {
         }
         ## x11()
         ## plot(as(pdag,"graphNEL"), main="After Rule2")
-        
+
         ## rule 3
         ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a - b
         if (length(ind)>0) {
@@ -1614,20 +1607,20 @@ udag2pdagRelaxed <- function(gInput,verbose=0) {
     p <- dim(g)[1]
     pdag <- g
     ind <- which(g==1,arr.ind=TRUE)
-    
+
     ## Create minimal pattern
     for (i in 1:dim(ind)[1]) {
       x <- ind[i,1]
       y <- ind[i,2]
       allZ <- setdiff(which(g[y,]==1),x) ## x-y-z
-      
+
       if (length(allZ)>0) {
         for (j in 1:length(allZ)) {
           z <- allZ[j]
           if ((g[x,z]==0) & !((y %in% gInput@sepset[[x]][[z]]) |
                   (y %in% gInput@sepset[[z]][[x]]))) {
             if (verbose==1) {
-              cat("\n",x,"->",y,"<-",z,"\n") 
+              cat("\n",x,"->",y,"<-",z,"\n")
               cat("Sxz=",gInput@sepset[[z]][[x]],"Szx=",gInput@sepset[[x]][[z]])
             }
             pdag[x,y] <- pdag[z,y] <- 1
@@ -1636,10 +1629,10 @@ udag2pdagRelaxed <- function(gInput,verbose=0) {
         }
       }
     }
-    
+
     ## Test whether this pdag allows a consistent extension
     ## res2 <- pdag2dag(as(pdag,"graphNEL"))
-    
+
     ## Convert to complete pattern: use rules by Pearl
     old_pdag <- matrix(rep(0,p^2),nrow=p,ncol=p)
     while (sum(!(old_pdag==pdag))>0) {
@@ -1660,7 +1653,7 @@ udag2pdagRelaxed <- function(gInput,verbose=0) {
         ## x11()
         ## plot(as(pdag,"graphNEL"), main="After Rule1")
       }
-      
+
       ## rule 2
       ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a -> b
       if (length(ind)>0) {
@@ -1678,7 +1671,7 @@ udag2pdagRelaxed <- function(gInput,verbose=0) {
       }
       ## x11()
       ## plot(as(pdag,"graphNEL"), main="After Rule2")
-      
+
       ## rule 3
       ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a - b
       if (length(ind)>0) {
@@ -1741,7 +1734,7 @@ udag2pdagRelaxed <- function(gInput,verbose=0) {
 beta.special <- function(dat=NA,x.pos,y.pos,verbose=0,a=0.01,myDAG=NA,myplot=FALSE,perfect=FALSE,method="local",collTest=TRUE,pcObj=NA,all.dags=NA,u2pd="rand")
 {
   ## Purpose: Estimate the causal effect of x on y; the pcObj and all DAGs
-  ## can be precomputed 
+  ## can be precomputed
   ## ----------------------------------------------------------------------
   ## Arguments:
   ## - dat: data
@@ -1768,10 +1761,10 @@ beta.special <- function(dat=NA,x.pos,y.pos,verbose=0,a=0.01,myDAG=NA,myplot=FAL
   ## ----------------------------------------------------------------------
   ## Author: Markus Kalisch, Date: 21 Nov 2007, 11:18
 
-##  dat=d.mat;x.pos;y.pos;verbose=0;a=0.01;myDAG=NA;myplot=FALSE;perfect=FALSE;method="global";collTest=TRUE;pcObj=NA;all.dags=NA;trueLocal=TRUE;u2pd="rand"
+  ##  dat=d.mat;x.pos;y.pos;verbose=0;a=0.01;myDAG=NA;myplot=FALSE;perfect=FALSE;method="global";collTest=TRUE;pcObj=NA;all.dags=NA;trueLocal=TRUE;u2pd="rand"
 
   cat("This function is deprecated and is only kept for backward compatibility. Please use ida or idaFast instead\n")
-  
+
   tmpColl <- FALSE
 
   ## Covariance matrix: Perfect case / standard case
@@ -1799,12 +1792,12 @@ beta.special <- function(dat=NA,x.pos,y.pos,verbose=0,a=0.01,myDAG=NA,myplot=FAL
   amat[which(amat!=0)] <- 1 ## i->j if amat[j,i]==1
   amatSkel <- amat + t(amat)
   amatSkel[amatSkel!=0] <- 1
-  
+
   if (method=="local") {
-  ##############################
-  ## local method
-  ## Main Input: mcov
-  ##############################
+##############################
+    ## local method
+    ## Main Input: mcov
+##############################
     ## find unique parents of x
     wgt.est <- wgtMatrix(res@graph)
     tmp <- wgt.est-t(wgt.est)
@@ -1823,7 +1816,7 @@ beta.special <- function(dat=NA,x.pos,y.pos,verbose=0,a=0.01,myDAG=NA,myplot=FAL
         cat("pa1=",pa1,"\n")
         cat("pa2=",pa2,"\n")
       }
-      
+
       ## estimate beta
       if (length(pa2)==0) {
         beta.hat <- lm.cov(mcov,y.pos,c(x.pos,pa1))
@@ -1899,10 +1892,10 @@ beta.special <- function(dat=NA,x.pos,y.pos,verbose=0,a=0.01,myDAG=NA,myplot=FAL
       } ## if pa2
     } ## if y in pa1
   } else {
-  ##############################
-  ## global method
-  ## Main Input: mcov
-  ##############################
+##############################
+    ## global method
+    ## Main Input: mcov
+##############################
     p <- numNodes(res@graph)
     am.pdag <- wgtMatrix(res@graph)
     am.pdag[am.pdag!=0] <- 1
@@ -1980,14 +1973,14 @@ beta.special.pcObj <- function(x.pos,y.pos,pcObj,mcov=NA,amat=NA,amatSkel=NA,
   ##   is commented out
   ## ----------------------------------------------------------------------
   ## Value: List with two elements
-  ## - beta.res: beta.causal values 
+  ## - beta.res: beta.causal values
   ## ----------------------------------------------------------------------
   ## Author: Markus Kalisch, Date: 21 Nov 2007, 11:18
 
-cat("This function is deprecated and is only kept for backward compatibility. Please use ida or idaFast instead\n")
+  cat("This function is deprecated and is only kept for backward compatibility. Please use ida or idaFast instead\n")
 
   if (is.na(amat) | is.na(amatSkel) | is.na(t.amat)) {
-  ## Code for computing precomputable variables
+    ## Code for computing precomputable variables
     ## prepare adjMatrix and skeleton
     amat <- wgtMatrix(pcObj@graph)
     amat[which(amat!=0)] <- 1 ## i->j if amat[j,i]==1
@@ -2075,11 +2068,11 @@ cat("This function is deprecated and is only kept for backward compatibility. Pl
 ##-   beta[1]
 ##- }
 
-lm.cov <- function (C, y, x) 
+lm.cov <- function (C, y, x)
 {
-    sig <- C[x, x]
-    beta <- solve(sig) %*% C[x, y, drop = FALSE]
-    beta[1,]
+  sig <- C[x, x]
+  beta <- solve(sig) %*% C[x, y, drop = FALSE]
+  beta[1,]
 }
 
 causalEffect <- function(g,y,x) {
@@ -2141,7 +2134,7 @@ check.new.coll <- function(amat,amatSkel,x,pa1,pa2.t,pa2.f) {
   }
   res
 }
-    
+
 allDags <- function(gm,a,tmp,verb=FALSE)
 {
   ## Purpose: Find all DAGs for a given PDAG
@@ -2248,37 +2241,37 @@ pcAlgo.Perfect <- function(C, cutoff=0.00000001, corMethod = "standard", verbose
     ind <- ind[order(ind[,1]) ,]
     remainingEdgeTests <- nrow(ind)
     if(verbose>=1)
-        cat("Order=",ord,"; remaining edges:",remainingEdgeTests,"\n", sep='')
+      cat("Order=",ord,"; remaining edges:",remainingEdgeTests,"\n", sep='')
     for (i in 1:remainingEdgeTests) {
       if(verbose>=1) { if(i%%100==0) cat("|i=",i,"|iMax=",nrow(ind),"\n") }
       x <- ind[i,1]
       y <- ind[i,2]
-##      done <- !G[y,x] # i.e. (x,y) was not already deleted in its (y,x) "version"
-##      if(!done) {
+      ##      done <- !G[y,x] # i.e. (x,y) was not already deleted in its (y,x) "version"
+      ##      if(!done) {
       if (G[y,x]) {
         nbrsBool <- G[,x]
         nbrsBool[y] <- FALSE
         nbrs <- seq_p[nbrsBool]
         length_nbrs <- length(nbrs)
         ## if(verbose)
-        
-##        done <- length_nbrs < ord
-##        if (!done) {
+
+        ##        done <- length_nbrs < ord
+        ##        if (!done) {
         if (length_nbrs >= ord) {
           if (length_nbrs > ord) done <- FALSE
           S <- seq(length = ord)
 
           ## now includes special cases (ord == 0) or (length_nbrs == 1):
           repeat { ## condition w.r.to all  nbrs[S] of size 'ord' :
-          ##  if (condIndFisherZ(x,y, nbrs[S], C,n, cutoff,verbose)) {
-## MM: want to use this: --- but it changes the result in some cases!!
-##            cat("X=",x,"|Y=",y,"|ord=",ord,"|nbrs=",nbrs[S],"|iMax=",nrow(ind),"\n")
+            ##  if (condIndFisherZ(x,y, nbrs[S], C,n, cutoff,verbose)) {
+            ## MM: want to use this: --- but it changes the result in some cases!!
+            ##            cat("X=",x,"|Y=",y,"|ord=",ord,"|nbrs=",nbrs[S],"|iMax=",nrow(ind),"\n")
             n.edgetests[ord+1] <- n.edgetests[ord+1]+1
             pc.val <- pcorOrder(x,y,nbrs[S],C)
             if (abs(pc.val)<pcMin[x,y]) pcMin[x,y] <- abs(pc.val)
             if (verbose==2) cat(paste("x:",x,"y:",y,"S:"),nbrs[S],paste("pc:",pc.val,"\n"))
             if (abs(pc.val) <= cutoff) {
-##              ##  pnorm(abs(z), lower.tail = FALSE) is the P-value
+              ##              ##  pnorm(abs(z), lower.tail = FALSE) is the P-value
               G[x,y] <- G[y,x] <- FALSE
               sepset[[x]][[y]] <- nbrs[S]
               break
@@ -2286,7 +2279,7 @@ pcAlgo.Perfect <- function(C, cutoff=0.00000001, corMethod = "standard", verbose
             else {
               nextSet <- getNextSet(length_nbrs, ord, S)
               if(nextSet$wasLast)
-                  break
+                break
               S <- nextSet$nextSet
             }
           }
@@ -2295,7 +2288,7 @@ pcAlgo.Perfect <- function(C, cutoff=0.00000001, corMethod = "standard", verbose
 
     } ## end for(i ..)
     ord <- ord+1
-##    n.edgetests[ord] <- remainingEdgeTests
+    ##    n.edgetests[ord] <- remainingEdgeTests
   }
 
   if (psepset) {
@@ -2308,21 +2301,21 @@ pcAlgo.Perfect <- function(C, cutoff=0.00000001, corMethod = "standard", verbose
       x <- ind[i,1]
       y <- ind[i,2]
       allZ <- setdiff(which(amat[y,]==1),x) ## x-y-z
-      
+
       if (length(allZ)>0) {
         for (j in 1:length(allZ)) {
           z <- allZ[j]
           if ((amat[x,z]==0) & !((y %in% sepset[[x]][[z]]) |(y %in% sepset[[z]][[x]]))) {
             if (verbose == 2) {
-              cat("\n",x,"*->",y,"<-*",z,"\n") 
+              cat("\n",x,"*->",y,"<-*",z,"\n")
               cat("Sxz=",sepset[[z]][[x]],"and","Szx=",sepset[[x]][[z]],"\n")
             }
-            
+
             ##x o-> y <-o z
             amat[x,y] <- amat[z,y] <- 2
-            
+
           } ## if
-        } ## for 
+        } ## for
       } ## if
     } ## for
 
@@ -2378,10 +2371,10 @@ pcAlgo.Perfect <- function(C, cutoff=0.00000001, corMethod = "standard", verbose
   }
 
   res <- new("pcAlgo",
-      graph = Gobject,
-      call = cl, n = as.integer(1), max.ord = as.integer(ord-1),
-      n.edgetests = n.edgetests, sepset = sepset,
-      zMin = pcMin)
+             graph = Gobject,
+             call = cl, n = as.integer(1), max.ord = as.integer(ord-1),
+             n.edgetests = n.edgetests, sepset = sepset,
+             zMin = pcMin)
 
   if (directed) {
     res <- switch (u2pd,
@@ -2402,15 +2395,15 @@ reach <- function(a,b,c,adjacency)
                                         #numvertex      integer
                                         #labeled        array (by depth) of list of edges that have been labeled
 
-  makeedge = function(x,y)(list(list(x,y)))      
+  makeedge = function(x,y)(list(list(x,y)))
 
   legal <- function(t,...) {UseMethod("legal")}
 
   legal.possibledsep = function(t,u,v,r,s) {
-    if (((adjacency[r[[1]],r[[2]]] == 2) && 
-         (adjacency[s,r[[2]]] == 2) && 
+    if (((adjacency[r[[1]],r[[2]]] == 2) &&
+         (adjacency[s,r[[2]]] == 2) &&
          (r[[1]] != s)) ||
-        ((adjacency[r[[1]],s] != 0) && 
+        ((adjacency[r[[1]],s] != 0) &&
          (r[[1]] != s))){
       edgeslist[[r[[2]]]]  <<- setdiff(edgeslist[[r[[2]]]],s)
       makeedge(r[[2]],s)}}
@@ -2429,7 +2422,7 @@ reach <- function(a,b,c,adjacency)
   initialize.possibledsep <- function(x,y,z) {mapply(makeedge,x=a,y=edgeslist[[a]])}
 
   initialize.discriminating <- function(x,y,z) {mapply(makeedge,x=a,y=setdiff(which(adjacency[,a] == 2),c(b,c)))}
-  
+
   labeled = list()
   numvertex = dim(adjacency)[1]
   edgeslist = list()
@@ -2444,7 +2437,7 @@ reach <- function(a,b,c,adjacency)
        edgestemp = edgeslist[[labeled[[depth-1]][[i]][[2]]]]
        if (length(edgestemp) == 0) break
        for (j in 1:length(edgestemp))
-         {labeled[[depth]] = 
+         {labeled[[depth]] =
             union(legal(a,b,c,labeled[[depth-1]][[i]],edgestemp[[j]]),labeled[[depth]])}}
      if (length(labeled[[depth]]) != 0){
        more = TRUE
@@ -2492,7 +2485,7 @@ discr.path <- function(path=NA, n=NA, pag=NA ,gInput=NA ,verb=NA)
           ##check if c and d are adjacent
           ##if no there exists a discr. path
           if (res[c,d]==0 & res[d,c]==0){
-            ##check whether b is in Sepset(c,d)      
+            ##check whether b is in Sepset(c,d)
             if ((b %in% gInput@sepset[[c]][[d]]) |
                 (b %in% gInput@sepset[[d]][[c]])){
               if(verb==1){
@@ -2548,7 +2541,7 @@ ucp <- function(path=NA, pag=NA, n=NA, verb=NA)
   ## ----------------------------------------------------------------------
   ## Author: Diego Colombo, Date:  9 Feb 2009, 10:09
 
-  
+
   if (n<=dim(pag)[1]){
     res <- pag
     ##all x with path[n-2] o-o x
@@ -2632,7 +2625,7 @@ upd <- function(path=NA, pag=NA, n=NA, verb=NA)
         ##and check that x @--@ c
         if ((!(x %in% path)) & (res[c,a]!=3)){
           new.path <- c(path[c(2:n)],x,path[1])
-          if ((res[x,c]==1 | res[x,c]==2) & (res[c,x]==1 | res[c,x]==3)){    
+          if ((res[x,c]==1 | res[x,c]==2) & (res[c,x]==1 | res[c,x]==3)){
             ##check uncovered feature
             check.uncov <- 0
             for (l in 1:(n-1)){
@@ -2773,7 +2766,7 @@ udag2pag <- function(gInput, rules=rep(TRUE,10), verbose=TRUE) {
   ## b=beta
   ## c=gamma
   ## d=theta
-  
+
   ##counter <- 0
   ##res <- gInput
   ##status <- 0
@@ -2786,21 +2779,21 @@ udag2pag <- function(gInput, rules=rep(TRUE,10), verbose=TRUE) {
     ind <- which(g==1, arr.ind=TRUE)
     ## ind <- unique(t(apply(ind,1,sort)))
 
-    
+
     ## Create minimal pattern
     ## rule 0
     for (i in 1:dim(ind)[1]) {
       x <- ind[i,1]
       y <- ind[i,2]
       allZ <- setdiff(which(g[y,]==1),x) ## x-y-z
-      
+
       if (length(allZ)>0) {
         for (j in 1:length(allZ)) {
           z <- allZ[j]
           if ((g[x,z]==0) & !((y %in% gInput@sepset[[x]][[z]]) |
                   (y %in% gInput@sepset[[z]][[x]]))) {
             if (verbose==1) {
-              cat("\n",x,"*->",y,"<-*",z,"\n") 
+              cat("\n",x,"*->",y,"<-*",z,"\n")
               cat("Sxz=",gInput@sepset[[z]][[x]],"and","Szx=",gInput@sepset[[x]][[z]],"\n")
             }
 
@@ -2808,17 +2801,17 @@ udag2pag <- function(gInput, rules=rep(TRUE,10), verbose=TRUE) {
             pag[x,y] <- pag[z,y] <- 2
 
           } ## if
-        } ## for 
+        } ## for
       } ## if
     } ## for
-    
+
 
     ## first while for R1-R4
     old_pag1 <- matrix(rep(0,p^2),nrow=p,ncol=p)
     while (sum(!(old_pag1==pag))>0) {
       old_pag1 <- pag
 
-    
+
       ## rule 1
       if (rules[1]){
         ind <- which((pag==2 & t(pag)!=0), arr.ind=TRUE) ## a *--> b
@@ -2840,9 +2833,9 @@ udag2pag <- function(gInput, rules=rep(TRUE,10), verbose=TRUE) {
           }## for
         }## if
       }
-      
-      
-      
+
+
+
       ## rule 2
       if (rules[2]){
         ind <- which((pag==1 & t(pag)!=0), arr.ind=TRUE) ## a *--o c
@@ -2862,9 +2855,9 @@ udag2pag <- function(gInput, rules=rep(TRUE,10), verbose=TRUE) {
           }## for
         }## if
       }
-      
-      
-      
+
+
+
       ## rule 3
       if (rules[3]){
         ind <- which((pag!=0 & t(pag)==1), arr.ind=TRUE) ## b o--* d
@@ -2906,8 +2899,8 @@ udag2pag <- function(gInput, rules=rep(TRUE,10), verbose=TRUE) {
           }## for
         }## if
       }
-      
-      
+
+
       ## rule 4
       if (rules[4]){
         ind <- which((pag!=0 & t(pag)==1), arr.ind=TRUE) ## b o--* c
@@ -2936,8 +2929,8 @@ udag2pag <- function(gInput, rules=rep(TRUE,10), verbose=TRUE) {
     old_pag2 <- matrix(rep(0,p^2),nrow=p,ncol=p)
     while (sum(!(old_pag2==pag))>0) {
       old_pag2 <- pag
-    
-  
+
+
       ##rule 5
       if (rules[5]){
         ind <- which((pag==1 & t(pag)==1), arr.ind=TRUE) ## a o--o b
@@ -2977,9 +2970,9 @@ udag2pag <- function(gInput, rules=rep(TRUE,10), verbose=TRUE) {
           }##for i
         }##if
       }
-      
-      
-      
+
+
+
       ## rule 6
       if (rules[6]){
         ind <- which((pag!=0 & t(pag)==1), arr.ind=TRUE) ## b o--* c
@@ -2998,9 +2991,9 @@ udag2pag <- function(gInput, rules=rep(TRUE,10), verbose=TRUE) {
           }## for i
         }## if length(ind)
       }
-      
-      
-      
+
+
+
       ## rule 7
       if (rules[7]){
         ind <- which((pag!=0 & t(pag)==1), arr.ind=TRUE) ## b o--* c
@@ -3020,8 +3013,8 @@ udag2pag <- function(gInput, rules=rep(TRUE,10), verbose=TRUE) {
           }## for i
         }## if length(ind)
       }
-      
-      
+
+
       ## rule 8
       if (rules[8]){
         ind <- which((pag==2 & t(pag)==1), arr.ind=TRUE) ## a o--> c
@@ -3040,9 +3033,9 @@ udag2pag <- function(gInput, rules=rep(TRUE,10), verbose=TRUE) {
           }## for i
         }## if length(ind)
       }
-      
-      
-      
+
+
+
       ##rule 9
       if (rules[9]){
         ind <- which((pag==2 & t(pag)==1), arr.ind=TRUE) ## a o--> c
@@ -3055,7 +3048,7 @@ udag2pag <- function(gInput, rules=rep(TRUE,10), verbose=TRUE) {
             indB <- which((pag[a,]==2 | pag[a,]==1) & (pag[,a]==1 | pag[,a]==3) & (pag[c,]==0 & pag[,c]==0))
             indB <- setdiff(indB,c)
             if (length(indB)>0){
-              for (k in 1:length(indB)){   
+              for (k in 1:length(indB)){
                 b <- indB[k]
                 ##find all d such that c <--o a @-@ b @-@ d and d and a not adjacent
                 indD <- which((pag[b,]==2 | pag[b,]==1) & (pag[,b]==1 | pag[,b]==3) & (pag[a,]==0 & pag[,a]==0))
@@ -3152,9 +3145,9 @@ udag2pag <- function(gInput, rules=rep(TRUE,10), verbose=TRUE) {
           }##for i
         }##if
       }
-    
+
     }## while
-    
+
   }## if
 
   return(pag)
@@ -3174,6 +3167,9 @@ plotAG <- function(amat)
   ##   "0": no edge; "1": circle; "2": arrow; "3": tail
   ## ----------------------------------------------------------------------
   ## Author: Markus Kalisch, Date: 16 Feb 2009, 18:01
+  if (!require(Rgraphviz)) {
+    stop("You need to install Rgraphviz for plotting graphs!")
+  }
 
   g <- as(amat,"graphNEL")
   nn <- nodes(g)
@@ -3198,7 +3194,7 @@ plotAG <- function(amat)
     }
   }
   names(ah.list) <- names(at.list) <- list.names
-  
+
   edgeRenderInfo(g) <- list(arrowhead=ah.list,arrowtail=at.list)
   renderGraph(layoutGraph(g))
 }
@@ -3224,7 +3220,7 @@ skeleton <- function(suffStat, indepTest, p, alpha, verbose = FALSE,
   ## - datatype: distinguish between discrete and continuous data
   ## - NAdelete: delete edge if pval=NA (for discrete data)
   ## - m.max: maximal size of conditioning set
-  ## - gTrue: Graph object of true DAG 
+  ## - gTrue: Graph object of true DAG
   ## ----------------------------------------------------------------------
   ## Value:
   ## - G, sepset, pMax, ord, n.edgetests
@@ -3232,12 +3228,12 @@ skeleton <- function(suffStat, indepTest, p, alpha, verbose = FALSE,
   ## Author: Markus Kalisch, Date: 09.12.2009
 
   ## x,y,S konstruieren
-##-   tst <- try(indepTest(x,y,S, obj))
-##-   if(inherits(tst, "try-error"))
-##-     stop("the 'indepTest' function does not work correctly with 'obj'")
+  ##-   tst <- try(indepTest(x,y,S, obj))
+  ##-   if(inherits(tst, "try-error"))
+  ##-     stop("the 'indepTest' function does not work correctly with 'obj'")
 
   cl <- match.call()
-  
+
   pval <- NULL
 
   ## start skeleton
@@ -3277,7 +3273,7 @@ skeleton <- function(suffStat, indepTest, p, alpha, verbose = FALSE,
   ## save maximal p value
   pMax <- matrix(rep(-Inf,p*p),nrow=p,ncol=p)
   diag(pMax) <- 1
-  
+
   done <- FALSE
   ord <- 0
 
@@ -3310,8 +3306,8 @@ skeleton <- function(suffStat, indepTest, p, alpha, verbose = FALSE,
             if (is.na(pval)) pval <- ifelse(NAdelete,1,0)
             if (pval > pMax[x,y]) pMax[x,y] <- pval
             if(pval >= alpha) { # independent
-              G[x,y] <- G[y,x] <- FALSE                    
-              sepset[[x]][[y]] <- nbrs[S]                
+              G[x,y] <- G[y,x] <- FALSE
+              sepset[[x]][[y]] <- nbrs[S]
               break
             } else {
               nextSet <- getNextSet(length_nbrs, ord, S)
@@ -3357,7 +3353,7 @@ skeleton <- function(suffStat, indepTest, p, alpha, verbose = FALSE,
 pc <- function(suffStat, indepTest, p, alpha, verbose = FALSE, fixedGaps = NULL,
                fixedEdges = NULL, NAdelete = TRUE, m.max = Inf,
                u2pd = "rand") {
-  
+
   ## Purpose: Perform PC-Algorithm, i.e., estimate skeleton of DAG given data
   ## ----------------------------------------------------------------------
   ## Arguments:
@@ -3376,7 +3372,7 @@ pc <- function(suffStat, indepTest, p, alpha, verbose = FALSE, fixedGaps = NULL,
   ##   "rand": udag2pdag
   ##   "relaxed": udag2pdagRelaxed
   ##   "retry": udag2pdagSpecial
-  ## - gTrue: Graph suffStatect of true DAG 
+  ## - gTrue: Graph suffStatect of true DAG
   ## ----------------------------------------------------------------------
   ## Author: Markus Kalisch, Date: 26 Jan 2006; Martin Maechler
   ## Modifications: Sarah Gerster, Date: July 2007
@@ -3389,8 +3385,8 @@ pc <- function(suffStat, indepTest, p, alpha, verbose = FALSE, fixedGaps = NULL,
   ## Skeleton
   skel <- skeleton(suffStat, indepTest, p, alpha, verbose = verbose,
                    fixedGaps = fixedGaps, fixedEdges = fixedEdges,
-                   NAdelete = NAdelete, m.max = m.max) 
-  
+                   NAdelete = NAdelete, m.max = m.max)
+
   ## Orient edges
   res <- switch (u2pd,
                  "rand" = udag2pdag(skel),
@@ -3403,9 +3399,9 @@ pc <- function(suffStat, indepTest, p, alpha, verbose = FALSE, fixedGaps = NULL,
 
 
 fci <- function(suffStat, indepTest, p, alpha, verbose = FALSE,
-                    fixedGaps = NULL, fixedEdges = NULL, NAdelete = TRUE,
-                    m.max = Inf, rules = rep(TRUE, 10), doPdsep =
-                    TRUE) {
+                fixedGaps = NULL, fixedEdges = NULL, NAdelete = TRUE,
+                m.max = Inf, rules = rep(TRUE, 10), doPdsep =
+                TRUE) {
   ## Purpose: Perform PC-Algorithm, i.e., estimate skeleton of DAG given data
   ## ----------------------------------------------------------------------
   ## Arguments:
@@ -3425,13 +3421,13 @@ fci <- function(suffStat, indepTest, p, alpha, verbose = FALSE,
   ## Author: Markus Kalisch, Date: Dec 2009
 
 ##################################################
-## Initial Checks
+  ## Initial Checks
 ##################################################
   cl <- match.call()
   ## cl <-  call("sample",3)
 
 ##################################################
-## Skeleton
+  ## Skeleton
 ##################################################
   if (verbose) cat("Compute Skeleton\n================\n")
 
@@ -3446,7 +3442,7 @@ fci <- function(suffStat, indepTest, p, alpha, verbose = FALSE,
   max.ordSKEL <- skel@max.ord
 
 ##################################################
-## Possible D-Sep
+  ## Possible D-Sep
 ##################################################
   allPdsep <- NA
   if (doPdsep) {
@@ -3467,7 +3463,7 @@ fci <- function(suffStat, indepTest, p, alpha, verbose = FALSE,
   ## if(verbose) { cat("Final graph adjacency matrix:\n"); print(symnum(G)) }
 
 ##################################################
-## Make pcAlgo object
+  ## Make pcAlgo object
 ##################################################
   ## transform matrix to graph object
   if (sum(G) == 0) {
@@ -3486,7 +3482,7 @@ fci <- function(suffStat, indepTest, p, alpha, verbose = FALSE,
              pMax = pMax, zMin = matrix(NA,1,1))
 
 ##################################################
-## Transform to PAG
+  ## Transform to PAG
 ##################################################
   if (verbose) cat("\nDirect egdes:\n=============\nUsing rules:", which(rules),"\nCompute collider:\n")
   if (numEdges(tmp@graph)>0) {
@@ -3494,16 +3490,16 @@ fci <- function(suffStat, indepTest, p, alpha, verbose = FALSE,
     res <- udag2pag(gInput = tmp, rules = rules, verbose = verbose)
   } else {
     ## empty graph
-    res <- G 
+    res <- G
   }
 
 ##################################################
-## Return FCI object
+  ## Return FCI object
 ##################################################
   fciRes <- new("fciAlgo",
                 amat = res, call = cl, n = integer(0),
                 max.ord = as.integer(max.ordSKEL),
-                max.ordPDSEP = as.integer(max.ordPD), 
+                max.ordPDSEP = as.integer(max.ordPD),
                 n.edgetests = n.edgetestsSKEL,
                 n.edgetestsPDSEP = n.edgetestsPD,
                 sepset = sepset, pMax = pMax, allPdsep = allPdsep)
@@ -3513,7 +3509,7 @@ fci <- function(suffStat, indepTest, p, alpha, verbose = FALSE,
 
 
 gSquareBin <- function(x, y, S, dm, verbose=FALSE,adaptDF=FALSE){
-  
+
   ## Purpose: G^2 statistic to test for (conditional) independence
   ##          of X and Y given S
   ## -------------------------------------------------------------------------
@@ -3528,13 +3524,13 @@ gSquareBin <- function(x, y, S, dm, verbose=FALSE,adaptDF=FALSE){
 
 
   if(verbose) cat('\nEdge ',x,' -- ',y,' with subset: ',S,'\n')
-  
+
   n <- dim(dm)[1] # nr of samples
   lenS <- length(S)
-  
+
   ## degrees of freedom assuming no structural zeros
   df <- 2^lenS
-  
+
   if (n < 10*df) { ## not enough samples to perform the test, assume
     ## independence
     if (verbose) cat("\n Not enough samples...\n")
@@ -3556,31 +3552,31 @@ gSquareBin <- function(x, y, S, dm, verbose=FALSE,adaptDF=FALSE){
         dim(t.X) <- c(length(t.X),1)
         t.Y <- colSums(nij)
         dim(t.Y) <- c(1,length(t.Y))
-        
+
         ## compute G^2
         dij <- t.X %*% t.Y # s_ia * s_jb
-        t.log <- nij*n/dij                   
+        t.log <- nij*n/dij
         t.G2 <- 2*nij*log(t.log)
-        t.G2[which(is.nan(t.G2),arr.ind=TRUE)] <- 0             
+        t.G2[which(is.nan(t.G2),arr.ind=TRUE)] <- 0
         G2 <- sum(t.G2)
       } #end lenS=0
-     
+
       if (lenS==1){
         a.pos <- sort(c(x,y,S))
-        
+
         nijk <- array(0,c(2,2,2))
         for(i in 1:2) for(j in 1:2) for(k in 1:2) {
           nijk[i,j,k] <- sum((dm[,x]==i-1)&(dm[,y]==j-1)&(dm[,S]==k-1))
         }
-          
+
         alt <- c(x,y,S)
-         
-        
+
+
         c <- which(alt==S)
         nik <- apply(nijk,c,rowSums)
         njk <- apply(nijk,c,colSums)
         nk <- colSums(njk)
-        
+
         ## compute G^2
         t.log <- array(0,c(2,2,2))
         if(c==3){
@@ -3607,33 +3603,33 @@ gSquareBin <- function(x, y, S, dm, verbose=FALSE,adaptDF=FALSE){
             }
           }
         }
-        
+
         t.G2 <- 2 * nijk * log(t.log)
         t.G2[which(is.nan(t.G2),arr.ind=TRUE)] <- 0
         G2 <- sum(t.G2)
-        
-        
+
+
       } # end lenS=1
-      
+
       if(lenS==2){
         a.pos <- sort(c(x,y,S))
-        
+
         nijk2 <- array(NA,c(2,2,2,2))
         for(i in 1:2) for(j in 1:2) for(k in 1:2) for(l in 1:2){
           nijk2[i,j,k,l] <- sum((dm[,x]==i-1)&(dm[,y]==j-1)&(dm[,S[1]]==k-1)&(dm[,S[2]]==l-1))
         }
-          
+
         alt <- c(x,y,S)
-       
+
         nijk <- array(NA,c(2,2,4))
         for(i in 1:2) for(j in 1:2){
           nijk[,,2*(i-1)+j] <- nijk2[,,i,j]
         }
-        
+
         nik <- apply(nijk,3,rowSums)
         njk <- apply(nijk,3,colSums)
         nk <- colSums(njk)
-        
+
         ## compute G^2
         t.log <- array(0,c(2,2,4))
         for (k in 1:4) {
@@ -3642,7 +3638,7 @@ gSquareBin <- function(x, y, S, dm, verbose=FALSE,adaptDF=FALSE){
           t.dijk <- t.X %*% t.Y
           t.log[,,k] <- nijk[,,k]*nk[k]/t.dijk
         }
-        
+
         t.G2 <- 2 * nijk * log(t.log)
         t.G2[which(is.nan(t.G2),arr.ind=TRUE)] <- 0
         G2 <- sum(t.G2)
@@ -3657,7 +3653,7 @@ gSquareBin <- function(x, y, S, dm, verbose=FALSE,adaptDF=FALSE){
         nik <- apply(nijk,3,rowSums)
         njk <- apply(nijk,3,colSums)
         nk <- colSums(njk)
-        
+
         ## compute G^2
         t.log <- array(0,c(2,2,8))
         for (k in 1:8){
@@ -3666,22 +3662,22 @@ gSquareBin <- function(x, y, S, dm, verbose=FALSE,adaptDF=FALSE){
           t.dijk <- t.X %*% t.Y
           t.log[,,k] <- nijk[,,k]*nk[k]/t.dijk
         }
-        
+
         t.G2 <- 2 * nijk * log(t.log)
         t.G2[which(is.nan(t.G2),arr.ind=TRUE)] <- 0
         G2 <- sum(t.G2)
       } #end lenS=3
-      
+
       if(lenS==4){
         nijk <- array(NA,c(2,2,16))
         for(i1 in 1:2) for(i2 in 1:2) for(i3 in 1:2) for(i4 in 1:2) for(i5 in 1:2) for(i6 in 1:2){
           nijk[i1,i2,8*(i3-1)+4*(i4-1)+2*(i5-1)+i6] <- sum((dm[,x]==i1-1)&(dm[,y]==i2-1)&(dm[,S[1]]==i3-1)&(dm[,S[2]]==i4-1)&(dm[,S[3]]==i5-1)&(dm[,S[4]]==i6-1))
         }
-              
+
         nik <- apply(nijk,3,rowSums)
         njk <- apply(nijk,3,colSums)
         nk <- colSums(njk)
-        
+
         ## compute G^2
         t.log <- array(0,c(2,2,16))
         for (k in 1:16){
@@ -3690,22 +3686,22 @@ gSquareBin <- function(x, y, S, dm, verbose=FALSE,adaptDF=FALSE){
           t.dijk <- t.X %*% t.Y
           t.log[,,k] <- nijk[,,k]*nk[k]/t.dijk
         }
-        
+
         t.G2 <- 2 * nijk * log(t.log)
         t.G2[which(is.nan(t.G2),arr.ind=TRUE)] <- 0
         G2 <- sum(t.G2)
       } #end lens=4
-      
+
       if(lenS==5){
         nijk <- array(NA,c(2,2,32))
         for(i1 in 1:2) for(i2 in 1:2) for(i3 in 1:2) for(i4 in 1:2) for(i5 in 1:2) for(i6 in 1:2) for(i7 in 1:2){
           nijk[i1,i2,16*(i3-1)+8*(i4-1)+4*(i5-1)+2*(i6-1)+i7] <- sum((dm[,x]==i1-1)&(dm[,y]==i2-1)&(dm[,S[1]]==i3-1)&(dm[,S[2]]==i4-1)&(dm[,S[3]]==i5-1)&(dm[,S[4]]==i6-1)&(dm[,S[5]]==i7-1))
         }
-        
+
         nik <- apply(nijk,3,rowSums)
         njk <- apply(nijk,3,colSums)
         nk <- colSums(njk)
-        
+
         ## compute G^2
         t.log <- array(0,c(2,2,32))
         for (k in 1:32){
@@ -3714,7 +3710,7 @@ gSquareBin <- function(x, y, S, dm, verbose=FALSE,adaptDF=FALSE){
           t.dijk <- t.X %*% t.Y
           t.log[,,k] <- nijk[,,k]*nk[k]/t.dijk
         }
-        
+
         t.G2 <- 2 * nijk * log(t.log)
         t.G2[which(is.nan(t.G2),arr.ind=TRUE)] <- 0
         G2 <- sum(t.G2)
@@ -3734,7 +3730,7 @@ gSquareBin <- function(x, y, S, dm, verbose=FALSE,adaptDF=FALSE){
       ## observed in the data
       parents.val <- t(k[1,])
       nijk[i,j,parents.count] <- 1 # cell counts
-      
+
       ## Do the same for all other samples. If there is already a table
       ## for the subset values of the sample, increase the corresponding
       ## cell count. If not, create a new table and set the corresponding
@@ -3773,7 +3769,7 @@ gSquareBin <- function(x, y, S, dm, verbose=FALSE,adaptDF=FALSE){
           nijk[i,j,parents.count] <- 1
         } # end if(flag==0)
       }
-      
+
       nik <- apply(nijk,3,rowSums)
       njk <- apply(nijk,3,colSums)
       nk <- colSums(njk)
@@ -3788,9 +3784,9 @@ gSquareBin <- function(x, y, S, dm, verbose=FALSE,adaptDF=FALSE){
       t.G2 <- 2 * nijk * log(t.log)
       t.G2[which(is.nan(t.G2),arr.ind=TRUE)] <- 0
       G2 <- sum(t.G2)
-      
-    }                    
-    
+
+    }
+
     if (adaptDF&lenS>0) {
       ## lower the degrees of freedom according to the amount of
       ## zero counts
@@ -3800,10 +3796,10 @@ gSquareBin <- function(x, y, S, dm, verbose=FALSE,adaptDF=FALSE){
       zero.counts <- zero.counts + 4*(2^lenS-dim(nijk)[3])
       df <- max((df-zero.counts),1)
     } # end adaptDF
-    
+
     prob <- 1 - pchisq(G2,df)
-  } # end if/else(number of samples)   
-  prob  
+  } # end if/else(number of samples)
+  prob
 }
 gSquareDis <- function(x, y, S, dm, nlev, verbose=FALSE,adaptDF=FALSE){
 
@@ -3820,15 +3816,15 @@ gSquareDis <- function(x, y, S, dm, nlev, verbose=FALSE,adaptDF=FALSE){
   ## - adaptDF: lower the degrees of freedom by one for each zero count.
   ##            The value for the DF cannot go below 1.
   ## -------------------------------------------------------------------
-  
+
   if(verbose) cat('\nEdge ',x,' -- ',y,' with subset: ',S,'\n')
-  
+
   n <- dim(dm)[1] # nr of samples
   lenS <- length(S)
-  
+
   ## degrees of freedom assuming no structural zeros
   df <- (nlev[x]-1)*(nlev[y]-1)*prod(nlev[S])
-  
+
   if (n < 10*df) { ## not enough samples to perform the test, assume
     ## independence
     if (verbose) cat("\n Not enough samples...\n")
@@ -3849,25 +3845,25 @@ gSquareDis <- function(x, y, S, dm, nlev, verbose=FALSE,adaptDF=FALSE){
         dim(t.X) <- c(length(t.X),1)
         t.Y <- colSums(nij)
         dim(t.Y) <- c(1,length(t.Y))
-        
+
         ## compute G^2
         dij <- t.X %*% t.Y # s_ia * s_jb
-        t.log <- nij*n/dij                   
+        t.log <- nij*n/dij
         t.G2 <- 2*nij*log(t.log)
-        t.G2[which(is.nan(t.G2),arr.ind=TRUE)] <- 0             
+        t.G2[which(is.nan(t.G2),arr.ind=TRUE)] <- 0
         G2 <- sum(t.G2)
       } #end lenS=0
-     
+
       if (lenS==1){
         nijk <- array(0,c(nlev[x],nlev[y],nlev[S]))
         for(i in 1:nlev[x]) for(j in 1:nlev[y]) for(k in 1:nlev[S]) {
           nijk[i,j,k] <- sum((dm[,x]==i-1)&(dm[,y]==j-1)&(dm[,S]==k-1))
         }
-          
+
         nik <- apply(nijk,3,rowSums)
         njk <- apply(nijk,3,colSums)
         nk <- colSums(njk)
-          
+
         ## compute G^2
         t.log <- array(0,c(nlev[x],nlev[y],prod(nlev[S])))
         for (k in 1:prod(nlev[S])) {
@@ -3876,13 +3872,13 @@ gSquareDis <- function(x, y, S, dm, nlev, verbose=FALSE,adaptDF=FALSE){
           t.dijk <- t.X %*% t.Y
           t.log[,,k] <- nijk[,,k]*nk[k]/t.dijk
         }
-          
+
         t.G2 <- 2 * nijk * log(t.log)
         t.G2[which(is.nan(t.G2),arr.ind=TRUE)] <- 0
         G2 <- sum(t.G2)
-        
+
       } # end lenS=1
-        
+
       if(lenS==2){
         nijk <- array(NA,c(nlev[x],nlev[y],nlev[S[1]]*nlev[S[2]]))
         for(i in 1:nlev[x]) for(j in 1:nlev[y]) for(k in 1:nlev[S[1]]) for(l in 1:nlev[S[2]]){
@@ -3892,7 +3888,7 @@ gSquareDis <- function(x, y, S, dm, nlev, verbose=FALSE,adaptDF=FALSE){
         nik <- apply(nijk,3,rowSums)
         njk <- apply(nijk,3,colSums)
         nk <- colSums(njk)
-        
+
         ## compute G^2
         t.log <- array(0,c(nlev[x],nlev[y],prod(nlev[S])))
         for (k in 1:prod(nlev[S])) {
@@ -3901,7 +3897,7 @@ gSquareDis <- function(x, y, S, dm, nlev, verbose=FALSE,adaptDF=FALSE){
           t.dijk <- t.X %*% t.Y
           t.log[,,k] <- nijk[,,k]*nk[k]/t.dijk
         }
-        
+
         t.G2 <- 2 * nijk * log(t.log)
         t.G2[which(is.nan(t.G2),arr.ind=TRUE)] <- 0
         G2 <- sum(t.G2)
@@ -3916,7 +3912,7 @@ gSquareDis <- function(x, y, S, dm, nlev, verbose=FALSE,adaptDF=FALSE){
         nik <- apply(nijk,3,rowSums)
         njk <- apply(nijk,3,colSums)
         nk <- colSums(njk)
-        
+
         ## compute G^2
         t.log <- array(0,c(nlev[x],nlev[y],prod(nlev[S])))
         for (k in 1:prod(nlev[S])){
@@ -3925,22 +3921,22 @@ gSquareDis <- function(x, y, S, dm, nlev, verbose=FALSE,adaptDF=FALSE){
           t.dijk <- t.X %*% t.Y
           t.log[,,k] <- nijk[,,k]*nk[k]/t.dijk
         }
-        
+
         t.G2 <- 2 * nijk * log(t.log)
         t.G2[which(is.nan(t.G2),arr.ind=TRUE)] <- 0
         G2 <- sum(t.G2)
       } #end lenS=3
-      
+
       if(lenS==4){
         nijk <- array(NA,c(nlev[x],nlev[y],prod(nlev[S])))
         for(i1 in 1:nlev[x]) for(i2 in 1:nlev[y]) for(i3 in 1:nlev[S[1]]) for(i4 in 1:nlev[S[2]]) for(i5 in 1:nlev[S[3]]) for(i6 in 1:nlev[S[4]]){
           nijk[i1,i2,nlev[S[4]]*nlev[S[3]]*nlev[S[2]]*(i3-1)+nlev[S[4]]*nlev[S[3]]*(i4-1)+nlev[S[4]]*(i5-1)+i6] <- sum((dm[,x]==i1-1)&(dm[,y]==i2-1)&(dm[,S[1]]==i3-1)&(dm[,S[2]]==i4-1)&(dm[,S[3]]==i5-1)&(dm[,S[4]]==i6-1))
         }
-              
+
         nik <- apply(nijk,3,rowSums)
         njk <- apply(nijk,3,colSums)
         nk <- colSums(njk)
-        
+
         ## compute G^2
         t.log <- array(0,c(nlev[x],nlev[y],prod(nlev[S])))
         for (k in 1:prod(nlev[S])){
@@ -3949,7 +3945,7 @@ gSquareDis <- function(x, y, S, dm, nlev, verbose=FALSE,adaptDF=FALSE){
           t.dijk <- t.X %*% t.Y
           t.log[,,k] <- nijk[,,k]*nk[k]/t.dijk
         }
-        
+
         t.G2 <- 2 * nijk * log(t.log)
         t.G2[which(is.nan(t.G2),arr.ind=TRUE)] <- 0
         G2 <- sum(t.G2)
@@ -3969,7 +3965,7 @@ gSquareDis <- function(x, y, S, dm, nlev, verbose=FALSE,adaptDF=FALSE){
       ## observed in the data
       parents.val <- t(k[1,])
       nijk[i,j,parents.count] <- 1 # cell counts
-      
+
       ## Do the same for all other samples. If there is already a table
       ## for the subset values of the sample, increase the corresponding
       ## cell count. If not, create a new table and set the corresponding
@@ -4008,7 +4004,7 @@ gSquareDis <- function(x, y, S, dm, nlev, verbose=FALSE,adaptDF=FALSE){
           nijk[i,j,parents.count] <- 1
         } # end if(flag==0)
       }
-      
+
       nik <- apply(nijk,3,rowSums)
       njk <- apply(nijk,3,colSums)
       nk <- colSums(njk)
@@ -4023,9 +4019,9 @@ gSquareDis <- function(x, y, S, dm, nlev, verbose=FALSE,adaptDF=FALSE){
       t.G2 <- 2 * nijk * log(t.log)
       t.G2[which(is.nan(t.G2),arr.ind=TRUE)] <- 0
       G2 <- sum(t.G2)
-      
-    }                    
-    
+
+    }
+
     if (adaptDF&lenS>0) {
       ## lower the degrees of freedom according to the amount of
       ## zero counts
@@ -4038,12 +4034,12 @@ gSquareDis <- function(x, y, S, dm, nlev, verbose=FALSE,adaptDF=FALSE){
       }
       ## add zero counts corresponding to the number of parents
       ## combinations that are missing
-            df <- max((df-zero.counts),1)
+      df <- max((df-zero.counts),1)
     } # end adaptDF
-    
+
     prob <- 1 - pchisq(G2,df)
-  } # end if/else(number of samples)   
-  prob  
+  } # end if/else(number of samples)
+  prob
 }
 
 gaussCItest <- function(x,y,S,suffStat) {
@@ -4128,7 +4124,7 @@ dsep <- function(a,b,S,g,john.pairs=NA)
     ## if no edge in graph, nodes are d-separated
     res <- TRUE
   }
-  
+
   res
 }
 
@@ -4141,7 +4137,7 @@ dsepTest <- function(x,y,S,suffStat) {
   ## pval == 1; drop edge / d-separated
   g <- suffStat$g
   jp <- suffStat$jp
-  
+
   pval <- 0
   if ((x==y) || (x %in% S) || (y %in% S)) {
     pval <- 0
@@ -4198,7 +4194,7 @@ pdsep <- function(G, suffStat, indepTest, p, sepset, pMax, NAdelete=TRUE,
   ## Author: Markus Kalisch, Date:  9 Dec 2009, 16:01
   n.edgetests <- rep(0,1000)
   max.ord <- 0
-  
+
   allPdsep <- vector("list",p)
 
   ## only start if there is at least one edge
@@ -4211,16 +4207,16 @@ pdsep <- function(G, suffStat, indepTest, p, sepset, pMax, NAdelete=TRUE,
     for (i in 1:dim(ind)[1]) {
       x <- ind[i,1]
       y <- ind[i,2]
-      allZ <- setdiff(which(amat[y,]!=0),x) ## x-y-z      
+      allZ <- setdiff(which(amat[y,]!=0),x) ## x-y-z
       if (length(allZ)>0) {
         for (j in 1:length(allZ)) {
           z <- allZ[j]
           if ((amat[x,z]==0) & !((y %in% sepset[[x]][[z]]) |
                      (y %in% sepset[[z]][[x]]))) {
-##-             if (verbose) {
-##-               cat("\n",x,"*->",y,"<-*",z,"\n") 
-##-               cat("Sxz=",sepset[[z]][[x]],"and","Szx=",sepset[[x]][[z]],"\n")
-##-             }
+            ##-             if (verbose) {
+            ##-               cat("\n",x,"*->",y,"<-*",z,"\n")
+            ##-               cat("Sxz=",sepset[[z]][[x]],"and","Szx=",sepset[[x]][[z]],"\n")
+            ##-             }
 
             ##x o-> y <-o z
             amat[x,y] <- amat[z,y] <- 2
@@ -4228,7 +4224,7 @@ pdsep <- function(G, suffStat, indepTest, p, sepset, pMax, NAdelete=TRUE,
           } ## if ((amat[x,z]==0) & etc.
         } ## for (j in 1:length(allZ))
       } ## if (length(allZ)>0) {
-    } ## for (i in 1:dim(ind)[1]) 
+    } ## for (i in 1:dim(ind)[1])
 
     ## Compute poss. sepsets and test edges again
     for (x in 1:p) {
@@ -4320,12 +4316,12 @@ pdsep <- function(G, suffStat, indepTest, p, sepset, pMax, NAdelete=TRUE,
     G[amat==1] <- TRUE
     G[amat==2] <- TRUE
   } ## if (sum(G) > 0)
-  
-  list(G=G, sepset=sepset, pMax=pMax, allPdsep=allPdsep, max.ord = max.ord, n.edgetests = n.edgetests[1:(max.ord+1)])  
+
+  list(G=G, sepset=sepset, pMax=pMax, allPdsep=allPdsep, max.ord = max.ord, n.edgetests = n.edgetests[1:(max.ord+1)])
 }
 
 ida <- function(x.pos,y.pos,mcov,graphEst,method="local",
-                        y.notparent = FALSE, verbose=FALSE, all.dags=NA)
+                y.notparent = FALSE, verbose=FALSE, all.dags=NA)
 {
   ## Purpose: Estimate the causal effect of x on y; the graphEst and correlation
   ## matrix have to be precomputed; all DAGs can be precomputed;
@@ -4356,22 +4352,22 @@ ida <- function(x.pos,y.pos,mcov,graphEst,method="local",
   amat[which(amat!=0)] <- 1 ## i->j if amat[j,i]==1
   amatSkel <- amat + t(amat)
   amatSkel[amatSkel!=0] <- 1
-  
+
   if (method=="local") {
-  ##############################
-  ## local method
-  ## Main Input: mcov, graphEst
-  ##############################
+##############################
+    ## local method
+    ## Main Input: mcov, graphEst
+##############################
     ## find unique parents of x
-    wgt.est <- wgtMatrix(graphEst)
+    wgt.est <- (wgtMatrix(graphEst)!=0)
+    if (y.notparent) {
+      ## Direct edge btw. x.pos and y.pos towards y.pos
+      wgt.est[x.pos, y.pos] <- FALSE
+    }
     tmp <- wgt.est-t(wgt.est)
     tmp[which(tmp<0)] <- 0
     wgt.unique <- tmp
     pa1 <- which(wgt.unique[x.pos,]!=0)
-    if (y.notparent) {
-      ## remove y.pos as parent node
-      pa1 <- setdiff(pa1, y.pos)
-    }
     if (y.pos %in% pa1) {
       ## x is parent of y -> zero effect
       beta.hat <- 0
@@ -4384,7 +4380,7 @@ ida <- function(x.pos,y.pos,mcov,graphEst,method="local",
         cat("pa1=",pa1,"\n")
         cat("pa2=",pa2,"\n")
       }
-      
+
       ## estimate beta
       if (length(pa2)==0) {
         beta.hat <- lm.cov(mcov,y.pos,c(x.pos,pa1))
@@ -4408,21 +4404,19 @@ ida <- function(x.pos,y.pos,mcov,graphEst,method="local",
         for (i2 in 1:length(pa2)) {
           pa2.f <- pa2[-i2]
           pa2.t <- pa2[i2]
-          if (!y.notparent | (y.notparent & !(y.pos %in% pa2.t)) ) {
-            tmpColl <- check.new.coll(amat,amatSkel,x.pos,pa1,pa2.t,pa2.f)
-            if (!tmpColl) {
-              ii <-  ii+1
-              if (y.pos %in% pa2.t) {
-                beta.hat[ii] <- 0
-              } else {
-                beta.hat[ii] <- lm.cov(mcov,y.pos,c(x.pos,pa1,pa2[i2]))
-                if (verbose) cat("Fit - y:",y.pos,"x:",c(x.pos,pa1,pa2[i2]),
-                                 "|b.hat=",beta.hat[ii],"\n")
-              } ## if (y.pos %in% pa2.t)
-            } ## if (!tmpColl)
-          } ## if (!y.notparent | (y.notparent & !(y.pos %in% pa2.t)) )
+          tmpColl <- check.new.coll(amat,amatSkel,x.pos,pa1,pa2.t,pa2.f)
+          if (!tmpColl) {
+            ii <-  ii+1
+            if (y.pos %in% pa2.t) {
+              beta.hat[ii] <- 0
+            } else {
+              beta.hat[ii] <- lm.cov(mcov,y.pos,c(x.pos,pa1,pa2[i2]))
+              if (verbose) cat("Fit - y:",y.pos,"x:",c(x.pos,pa1,pa2[i2]),
+                               "|b.hat=",beta.hat[ii],"\n")
+            } ## if (y.pos %in% pa2.t)
+          } ## if (!tmpColl)
         } ## for (i2 in 1:length(pa2))
-        
+
         ## higher order subsets of pa2
         if (length(pa2)>1) {
           for (i in 2:length(pa2)) {
@@ -4431,21 +4425,19 @@ ida <- function(x.pos,y.pos,mcov,graphEst,method="local",
             for (j in 1:n.comb) {
               pa2.f <- setdiff(pa2,pa.tmp[,j])
               pa2.t <- pa.tmp[,j]
-              if (!y.notparent | (y.notparent & !(y.pos %in% pa2.t)) ) {
-                tmpColl <- check.new.coll(amat,amatSkel,x.pos,pa1,pa2.t,pa2.f)
-                if (!tmpColl) {
-                  ii <- ii+1
-                  if (y.pos %in% pa2.t) {
-                    beta.hat[ii] <- 0
-                  } else {
-                    beta.hat[ii] <- lm.cov(mcov,y.pos,c(x.pos,pa1,pa.tmp[,j]))
-                    if (verbose) {
-                      cat("Fit - y:",y.pos,"x:",c(x.pos,pa1,pa.tmp[,j]),
-                          "|b.hat=",beta.hat[ii],"\n")
-                    } ## if (verbose)
-                  } ## if (y.pos %in% pa2.t)
-                } ## if (!tmpColl)
-              } ## if (!y.notparent | (y.notparent & !(y.pos %in% pa2.t)) )
+              tmpColl <- check.new.coll(amat,amatSkel,x.pos,pa1,pa2.t,pa2.f)
+              if (!tmpColl) {
+                ii <- ii+1
+                if (y.pos %in% pa2.t) {
+                  beta.hat[ii] <- 0
+                } else {
+                  beta.hat[ii] <- lm.cov(mcov,y.pos,c(x.pos,pa1,pa.tmp[,j]))
+                  if (verbose) {
+                    cat("Fit - y:",y.pos,"x:",c(x.pos,pa1,pa.tmp[,j]),
+                        "|b.hat=",beta.hat[ii],"\n")
+                  } ## if (verbose)
+                } ## if (y.pos %in% pa2.t)
+              } ## if (!tmpColl)
             } ## for (j in 1:n.comb)
           } ## for (i in 2:length(pa2))
         } ## if (length(pa2)>1)
@@ -4453,13 +4445,18 @@ ida <- function(x.pos,y.pos,mcov,graphEst,method="local",
     } ## if (y.pos %in% pa1)
 
   } else {
-  ##############################
-  ## global method
-  ## Main Input: mcov, graphEst
-  ##############################
+##############################
+    ## global method
+    ## Main Input: mcov, graphEst
+##############################
     p <- numNodes(graphEst)
     am.pdag <- wgtMatrix(graphEst)
     am.pdag[am.pdag!=0] <- 1
+    if (y.notparent) {
+      ## Direct edge btw. x.pos and y.pos towards y.pos
+      am.pdag[x.pos, y.pos] <- 0
+    }
+
     ## find all DAGs if not provided externally
     if (is.na(all.dags)) {
       ad <- allDags(am.pdag,am.pdag,NULL)
@@ -4473,32 +4470,30 @@ ida <- function(x.pos,y.pos,mcov,graphEst,method="local",
       gDag <- as(matrix(ad[i,],p,p),"graphNEL")
       ## path from y to x
       ## rev.pth <- sp.between(gDag,as.character(y.pos),
-         ##                    as.character(x.pos))[[1]]$path
+      ##                    as.character(x.pos))[[1]]$path
       ## if (length(rev.pth)>1) {
-        ## if reverse path exists, beta=0
+      ## if reverse path exists, beta=0
       ##  beta.hat[i] <- 0
       ## } else {
-        ## path from x to y
- ##       pth <- sp.between(gDag,as.character(x.pos),
-   ##                       as.character(y.pos))[[1]]$path
-     ##   if (length(pth)<2) {
-          ## sic! There is NO path from x to y
-       ##   beta.hat[i] <- 0
-       ## } else {
-          ## There is a path from x to y
-          wgt.unique <- t(matrix(ad[i,],p,p)) ## wgt.est is wgtMatrix of DAG
-          pa1 <- which(wgt.unique[x.pos,]!=0)
-          if (!y.notparent | (y.notparent & !(y.pos %in% pa1)) ) {
-            if (y.pos %in% pa1) {
-              beta.hat[i] <- 0
-            } else {
-              beta.hat[i] <- lm.cov(mcov,y.pos,c(x.pos,pa1))
-              if (verbose) cat("Fit - y:",y.pos,"x:",c(x.pos,pa1),
-                               "|b.hat=",beta.hat[i],"\n")              
-            } ## if (y.pos %in% pa1)
-          } ## if (!y.notparent | (y.notparent & !(y.pos %in% pa1)) )
+      ## path from x to y
+      ##       pth <- sp.between(gDag,as.character(x.pos),
+      ##                       as.character(y.pos))[[1]]$path
+      ##   if (length(pth)<2) {
+      ## sic! There is NO path from x to y
+      ##   beta.hat[i] <- 0
+      ## } else {
+      ## There is a path from x to y
+      wgt.unique <- t(matrix(ad[i,],p,p)) ## wgt.est is wgtMatrix of DAG
+      pa1 <- which(wgt.unique[x.pos,]!=0)
+      if (y.pos %in% pa1) {
+        beta.hat[i] <- 0
+      } else {
+        beta.hat[i] <- lm.cov(mcov,y.pos,c(x.pos,pa1))
+        if (verbose) cat("Fit - y:",y.pos,"x:",c(x.pos,pa1),
+                         "|b.hat=",beta.hat[i],"\n")
+      } ## if (y.pos %in% pa1)
       ##  } ## if length(pth)
-     ## } ## if rev.pth
+      ## } ## if rev.pth
     } ## for n.dags
   } ## if (method = "local")
   beta.hat
@@ -4515,7 +4510,7 @@ idaFast <- function(x.pos,y.pos.set,mcov,graphEst)
   ## Arguments:
   ## - x.pos, y.pos: Column of x and y in d.mat
   ## - mcov: Covariance matrix that was used to estimate graphEst
-  ## - graphEst: Fit of PC Algorithm (semidirected) 
+  ## - graphEst: Fit of PC Algorithm (semidirected)
   ## ----------------------------------------------------------------------
   ## Value: list of causal values; one list element for each element of
   ## y.pos.set
@@ -4529,7 +4524,7 @@ idaFast <- function(x.pos,y.pos.set,mcov,graphEst)
   amat[which(amat!=0)] <- 1 ## i->j if amat[j,i]==1
   amatSkel <- amat + t(amat)
   amatSkel[amatSkel!=0] <- 1
-  
+
   ## find unique and ambiguous parents of x
   wgt.est <- (wgtMatrix(graphEst)!=0)
   tmp <- wgt.est-t(wgt.est)
@@ -4543,9 +4538,9 @@ idaFast <- function(x.pos,y.pos.set,mcov,graphEst)
 
   ## estimate beta
   if (length(pa2)==0) {
-      beta.tmp <- lm.cov(mcov,y.pos.set,c(x.pos,pa1)) ####
-      beta.tmp[y.pos.set %in% pa1] <- 0
-      beta.hat <- cbind(beta.hat,beta.tmp)
+    beta.tmp <- lm.cov(mcov,y.pos.set,c(x.pos,pa1)) ####
+    beta.tmp[y.pos.set %in% pa1] <- 0
+    beta.hat <- cbind(beta.hat,beta.tmp)
   } else {    ## at least one undirected parent
     ## no member of pa2
     pa2.f <- pa2
@@ -4568,7 +4563,7 @@ idaFast <- function(x.pos,y.pos.set,mcov,graphEst)
         beta.hat <- cbind(beta.hat, beta.tmp)
       } ## if (!tmpColl)
     } ## for (i2 in 1:length(pa2))
-    
+
     ## higher order subsets of pa2
     if (length(pa2)>1) {
       for (i in 2:length(pa2)) {
@@ -4587,8 +4582,8 @@ idaFast <- function(x.pos,y.pos.set,mcov,graphEst)
       } ## for (i in 2:length(pa2))
     } ## if (length(pa2)>1)
   } ## if (length(pa2) == 0)
-
-beta.hat
+  if (nrow(beta.hat)>0) rownames(beta.hat) <- as.character(y.pos.set)
+  beta.hat
 }
 
 legal.psep <- function(a,b,c,amat)
@@ -4620,7 +4615,7 @@ legal.psep <- function(a,b,c,amat)
 qreach <- function(x,amat,verbose=FALSE)
 {
   ## Purpose: Compute possible-d-sep(x) ("psep")
-  ## !! The non-zero entries in amat must be symmetric !! 
+  ## !! The non-zero entries in amat must be symmetric !!
   ## ----------------------------------------------------------------------
   ## Arguments:
   ## - x: node of which psep berechnet werden soll
@@ -4664,13 +4659,13 @@ qreach <- function(x,amat,verbose=FALSE)
   ## check: quadratic; x in V; edgemarks ok; non-zeroes symmetric
   stopifnot((ncol(amat)==nrow(amat)),x<=ncol(amat),all(amat %in% c(0,1,2)),
             all((amat!=0)==(t(amat!=0))))
-  amat.tmp <- amat  
+  amat.tmp <- amat
 
   nb <- which(amat[x,]!=0)
-  Q <- nb 
+  Q <- nb
   P <- rep(x,length(Q))
   PSEP <- nb
-  
+
   amat.tmp[x,nb] <- 0 ## delete edge to nbrs
 
   while(length(Q) > 0) {
@@ -4691,7 +4686,7 @@ qreach <- function(x,amat,verbose=FALSE)
     if (verbose) cat("Select",pred,"towards",a,"\n")
     nb <- which(amat.tmp[a,]!=0) ## (*)
     if (verbose) cat("Check nbrs",nb,"\nLegal:")
-    
+
     if (length(nb)>0) {
       for (i in 1:length(nb)) {
         b <- nb[i]
@@ -4709,26 +4704,7 @@ qreach <- function(x,amat,verbose=FALSE)
   sort(unique(setdiff(PSEP,x)))
 }
 
-##################################################
-## Classes
-##################################################
-setClass("gAlgo",
-         representation(call = "call",
-	      n	   = "integer",
-	      max.ord = "integer",
-	      n.edgetests= "numeric",
-              sepset= "list",
-              pMax= "matrix"), "VIRTUAL")
-
-
-setClass("fciAlgo",
-         representation(amat = "matrix", allPdsep = "list",
-                        n.edgetestsPDSEP = "numeric", max.ordPDSEP = "integer"),
-         contains = "gAlgo")
-
-setClass("pcAlgo",
-         representation(graph = "graph", zMin = "matrix"), ## zMin for compatibility
-         contains = "gAlgo")
+### Classes -->  AllClasses.R
 
 ##################################################
 ## Methods
@@ -4799,70 +4775,83 @@ setMethod("plot", signature(x = "pcAlgo"),
           function(x, y, main = NULL, zvalue.lwd = FALSE, lwd.max = 7,
                    labels = NULL, ...)
       {
-	if(is.null(main))
-	    main <- deparse(x@call)
-        attrs <- list()
-        nodeAttrs <- list()
-        if (!is.null(labels)) {
-          attrs$node <- list(shape = "ellipse", fixedsize = FALSE)
-          names(labels) <- nodes(x@graph)
-          nodeAttrs$label <- labels
-        }
+          if (!require(Rgraphviz))
+              stop("Install package 'Rgraphviz' (from Bioconductor) for plotting graphs!")
 
-        if (zvalue.lwd & numEdges(x@graph)!=0) {
-          lwd.Matrix <- x@zMin
-          lwd.Matrix <- ceiling(lwd.max*lwd.Matrix/max(lwd.Matrix))
-          z <- agopen(x@graph,
-                     name="lwdGraph",
-                     nodeAttrs = nodeAttrs,
-                     attrs = attrs)
-          eLength <- length(z@AgEdge)
-          for (i in 1:eLength) {
-            x <- as.numeric(z@AgEdge[[i]]@head)
-            y <- as.numeric(z@AgEdge[[i]]@tail)
-            z@AgEdge[[i]]@lwd <- lwd.Matrix[x,y]
+          ## else :
+
+          if(is.null(main))
+              main <- deparse(x@call)
+          attrs <- list()
+          nodeAttrs <- list()
+          if (!is.null(labels)) {
+              attrs$node <- list(shape = "ellipse", fixedsize = FALSE)
+              names(labels) <- nodes(x@graph)
+              nodeAttrs$label <- labels
           }
-          plot(z, main = main, ...)
-        } else {
-          plot(x@graph, nodeAttrs = nodeAttrs, main = main,
-               attrs = attrs, ...)
-        }
+
+          if (zvalue.lwd & numEdges(x@graph)!=0) {
+              lwd.Matrix <- x@zMin
+              lwd.Matrix <- ceiling(lwd.max*lwd.Matrix/max(lwd.Matrix))
+              z <- agopen(x@graph,
+                          name="lwdGraph",
+                          nodeAttrs = nodeAttrs,
+                          attrs = attrs)
+              eLength <- length(z@AgEdge)
+              for (i in 1:eLength) {
+                  x <- as.numeric(z@AgEdge[[i]]@head)
+                  y <- as.numeric(z@AgEdge[[i]]@tail)
+                  z@AgEdge[[i]]@lwd <- lwd.Matrix[x,y]
+              }
+              Rgraphviz::plot(z, main = main, ...)
+          } else {
+              Rgraphviz::plot(x@graph, nodeAttrs = nodeAttrs, main = main,
+                              attrs = attrs, ...)
+          }
       })
 
 setMethod("plot", signature(x = "fciAlgo"),
           function(x, y, main = NULL)
-          {
-            amat <- x@amat
-            g <- as(amat,"graphNEL")
-            nn <- nodes(g)
-            p <- numNodes(g)
-            n.edges <- numEdges(g)
-            ah.list <- at.list <- rep("none",n.edges)
-            counter <- 0
-            list.names <- NULL
-            amat[amat==1] <- "odot"
-            amat[amat==2] <- "normal"
-            amat[amat==3] <- "none"
-            for (i in 1:(p-1)) {
+      {
+          if (!require(Rgraphviz))
+              stop("Install package 'Rgraphviz' (from Bioconductor) for plotting graphs!")
+
+          ## else :
+
+          amat <- x@amat
+          g <- as(amat,"graphNEL")
+          nn <- nodes(g)
+          p <- numNodes(g)
+          n.edges <- numEdges(g)
+          ah.list <- at.list <- rep("none",n.edges)
+          counter <- 0
+          list.names <- NULL
+          amat[amat==1] <- "odot"
+          amat[amat==2] <- "normal"
+          amat[amat==3] <- "none"
+          for (i in 1:(p-1)) {
               for (j in (i+1):p) {
-                x <- nn[i]
-                y <- nn[j]
-                if (amat[x,y]!=0) {
-                  counter <- counter + 1
-                  ah.list[[counter]] <- amat[x,y]
-                  at.list[[counter]] <- amat[y,x]
-                  list.names <- c(list.names,paste(x,"~",y,sep=""))
-                }
+                  x <- nn[i]
+                  y <- nn[j]
+                  if (amat[x,y]!=0) {
+                      counter <- counter + 1
+                      ah.list[[counter]] <- amat[x,y]
+                      at.list[[counter]] <- amat[y,x]
+                      list.names <- c(list.names,paste(x,"~",y,sep=""))
+                  }
               }
-            }
-            names(ah.list) <- names(at.list) <- list.names
-            
-            edgeRenderInfo(g) <- list(arrowhead=ah.list,arrowtail=at.list)
-            renderGraph(layoutGraph(g))
-          })
+          }
+          names(ah.list) <- names(at.list) <- list.names
+
+          edgeRenderInfo(g) <- list(arrowhead=ah.list,arrowtail=at.list)
+          renderGraph(layoutGraph(g))
+      })
 
 
-plotSG <- function( graphObj, y, dist, amat = NA, directed = TRUE ){
+plotSG <- function(graphObj, y, dist, amat = NA, directed = TRUE,
+                   main = paste("Subgraph of ", deparse(substitute(graphObj)),
+                   "\nfrom ", y, " with distance ", dist ))
+{
   ## Title:
   ## Plot (directed) subgraph
   ## ----------------------------------------------------------------------
@@ -4889,56 +4878,46 @@ plotSG <- function( graphObj, y, dist, amat = NA, directed = TRUE ){
   ## ----------------------------------------------------------------------
   ## Author: Daniel Stekhoven, Date: 26 Jan 2010, 08:56
   ## ----------------------------------------------------------------------
-  ## References:
-  ## ----------------------------------------------------------------------
-  .graphObj <- sub('(.*)\\(\\)','\\1', sys.call()[2])
-  .title <- paste( "Subgraph of", .graphObj, "\nfrom", y, "with distance", dist )
-  
+  if (!require(Rgraphviz))
+    stop("You need to install Rgraphviz for plotting graphs!")
+  stopifnot(dist >= 1)
+
   ## Extract adjacency matrix (if necessary)
-  if ( any( is.na( amat ) ) )
-    amat <- wgtMatrix( graphObj )
+  if (any( is.na(amat)))
+    amat <- wgtMatrix(graphObj)
 
   ## Diagonalise (has no effect if already diagonal)
   amat[amat != 0] <- 1
   amat <- amat + t(amat)
-  diag( amat ) <- 0 # can that happen anyway??
+  diag(amat) <- 0 # can that happen anyway??
   amat[amat == 2] <- 1
-  
+
   ## Find connected nodes hierarchically
   nh <- which( amat[y,] == 1 )
   rel.nodes <- c( y, nh )
-  if ( dist != 1 ){
-    for ( t.dist in 1:( dist-1 ) ){
-      if ( length( nh ) == 1 ){
-        .nh <- which( amat[nh,] == 1 )
-      } else {
-        if ( length( nh ) != 0 ){
-          .nh <- which( amat[nh,] == 1, arr.ind = TRUE )[,"col"]
-        } else {
-          .nh <- NULL
-        }
-      }
-      nh <- .nh
+  if (dist > 1) {
+    for (i in seq_len(dist-1L)) {
+      nh <- { if ( length(nh) == 1 )
+		  which( amat[nh,] == 1 )
+	      else if (length(nh) != 0)
+		  which( amat[nh,] == 1, arr.ind = TRUE )[,"col"]
+	      ## else NULL
+       }
       rel.nodes <- unique( c( rel.nodes, nh ) )
     }
   }
 
   ## Name nodes
-  if ( class( graphObj )[1] == "graphNEL" )
-    names( rel.nodes ) <- graphObj@nodes[rel.nodes]
+  if(is(graphObj, "graphNEL"))
+    names(rel.nodes) <- graphObj@nodes[rel.nodes]
 
-  ## Plot subgraph - distinguish between directed edges or not
-  if ( directed ){
-    sg <- subGraph( as.character( rel.nodes ), graphObj )
-    plot( sg )
-  } else {
-    nh.amat <- amat[rel.nodes, rel.nodes]
-    sg <- as( nh.amat, "graphNEL" )
-    plot( sg )
-  }
-  title( .title )
+  ## subgraph - distinguish between directed edges or not
+  sg <- { if (directed)
+	      subGraph(as.character(rel.nodes), graphObj) else
+	  as( amat[rel.nodes, rel.nodes], "graphNEL") }
+  ## Plot subgraph
+  Rgraphviz::plot( sg )
+  if(!is.null(main) && !is.na(main))
+      title(main=main)
+  invisible(sg)
 }
-
-
-
-

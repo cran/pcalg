@@ -126,7 +126,7 @@ doPdsep = TRUE)
 \seealso{\code{\link{skeleton}} for estimating a skeleton
   using the PC algorithm; \code{\link{pc}} for estimating a CPDAG using
   the PC algorithm; \code{\link{pdsep}} for computing
-  possible d-sep for each node and testing and adapting the graph
+  Possible-D-Sep for each node and testing and adapting the graph
   accordingly; \code{\link{qreach}} for a fast way of finding possible d-sep
     for a given node; \code{\link{gaussCItest}},
   \code{\link{disCItest}}, \code{\link{binCItest}} and

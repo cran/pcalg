@@ -72,7 +72,19 @@ Class \code{"\linkS4class{gAlgo}"}.
       }
 
       \examples{
+## look at slots of the class
 showClass("fciAlgo")
+\dontrun{
+## Suppose, fciObj is an object of class fciAlgo
+## access slots by using the @ symbol
+fciObj@amat ## adjacency matrix
+fciObj@sepset ## separation sets
+
+## use show, summary and plot method
+show(fciObj)
+summary(fciObj)
+plot(fciObj)
+}
 }
 
 \keyword{classes}

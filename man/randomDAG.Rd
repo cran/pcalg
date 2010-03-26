@@ -25,7 +25,7 @@ randomDAG(n, prob, lB = 0.1, uB = 1)
 \details{
   The \code{n} nodes are ordered.  Start with first node.  Let the
   number of nodes with higher order be k.  Then, the number of
-  neighbouring nodes is drawn as Bin(k,\code{prob}).  The neighbours are
+  neighbouring nodes is drawn as Bin(k, \code{prob}).  The neighbours are
   then drawn without replacement from the nodes with higher order.  For
   each node, a weight is uniformly sampled from \code{lB} to \code{uB}.
   This procedure is repeated for the next node in the original ordering
@@ -39,9 +39,11 @@ randomDAG(n, prob, lB = 0.1, uB = 1)
   Markus Kalisch (\email{kalisch@stat.math.ethz.ch}) and Martin Maechler
 }
 \examples{
+if (require(Rgraphviz)) {
 set.seed(101)
 myDAG <- randomDAG(n = 20, prob= 0.2, lB = 0.1, uB = 1)
 plot(myDAG)
+}
 }
 \keyword{graphs}
 \keyword{datagen}

@@ -29,22 +29,11 @@ pcSelect.presel(y, dm, alpha, alphapre, corMethod = "standard", verbose = 0, dir
   \item{Xnew}{Preselected Variables.}
 }
 \details{
-  This function basically applies \code{\link{pcAlgo}} on the data
-  matrix obtained by joining \code{y} and \code{dm}. Since the output is
-  not concerned with the edges found within the columns of \code{dm},
-  the algorithm is adapted accordingly. Therefore, the runtime and the
-  ability to deal with large datasets is typically increased quite a
-  lot.
-
   First, \code{pcSelect} is run using \code{alphapre}. Then,
   only the important variables are kept and \code{pcSelect} is run on
   them again.
 }
-\references{
-  P. Spirtes, C. Glymour and R. Scheines (2000)
-  \emph{Causation, Prediction, and Search}, 2nd edition, The MIT Press.
-}
-\seealso{\code{\link{pcAlgo}} which is the more general version of this function.
+\seealso{\code{\link{pcSelect}}
 }
 \author{
   Philipp Ruetimann.
