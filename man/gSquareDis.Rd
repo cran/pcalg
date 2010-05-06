@@ -50,5 +50,6 @@ dat <- cbind(x,y,z)
 
 ## Analyze data
 gSquareDis(1,3,2,dat,nlev = c(3,4,2))
+gSquareDis(1,3,2,dat,nlev = c(3,4,2), verbose=TRUE, adaptDF=TRUE)
 }
 

@@ -87,7 +87,8 @@ export(randomDAG,
        triple2numb,
        pc.cons.intern,
        checkTriple,
-       faith.check)
+       faith.check,
+       rfci)
 
 exportClasses("pcAlgo",
               "fciAlgo",

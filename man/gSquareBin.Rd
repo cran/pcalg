@@ -71,9 +71,13 @@ dat <- cbind(x1,x2,x3)
 gSquareBin(3,1,NULL,dat, verbose=TRUE)
 gSquareBin(3,1, 2,  dat)
 gSquareBin(1,3, 2,  dat) # the same
+gSquareBin(1,3, 2,  dat, adaptDF=TRUE)
 \dontshow{
 stopifnot(all.equal(gSquareBin(3,1, 2, dat),
-                    gSquareBin(1,3, 2, dat)))
+                    gSquareBin(1,3, 2, dat)),
+          all.equal(gSquareBin(3,1, 2, dat, adaptDF=TRUE),
+                    gSquareBin(1,3, 2, dat, adaptDF=TRUE))
+)
 }
 }
 

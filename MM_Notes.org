@@ -47,16 +47,15 @@
 * DESCRIPTION:
 ** Depends:  too many; I do not believe they are all "dependently" needed.
 
-*** DONE Look at ./NAMESPACE  and replace *ALL*  the  Imports() by
-     ImportsFrom(.)
-
-*** TODO Remove more 'Depends:': vcd;  probably RBGL, abind, corpcor
+*** DONE Remove more 'Depends:': vcd, RBGL.
     - vcd: I've eliminated it, and all the 'R CMD check' still run
-    - abind: abind() needed in gSquareBin() & *Dis() -- once only, each
-    - corpcor: pseudoinverse() [ -> fast.svd() .. non-optimal "A %% diag(.)" ]
     - RBGL: .. ok, only a few needed
     - graph: import quite a few; now found all examples -- is this (not
       attaching 'graph') acceptable to the current pcalg users ?
+**** Note: 'abind' and 'corpcor' are kept *ONLY* because they have no namespace!
+    - abind: abind() needed in gSquareBin() & *Dis() -- once only, each
+    - corpcor: pseudoinverse() [ -> fast.svd() .. non-optimal "A %% diag(.)" ]
+
 
 
 * Remarks on specific functions and issues:
@@ -85,3 +84,22 @@
 ** ida():  argument  'all.dags' is never used, i.e., never tested.
 
 ** dsepTest(): gibt 0 / 1  zurück; wieso nicht einfach FALSE/TRUE wie dsep()?
+
+* NAMESPACE:
+
+*** DONE Look at ./NAMESPACE  and replace *ALL*  the  Imports() by
+     ImportsFrom(.)
+
+
+
+*** TODO What do we export / what not?
+    Currently, there is  ./man/pcalg-internal.Rd   with man \alias{}es
+    and only few functions in "Usage".
+    The concept of such "internal" functions really *predates* the use
+    of NAMESPACEs and is now obsolete.
+
+    I think almost all of these should be *removed* for the *.Rd page,
+    *and* from NAMESPACE.
+    Very few maybe could be kept, but then we should plan to document them
+    (on a different *.Rd file)
+**** Goal: Get rid of ./man/pcalg-internal.Rd   entirely.

@@ -20,12 +20,16 @@ for (i in 1:nreps) {
   all.eff.true[i] <- eff.true
   ## cat("x=",x," y=",y," eff=",eff.true,"\n")
 
-  eff.est <- Rnd(ida(x,y, mcov, myCPDAG, method="local", verbose=FALSE))
+  eff.est <- Rnd(ida(x,y, mcov, myCPDAG, method="local"))
   res[i] <- (eff.true %in% eff.est)
 }
+cat('Time elapsed: ', (.pt <- proc.time()),"\n")
 
 stem(all.eff.true)
-
 if (!all(res)) stop("Test ida: True effects were not recovered!")
 
-cat('Time elapsed: ', proc.time(),"\n")
+## *one* test for  method="global" :
+eff.g.est <- Rnd(ida(x,y, mcov, myCPDAG, method="global", verbose=TRUE))
+stopifnot(identical(eff.est, eff.g.est))
+
+cat('Time elapsed additionally: ', proc.time() - .pt,"\n")

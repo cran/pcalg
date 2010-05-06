@@ -12,7 +12,7 @@
 %%\VignetteIndexEntry{Causal Inference: The pcalg R package}
 %%\VignetteDepends{pcalg, sfsmisc}
 \SweaveOpts{engine=R,eps=FALSE,pdf=TRUE,width=7,height=4}
-\SweaveOpts{keep.source=TRUE,strip.white=TRUE}
+\SweaveOpts{keep.source=TRUE,strip.white=true}
 %           ^^^^^^^^^^^^^^^^ preserve comments (and all) in R chunks
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -20,11 +20,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% almost as usual
-\newcommand*{\AUT}[1]{{\small #1} \\ {\small ETH Zurich}}
+\newcommand*{\AUT}[1]{{\normalsize #1} \\ {\small ETH Zurich}}
 \author{
   \AUT{Markus Kalisch} \And
   \AUT{Martin M\"achler} \And
-  \AUT{Diego Colombo} \And
+  \AUT{Diego Colombo} \AND
   \AUT{Marloes H. Maathuis} \And
   \AUT{Peter B\"uhlmann}}
 \title{Causal Inference using Graphical Models with the \proglang{R} Package \pkg{pcalg}}
@@ -32,11 +32,11 @@
 %% for pretty printing and a nice hypersummary also set:
 \Plainauthor{Markus Kalisch, Martin M\"achler, Diego Colombo, Marloes
   H. Maathuis, Peter B\"uhlmann} %% comma-separated
-\Plaintitle{Causal Inference using Graphical Models: The package pcalg} %% without formatting
+\Plaintitle{Causal Inference using Graphical Models: The R package pcalg} %% without formatting
 \Shorttitle{Causal Graphical Models: Package pcalg} %% a short title (if necessary)
 
 %% an abstract and keywords
-\Abstract{ The \pkg{pcalg} package for \proglang{R} is a tool for
+\Abstract{ The \pkg{pcalg} package for \proglang{R} (\cite{citeR})is a tool for
   estimating intervention effects when the true underlying causal structure
   is unknown. To this end, \pkg{pcalg} contains functions for estimating
   the causal structure using graphical models (functions \code{skeleton},
@@ -87,7 +87,8 @@
 options(SweaveHooks=
         list(fig=function() par(mar=c(5.1, 4.1, 1.1, 2.1))),
         width = 75,
-        digits = 5)
+        digits = 5,
+        prompt = "R> ")
 @
 %% include your article here, just as usual
 %% Note that you should use the \pkg{}, \proglang{} and \code{} commands.
@@ -101,8 +102,9 @@ used to find these relationships. In many settings, however, experiments
 are infeasible because of time, cost or ethical constraints.
 
 Recently, we proposed and mathematically justified a statistical method
-(IDA) to obtain bounds on total causal effects based on observational data
-under some assumptions (see \cite{BuKaMa09}). Furthermore, we presented an
+(IDA - intervention calculus when a directed acyclic graph is absent) to
+obtain bounds on total causal effects based on observational data under
+some assumptions (see \cite{BuKaMa09}). Furthermore, we presented an
 experimental validation of our method on a large-scale biological system
 (see \cite{NatMethods10}).
 
@@ -118,8 +120,8 @@ typical application. Suppose we have a system described by some
 variables and many observations of this system. Furthermore, assume
 that it seems plausible that there are no hidden variables and no
 feedback loops in the underlying causal system. The causal structure
-of such a system can be conveniently represented by a Directed Acyclic
-Graph (DAG), where each node represents a variable and each arrow
+of such a system can be conveniently represented by a directed acyclic
+graph (DAG), where each node represents a variable and each arrow
 represents a direct cause. We are interested in the change of variable
 Y if we changed the variable X by intervention, i.e., we seek the
 causal effect of X on Y.  To fix ideas, we have simulated an example
@@ -127,20 +129,20 @@ data set with $p = 8$ continuous variables with Gaussian noise and $n
 = 5000$ observations, which we will now analyse. First, we load the
 package \pkg{pcalg} and the data set.
 
+%% Used to generate "gmG" gaussianData
 <<def-gmG, eval=FALSE, echo=FALSE>>=
-## Used to generate "gmG" gaussianData
 set.seed(40)
 p <- 8
 n <- 5000
-gGtrue <- randomDAG(p, prob = 0.3) ## true DAG
+gGtrue <- randomDAG(p, prob = 0.3)
 gmG <- list(x = rmvDAG(n, gGtrue), g = gGtrue)
 @
 
 % insert below for testing:
 % .libPaths() ## <<-- just for "testing"
 <<exIntro1>>=
-library(pcalg)
-data(gmG)
+library("pcalg")
+data("gmG")
 @
 
 In the next step, we use the function \code{pc} to produce an estimate
@@ -165,8 +167,8 @@ result.
 <<Iplot, echo=FALSE, eval=FALSE>>=
 stopifnot(require(Rgraphviz))# needed for all our graph plots
 par(mfrow = c(1,2))
-plot(gmG$g,  main = "True DAG")
-plot(pc.fit, main = "Estimated DAG")
+plot(gmG$g, main = "")
+plot(pc.fit, main = "")
 @
 
 <<exIntroPlot>>=
@@ -180,12 +182,11 @@ pc.fit <- pc(suffStat, indepTest = gaussCItest,
 <<exIntroPlot, echo=FALSE, fig=TRUE>>=
 <<Iplot>>
 @
-\caption{True and estimated causal structure represented by a Directed
-  Acyclic Graph (DAG).}
+\caption{True (left) and estimated (right) causal structure represented by a DAG.}
 \label{fig:intro1}
 \end{figure}
 
-As can be seen in Fig.~\ref{fig:intro1}, there are directed and bidirected
+As can be seen in Fig. \ref{fig:intro1}, there are directed and bidirected
 edges in the estimated causal structure. The directed edges show the
 presence and direction of direct causal effects. The direction of the
 bidirected edges, however, could not be decided by our method. Thus, they
@@ -272,7 +273,7 @@ with a rule for interpreting this graph. In general, nodes in the graph
 represent (random) variables and edges represent some kind of dependence.
 
 \subsubsection{Without hidden and selection variables}
-An example of a graphical model is the Directed Acyclic Graph (DAG)
+An example of a graphical model is the DAG
 model. The physical map here is a graph consisting of nodes and arrows
 (only one arrowhead per line) connecting the nodes. As a further
 restriction, the arrows must be directed in a way, so that it is not
@@ -328,7 +329,7 @@ class have the same directed edge. Arrows that point into one direction for
 some DAGs in the equivalence class and in the other direction for other
 DAGs in the equivalence class are visualized by bidirected edges
 (sometimes, undirected edges are used instead). This graph is called
-Completed Partially Directed Acyclic Graph (CPDAG).
+completed partially directed acyclic graph (CPDAG).
 
 \begin{algorithm}[h]
 \caption{Outline of the PC-algorithm}
@@ -391,8 +392,8 @@ directed.
 \subsubsection{With hidden or selection variables}
 When discovering causal relations from nonexperimental data, two
 difficulties arise. One is the problem of hidden (or latent) variables:
-factors influencing two or more measured variables may not themselves be
-measured. The other is the problem of selection bias: values of the
+Factors influencing two or more measured variables may not themselves be
+measured. The other is the problem of selection bias: Values of the
 variables or features under study may themselves influence whether a unit
 is included in the data sample.
 
@@ -434,7 +435,7 @@ rules that restrict the direction of edges:
   \item[2:] There are no arrowheads present at a vertex which is an
     endpoint of an undirected edge.
 \end{description}
-\emph{Maximal Ancestral Graphs (MAG)}, which we will use from now on, also
+Maximal ancestral graphs (MAG), which we will use from now on, also
 obey a third rule:
 \begin{description}
 \item[3:] Every missing edge corresponds to a conditional independence.
@@ -458,11 +459,11 @@ oracle is in general impossible. One only reports on the equivalence class
 in which the true MAG lies.
 
 An equivalence class of a MAG can be uniquely represented by a
-\emph{Partial Ancestral Graph (PAG)} (see
+Partial ancestral graph (PAG) (see
 \cite{Zhang08-orientation-rules}). A PAG contains the following types of
 edges: o--o, o--, o-->, -->, <-->, --. Roughly, the bidirected edges come
 from hidden variables, and the undirected edges come from selection
-variables. The edges have the following interpretation: (i) there is an
+variables. The edges have the following interpretation: (i) There is an
 edge between $x$ and $y$ if and only if $x$ and $y$ are conditionally
 dependent given S for all sets S consisting of all selection variables and
 a subset of the observed variables; (ii) a tail on an edge means that this
@@ -553,8 +554,7 @@ errors due to finite sample size blur the result as with every statistical
 method. Thus, in a real world situation, we only get an estimate of the set
 of possible causal values. It was shown that this
 estimate is consistent under some assumptions by \cite{BuKaMa09}. The
-method was termed "IDA" (\textbf{I}ntervention calculus when the
-\textbf{D}AG is \textbf{a}bsent).
+method was termed IDA.
 
 It has recently been shown empirically that despite the described
 fundamental limitations in identifying the causal effect uniquely and
@@ -577,7 +577,7 @@ assumptions are made.
   and satisfies some regularity conditions on the partial correlations, and
   $\alpha$ is taken to zero appropriately.  See \cite{KaBu07a} for full
   details. Consistency in a standard asymptotic regime with a fixed number
-  of variables follows as a special case. 
+  of variables follows as a special case.
 
 \item[FCI-algorithm:] Consistent in high-dimensional settings if the
   underlying MAG is sparse (in a stronger sense than what is needed for
@@ -614,7 +614,7 @@ Alternatives to this package for estimating graphical models in
 \proglang{R} include: \pkg{bnlearn}, \pkg{deal}, \pkg{gRain}, \pkg{gRbase}
 and \pkg{gRc}.
 
-\subsection{skeleton}\label{sec:skel}
+\subsection{Skeleton}\label{sec:skel}
 The function \code{skeleton()} implements (P1) and (P2) from
 Algorithm~\ref{algo:pc}. The function can be called with the following
 arguments
@@ -649,21 +649,21 @@ the input has to be a list containing the correlation matrix and the sample
 size of the data.  In the following code, we estimate the skeleton on the
 data set \code{gmG} (which consists of $p=8$ variables and $n=5000$
 samples) and plot the results. The estimated skeleton and the true
-underlying DAG are shown in Fig.~\ref{fig:skelExpl}.
+underlying DAG are shown in Fig. \ref{fig:skelExpl}.
 \begin{figure}
   \centering
 <<skelExpl1Plot, fig=TRUE>>=
 require("pcalg")
-data(gmG)
+data("gmG")
 suffStat <- list(C = cor(gmG$x), n = nrow(gmG$x))
 pc.fit <- skeleton(suffStat, indepTest = gaussCItest,
                    p = ncol(gmG$x), alpha = 0.01)
 par(mfrow = c(1,2))
-plot(gmG$g, main = "True DAG")
-plot(pc.fit, main = "Estimated Skeleton")
+plot(gmG$g, main = "")
+plot(pc.fit, main = "")
 @
-\caption{True DAG and estimated skeleton fitted on the Gaussian data set
-  provided by the package using the function \code{skeleton()}.}
+\caption{True DAG (left) and estimated skeleton (right) fitted on the Gaussian data set
+  provided by the package.}
 \label{fig:skelExpl}
 \end{figure}
 
@@ -675,20 +675,20 @@ statistic and takes as input a list containing the data matrix, a
 vector specifying the number of levels for each variable and an option
 which indicates if the degrees of freedom must be lowered by one for
 each zero count. Finally, we plot the result. The estimated skeleton
-and the true underlying DAG are shown in Fig.~\ref{fig:skel2}.
+and the true underlying DAG are shown in Fig. \ref{fig:skel2}.
 \begin{figure}
   \centering
 <<skelExp2Plot, fig = TRUE, echo = FALSE>>=
-data(gmD)
+data("gmD")
 suffStat <- list(dm = gmD$x, nlev = c(3,2,3,4,2), adaptDF = FALSE)
 skel.fit <- skeleton(suffStat, indepTest = disCItest,
                      p = ncol(gmD$x), alpha = 0.01)
 par(mfrow = c(1,2))
-plot(gmD$g, main = "True DAG")
-plot(skel.fit, main = "Estimated Skeleton")
+plot(gmD$g, main = "")
+plot(skel.fit, main = "")
 @
-\caption{True DAG and estimated skeleton fitted on the discrete data set
-  provided by the package using function \code{skeleton()}.}
+\caption{True DAG (left) and estimated skeleton (right) fitted on the
+  discrete data set provided by the package.}
 \label{fig:skel2}
 \end{figure}
 
@@ -784,7 +784,7 @@ example for the skeleton in section \ref{sec:skel}. Again, we choose
 the predefined \code{gaussCItest()} as conditional independence
 test and create the corresponding test statistic. Finally, we plot the
 result. The estimated CPDAG and the true underlying DAG are shown in
-Fig.~\ref{fig:pcFit1}.
+Fig. \ref{fig:pcFit1}.
 
 \begin{figure}
   \centering
@@ -792,11 +792,11 @@ Fig.~\ref{fig:pcFit1}.
 suffStat <- list(C = cor(gmG$x), n = nrow(gmG$x))
 pc.fit <- pc(suffStat, indepTest=gaussCItest, p = ncol(gmG$x), alpha = 0.01)
 par(mfrow = c(1,2))
-plot(gmG$g, main = "True DAG")
-plot(pc.fit, main = "Estimated CPDAG")
+plot(gmG$g, main = "")
+plot(pc.fit, main = "")
 @
-\caption{True DAG and estimated CPDAG fitted on the Gaussian data set provided by the
-  package using the function \code{pc()}.}
+\caption{True DAG (left) and estimated CPDAG (right) fitted on the Gaussian
+  data set provided by the package.}
 \label{fig:pcFit1}
 \end{figure}
 
@@ -822,7 +822,7 @@ should be removed, one computes Possible-D-SEP($x$) and Possible-D-SEP($y$)
 and performs conditional independence tests of $x$ and $y$ given all
 possible subsets of Possible-D-SEP($x$) and of Possible-D-SEP($y$) (see
 helpfile of function \code{pdsep()}). Subsequently, all edges are transformed into o--o again and the v-structures are
-determined (using information in sepset).  Finally, as many 
+determined (using information in sepset).  Finally, as many
 undetermined edge marks (o) as possible are determined using (a subset of) the 10
 orientation rules given by \cite{Zhang08-orientation-rules}.
 
@@ -884,15 +884,14 @@ As an example, we estimate the PAG of a graph with five nodes using
 the function \code{fci()} and the predefined function \code{gaussCItest()}
 as conditional independence test. Finally, we plot the result. Node $V_1$ is latent.
 <<def-fciExpl-plot, eval=False>>=
-data(gmL)
+data("gmL")
 suffStat1 <- list(C = cor(gmL$x), n = nrow(gmL$x))
 pag.est <- fci(suffStat1, indepTest= gaussCItest,
                p = ncol(gmL$x), alpha = 0.01, labels = as.character(2:5))
 par(mfrow = c(1,2))
-plot(gmL$g, main = "True DAG")
+plot(gmL$g, main = "")
 plot(pag.est)
-@ In Fig.~\ref{fig:fci} the true DAG (left) and the estimated PAG (right)
-are shown.
+@ In Fig. \ref{fig:fci} the true DAG and the estimated PAG are shown.
 \begin{figure}
   \centering
 <<fciExpl-plot, echo=False, fig=TRUE>>=
@@ -928,29 +927,29 @@ data).
 
 To illustrate this, consider the following example. We have data from seven
 Gaussian variables with a causal structure given on the left of
-Fig.~\ref{fig:ida}. We assume that
+Fig. \ref{fig:ida}. We assume that
 the causal structure is unknown and want to infer the causal effect of $V_2$
 on $V_5$. First, we estimate the equivalence class of DAGs that describe the
 conditional independence relationships in the data, using the function
 \code{pc()} (see section \ref{sec:pc}).
 
+%% Used to generate "gmI" IDA data
 <<def-gmI, eval=FALSE, echo=FALSE>>=
-## Used to generate "gmI" IDA data
 set.seed(123)
 p <- 7
 n <- 10000
-myDAG <- randomDAG(p, prob = 0.2) ## true DAG
+myDAG <- randomDAG(p, prob = 0.2)
 datI <- rmvDAG(n, myDAG)
 gmI <- list(x = datI, g = myDAG)
 @
 
 <<idaExpl1>>=
-data(gmI)
+data("gmI")
 suffStat <- list(C = cor(gmI$x), n = nrow(gmI$x))
 pc.fit <- pc(suffStat, indepTest=gaussCItest,
              p = ncol(gmI$x), alpha = 0.01)
 @
-Comparing the true DAG with the CPDAG in Fig.~\ref{fig:ida}, we see that
+Comparing the true DAG with the CPDAG in Fig. \ref{fig:ida}, we see that
 the CPDAG and the true DAG have the same skeleton. Moreover, the directed
 edges in the CPDAG are also directed in that way in the true DAG. Three
 edges in the CPDAG are bidirected. Recall that undirected and bidirected
@@ -959,10 +958,10 @@ edges bear the same meaning in a CPDAG, so they can be used interchangeably.
   \centering
 <<idaExpl2, fig=TRUE, echo = FALSE>>=
 par(mfrow = c(1,2))
-plot(gmI$g, main = "True DAG")
-plot(pc.fit, main = "Estimated CPDAG")
+plot(gmI$g, main = "")
+plot(pc.fit, main = "")
 @
-\caption{True DAG and estimated CPDAG for illustrating the function \code{ida()}}
+\caption{True DAG (left) and estimated CPDAG (right).}
 \label{fig:ida}
 \end{figure}
 
@@ -977,7 +976,7 @@ V_3 \leftarrow V_5$ or $V_2 \leftarrow V_3 \rightarrow V_5$, and not as $V_2
 v-structure. There is only one remaining undirected edge ($V_1-V_6$), which
 can be directed in two ways. Thus, there are six valid DAGs
 (i.e. they have no new v-structure and no directed cycle) and these form the
-equivalence class represented by the CPDAG. In Fig.~\ref{fig:allDags}, all
+equivalence class represented by the CPDAG. In Fig. \ref{fig:allDags}, all
 DAGs in the equivalence class are shown. DAG 6 is the true DAG.
 
 <<idaExpl3, echo = FALSE>>=
@@ -996,14 +995,14 @@ sfsmisc::mult.fig(6)
 for (i in 1:6) plot(gDag[[i]], main = paste("DAG",i))
 @
 \caption{All DAGs belonging to the same equivalence class in which the true
-  DAG shown in Fig.~\ref{fig:ida} is.}
+  DAG shown in Fig. \ref{fig:ida} is.}
 \label{fig:allDags}
 \end{figure}
 
 For each DAG G in the equivalence class, we apply Pearl's do-calculus to
 estimate the total causal effect of $x$ on $y$. Since we assume
 Gaussianity, this can be done via a
-simple linear regression: if $y$ is not a parent of $x$, we take the
+simple linear regression: If $y$ is not a parent of $x$, we take the
 regression coefficient of $x$ in the regression \code{lm(y ~ x +
   pa(x))}, where \code{pa(x)} denotes the parents of $x$ in the DAG G; if
 $y$ is a parent of $x$ in G, we set the estimated causal effect to zero.
@@ -1083,7 +1082,7 @@ ida(2,5, cov(gmI$x), pc.fit@graph, method = "local")
 
 One can take summary measures of the multiset. For example, the minimum
 absolute value provides a lower bound on the size of the true causal
-effect: if the minimum absolute value of all values in the multiset is
+effect: If the minimum absolute value of all values in the multiset is
 larger than one, then we know that the size of the absolute true causal
 effect (up to sampling error) must be larger than one. The fact that the
 unique values of the multisets of the \code{global} and \code{local}
@@ -1144,7 +1143,7 @@ causal effect of $V_2$ on $V_5$. Now, we want to compute the effect of $V_2$
 on $V_5$, $V_6$ and $V_7$ using \code{idaFast} and compare the results with
 the output of \code{ida}. As expected, both methods lead to the same results.
 <<ida-idaFast>>=
-data(gmI)
+data("gmI")
 suffStat <- list(C = cor(gmI$x), n = nrow(gmI$x))
 pc.fit <- pc(suffStat, indepTest=gaussCItest, p=ncol(gmI$x), alpha = 0.01)
 
@@ -1198,8 +1197,6 @@ myCItest <- function(x,y,S, suffStat) {
     x. <- suffStat[,x]
     y. <- suffStat[,y]
   } else {
-    ## x. <- resid(lm(suffStat[,x] ~ suffStat[,S]))
-    ## y. <- resid(lm(suffStat[,y] ~ suffStat[,S])) ## but more efficiently:
     rxy <- resid(lm.fit(y= suffStat[,c(x,y)], x= cbind(1, suffStat[,S])))
     x. <- rxy[,1];  y. <- rxy[,2]
   }
@@ -1215,19 +1212,20 @@ pc.fit <- pc(suffStat, indepTest=gaussCItest, p = 8, alpha = 0.01)
 pc.myfit <- pc(suffStat = gmG$x, indepTest = myCItest,
                p = 8, alpha = 0.01)
 par(mfrow = c(1,2))
-plot(pc.fit, main = "gaussCItest")
-plot(pc.myfit, main = "myCItest")
+plot(pc.fit, main = "")
+plot(pc.myfit, main = "")
 @
 \begin{figure}[htb]
   \centering
 <<myCItest-ex-plot, echo=False, fig=TRUE>>=
 <<myCItest-def-plot>>
 @
-\caption{The estimated CPDAGs using the predefined and the user specified
+\caption{The estimated CPDAGs using the predefined (left) and the user
+  specified (right)
   conditional independence test are identical.}
 \label{fig:userSpec}
 \end{figure}
-As expected, the resulting CPDAG (see Fig.~\ref{fig:userSpec}) is the same
+As expected, the resulting CPDAG (see Fig. \ref{fig:userSpec}) is the same
 as in section \ref{sec:pc} where we used the function \code{gaussCItest()} as
 conditional independence test. Note however that using
 \code{gaussCItest} is considerably faster than using \code{myCItest} (on
@@ -1256,7 +1254,7 @@ system.time(for(i in 1:10)
 @
 
 
-\section{Session Information}
+\section{Session information}
 
 <<sessionInfo, results=tex>>=
 toLatex(sessionInfo())

@@ -24,6 +24,14 @@
 \alias{ucp}
 \alias{upd}
 \alias{wgtMatrix}
+\alias{combn2}
+\alias{skeleton.rfci}
+\alias{find.unsh.triple}
+\alias{rfci.vstructures}
+\alias{dep.triple}
+\alias{udag2apag}
+\alias{CheckEdges}
+\alias{min.discr.path}
 %
 \title{Internal Pcalg Functions}
 \description{
