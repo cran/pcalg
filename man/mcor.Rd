@@ -1,21 +1,22 @@
 \name{mcor}
 \alias{mcor}
-\title{Compute Correlation Matrix}
+\title{Compute (Large) Correlation Matrix}
 \description{
   Compute a correlation matrix, possibly by robust methods, applicable also
   for the case of a large number of variables.
 }
 \usage{
-mcor(dm,  method= c("standard",  "Qn", "QnStable",  "ogkScaleTau2",  "ogkQn", "shrink"))
+mcor(dm, method = c("standard", "Qn", "QnStable",
+                    "ogkScaleTau2",  "ogkQn", "shrink"))
 }
 \arguments{
   \item{dm}{numeric matrix of data; rows are samples, columns are variables.}
   \item{method}{"standard" (default), "Qn", "QnStable", "ogkQn" and "shrink"
-    envokes standard, 
+    envokes standard,
     elementwise robust (based on \eqn{Q_n} scale estimator, see
     \code{\link[robustbase]{Qn}}), robust (Qn using OGK, see
     \code{\link[robustbase]{covOGK}}) or shrinked ()
-    correlation estimate respectively.} 
+    correlation estimate respectively.}
 }
 \value{
   A correlation matrix estimated by the specified method.
@@ -28,7 +29,7 @@ mcor(dm,  method= c("standard",  "Qn", "QnStable",  "ogkScaleTau2",  "ogkQn", "s
   estimator. "ogkQn" envokes a correlation estimator based on Qn using
   OGK. "shrink" is only useful when used with pcSelect. An optimal
   shrinkage parameter is used. Only correlation between response and
-  covariates is shrinked. 
+  covariates is shrinked.
 }
 \seealso{
   \code{\link[robustbase]{Qn}} and \code{\link[robustbase]{covOGK}}
@@ -62,8 +63,8 @@ mcor(cbind(x,y), method="standard")
 yNoise <- 2*x + rcauchy(100)
 mcor(cbind(x,yNoise), method="standard") ## shows almost no correlation
 mcor(cbind(x,yNoise), method="Qn")       ## shows a lot correlation
-mcor(cbind(x,yNoise), method="QnStable")       ## shows a lot correlation
-mcor(cbind(x,yNoise), method="ogkQn")    ## dito
+mcor(cbind(x,yNoise), method="QnStable") ## shows still much correlation
+mcor(cbind(x,yNoise), method="ogkQn")    ## ditto
 }
 \keyword{multivariate}
 \keyword{robust}

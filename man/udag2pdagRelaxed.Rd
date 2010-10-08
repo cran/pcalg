@@ -9,17 +9,20 @@ Directed Acyclic Graph (PDAG). The result is a pcAlgo-object
 as well. There is no check whether the result is extendible to a DAG
 }
 \usage{
-udag2pdagRelaxed(gInput,verbose)
+udag2pdagRelaxed(gInput, verbose, unfVect=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{gInput}{pcAlgo-object containing skeleton and
     cond. ind. information}
   \item{verbose}{0: No output; 1: Details}
+  \item{unfVect}{Vector containing numbers that encode the unfaithful
+    triple (as returned by pc.cons.intern). This is needed in the conservative PC.}
 }
 \details{
   The skeleton is extended to a PDAG using rules by Spirtes and Pearl
-  (see References). There is no test whether the result is really extendible.
+  (see References). There is no test whether the result is really
+  extendible. 
 }
 \value{
   \item{pcObj}{Oriented pc-Object}

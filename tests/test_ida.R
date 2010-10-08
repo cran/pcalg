@@ -4,24 +4,28 @@ set.seed(123)
 nreps <- 100
 res <- rep(FALSE,nreps)
 all.eff.true <- res
+Rnd <- function(e) round(e, 14)
 for (i in 1:nreps) {
-  p <- 10
+  p <- 2 + rpois(1, lambda = 8) # ==>  p >= 2, E[p] = 10
   ## generate and draw random DAG :
   myDAG <- randomDAG(p, prob = 0.2)
   myCPDAG <- dag2cpdag(myDAG)
   mcov <- trueCov(myDAG)
 
-  x <- sample(1:10,1)
-  y <- sample(setdiff(1:10,x),1)
+  x <- sample(1:p, 1)
+  y <- sample(setdiff(1:p, x),1)
 
   ## plot(myCPDAG)
-  eff.true <- round(causalEffect(myDAG, y, x),14)
+  eff.true <- Rnd(causalEffect(myDAG, y, x))
   all.eff.true[i] <- eff.true
   ## cat("x=",x," y=",y," eff=",eff.true,"\n")
 
-  eff.est <- round(ida(x,y,mcov,myCPDAG,method="local",verbose=FALSE),14)
-
+  eff.est <- Rnd(ida(x,y, mcov, myCPDAG, method="local", verbose=FALSE))
   res[i] <- (eff.true %in% eff.est)
 }
 
+stem(all.eff.true)
+
 if (!all(res)) stop("Test ida: True effects were not recovered!")
+
+cat('Time elapsed: ', proc.time(),"\n")

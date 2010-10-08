@@ -1,21 +1,22 @@
 \name{pdsep}
 \alias{pdsep}
-\title{Compute possible d-sep for each node and test and adapt graph accordingly}
-
-\description{This function computes the Possible-D-Sep for each node
+\title{Compute Possible-D-Sep for Each Node and Adapt Graph Accordingly}
+\description{
+  Computes the Possible-D-Sep for each node
   and tests conditional independence given all subsets of
-  Possible-D-Sep. The graph is updated accordingly. }
-
+  Possible-D-Sep.  The graph is updated accordingly.
+}
 \usage{
-pdsep(G, suffStat, indepTest, p, sepset, pMax, NAdelete = TRUE, verbose
-= FALSE, alpha)
+pdsep(skel, suffStat, indepTest, p, sepset,
+      pMax, NAdelete = TRUE, verbose = FALSE,
+      alpha, unfVect = NULL, biCC = FALSE)
 }
 \arguments{
-  \item{G}{Boolean adjacency matrix (TRUE if there is an edge)}
-  \item{suffStat}{Sufficient statistics: A list containing all necessary
+  \item{skel}{Graph object returned by \code{\link{skeleton}}.}
+  \item{suffStat}{sufficient statistic: A list containing all necessary
     elements for making conditional independence decisions using
-    function \code{indepTest}}
-  \item{indepTest}{Predefined function for testing conditional independence. The
+    function \code{indepTest}.}
+  \item{indepTest}{predefined function for testing conditional independence. The
     function is internally called as \code{indepTest(x,y,S,suffStat)} for
     testing conditional independence of \code{x} and \code{y} given
     \code{S}. Here, \code{x} and \code{y} are node numbers of the
@@ -24,7 +25,7 @@ pdsep(G, suffStat, indepTest, p, sepset, pMax, NAdelete = TRUE, verbose
     containing all relevant elements for making conditional independence
     decisions. The return value of \code{indepTest} is the p-value of
     the test for conditional independence.}
-  \item{p}{Number of variables}
+  \item{p}{number of variables}
   \item{sepset}{List of length \code{p}; each element of the list
     contains another list of length \code{p}. The element
     \code{sepset[[x]][[y]]} contains the separation set that made the edge
@@ -41,6 +42,12 @@ pdsep(G, suffStat, indepTest, p, sepset, pMax, NAdelete = TRUE, verbose
   \item{verbose}{If \code{TRUE}, detailed output is provided.}
   \item{alpha}{Significance level for the individual conditional
     independence tests}
+  \item{unfVect}{vector containing numbers that encode the unfaithful
+    triple (as returned by \code{\link{pc.cons.intern}}).  This is
+    needed in the conservative FCI.}
+  \item{biCC}{logical; if true, only nodes on some path between a and c are
+    considered to be in sepset(a,c).  Uses biconnected components,
+    \code{\link[RBGL]{biConnComp}} from \pkg{RBGL}.}
 }
 \value{A list with several elements:
   \item{G}{Updated adjecency matrix}
@@ -57,7 +64,7 @@ pdsep(G, suffStat, indepTest, p, sepset, pMax, NAdelete = TRUE, verbose
   and there is an undirected path U between x and y in G such that for
   every subpath a,b,c of U either b is a collider on the subpath, or b
   is not a definite noncollider on U and a,b and c form a trianglein G.
-  
+
   Each pair of nodes x and y which is connected by
   an edge is tested for conditional independence given every subset in
   Possible-D-Sep of x or of y. The conditional independence is tested on
@@ -70,25 +77,13 @@ pdsep(G, suffStat, indepTest, p, sepset, pMax, NAdelete = TRUE, verbose
   To make the code more efficient, tests that have been done during
   finding the skeleton are not done again.}
 
-\value{A list with several elements:
-  \item{G}{Updated adjecency matrix}
-  \item{sepset}{Updated sepset}
-  \item{pMax}{Updated matrix containing maximal p-values}
-  \item{allPdsep}{Possible-D-Sep for each node}
-  \item{max.ord}{Maximal order of conditioning sets during independence
-    tests}
-  \item{n.edgetests}{Number of conditional edgetests performed grouped
-    by size of conditioning set.}
-}
-
 \references{
   P. Spirtes, C. Glymour and R. Scheines (2000).
   \emph{Causation, Prediction, and Search}, 2nd edition. The MIT Press.
 }
-
 \seealso{\code{\link{qreach}} for a fast way of finding Possible-D-Sep
-    for a given node; \code{\link{fci}} which uses \code{\link{pdsep}}}
-
+  for a given node; \code{\link{fci}} which uses \code{\link{pdsep}}.
+}
 \author{
   Markus Kalisch (\email{kalisch@stat.math.ethz.ch})
 }
@@ -101,19 +96,18 @@ n <- 10000
 d.mat <- rmvDAG(n, myDAG, errDist = "normal")
 
 ## estimate skeleton
-indepTest <- gaussCItest 
+indepTest <- gaussCItest
 suffStat <- list(C = cor(d.mat), n = n)
 alpha <- 0.01
 skel <- skeleton(suffStat, indepTest, p, alpha)
 
 ## prepare input for pdsep
-G <- (as(skel@graph,"matrix")!=0)
 sepset <- skel@sepset
 pMax <- skel@pMax
 n.edgetestsSKEL <- skel@n.edgetests
 max.ordSKEL <- skel@max.ord
 
 ## call pdsep to find possible d-sep and enhance the skeleton
-pdsepRes <- pdsep(G, suffStat, indepTest, p, sepset, pMax, NAdelete,
+pdsepRes <- pdsep(skel@graph, suffStat, indepTest, p, sepset, pMax, NAdelete,
 verbose = TRUE, alpha)
 }

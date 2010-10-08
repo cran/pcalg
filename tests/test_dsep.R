@@ -1,3 +1,4 @@
+#### Compare our dsep() with  dSep() from package "ggm" :
 library(pcalg)
 
 set.seed(22)
@@ -13,9 +14,9 @@ for (i in 1:nreps) {
   y <- sample(setdiff(1:p,x),1)
   S <- sample(setdiff(1:p,c(x,y)),sample(1:5,1))
 
-  dsepOld <- dSep(amat,as.character(x),as.character(y),as.character(S))
-  dsepRes <- dsep(as.character(x),as.character(y),as.character(S),myDAG)
-
+  dsepOld <- ggm::dSep(amat,as.character(x),as.character(y),as.character(S))
+  dsepRes <- dsep	   (as.character(x),as.character(y),as.character(S),
+			    myDAG)
   ok[i] <- (dsepRes == dsepOld)
 }
 

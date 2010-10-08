@@ -4,12 +4,12 @@
   Equivalence Class (CPDAG) of a DAG}
 \description{
   This function is DEPRECATED! Use \code{\link{skeleton}}, \code{\link{pc}} or
-  \code{\link{fci}} instead. 
+  \code{\link{fci}} instead.
 }
 \usage{
-pcAlgo(dm = NA, C = NA, n=NA, alpha, corMethod = "standard", verbose =
-FALSE, directed=FALSE, G=NULL, datatype='continuous',NAdelete=TRUE,
-m.max=Inf,u2pd="rand",psepset=FALSE)
+pcAlgo(dm = NA, C = NA, n=NA, alpha, corMethod = "standard",
+       verbose=FALSE, directed=FALSE, G=NULL, datatype = "continuous",
+       NAdelete=TRUE, m.max=Inf, u2pd = "rand", psepset=FALSE)
 }
 \arguments{
   \item{dm}{data matrix; rows correspond to samples, cols correspond to
@@ -41,10 +41,10 @@ m.max=Inf,u2pd="rand",psepset=FALSE)
 \value{
   An object of \code{\link{class}} \code{"pcAlgo"} (see
   \code{\linkS4class{pcAlgo}}) containing an undirected graph
-  (object of \code{\link{class}} \code{"graph"}, see 
+  (object of \code{\link{class}} \code{"graph"}, see
   \code{\link[graph]{graph-class}} from the package \pkg{graph})
   (without weigths) as estimate of the skeleton or the CPDAG of the
-  underlying DAG. 
+  underlying DAG.
 }
 \references{
   P. Spirtes, C. Glymour and R. Scheines (2000)

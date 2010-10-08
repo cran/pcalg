@@ -3,7 +3,7 @@
 \title{Plot partial ancestral graphs (PAG)}
 \description{
 This function is DEPRECATED! Use the \code{plot} method of the
-\code{\linkS4class{fci}} object instead.
+\code{\linkS4class{fciAlgo}} class instead.
 }
 \usage{
 plotAG(amat)

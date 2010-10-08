@@ -1,6 +1,5 @@
 \name{udag2pag}
 \alias{udag2pag}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{Extend a pcAlgo-object containing a skeleton to a PAG}
 \description{
 This function extends a pcAlgo-object containing a skeleton and
@@ -10,9 +9,8 @@ the option \code{psepset=TRUE}. The result is an adjacency matrix
 indicating also the edge marks.
 }
 \usage{
-udag2pag(gInput, rules, verbose)
+udag2pag(gInput, rules, verbose, unfVect = NULL)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{gInput}{pcAlgo-object containing skeleton and
     cond. ind. information; must have been estimated with
@@ -21,16 +19,18 @@ udag2pag(gInput, rules, verbose)
     rule. TRUE in position i means that rule i (Ri) will be used. Per
     default, all rules are set to TRUE.}
   \item{verbose}{0: No output; 1: Details. Default is 0.}
+  \item{unfVect}{Vector containing numbers that encode the unfaithful
+    triple (as returned by pc.cons.intern). This is needed in the conservative FCI.}
 }
 \details{
   The skeleton is extended to a PAG using rules by Zhang (see
   References). Note that the algorithm works with columns' position of the
-  adjacency matrix and not with the names of the variables. 
+  adjacency matrix and not with the names of the variables.
 }
 \value{
   The output is an adjacency matrix M with edge marks. The edge marks are
   coded in the following way: M[i,j]=M[j,i]=0: no edge; M[i,j]=1, M[j,i]
-  != 0: i *-o j; M[i,j]=2, M[j,i]!=0: i*->j; M[i,j]=3, M[j,i]!=0: i*-j. 
+  != 0: i *-o j; M[i,j]=2, M[j,i]!=0: i*->j; M[i,j]=3, M[j,i]!=0: i*-j.
 }
 \references{
   J. Zhang (2008). On the completeness of orientation rules for causal
@@ -69,20 +69,19 @@ d.mat <- rmvDAG(n, g, errDist = "normal")
 d.mat <- d.mat[-L,-L]
 
 ## estimate the skeleton of given data using psepset=TRUE
-resD <- pcAlgo(d.mat, alpha=0.05, psepset=TRUE)
-resD
+(resD <- pcAlgo(d.mat, alpha=0.05, psepset=TRUE))
 
 ## extend the pcalgo-object into a PAG using all 10 rules
 rules <- rep(TRUE,10)
 resP <- udag2pag(resD, rules=rules, verbose=1)
-colnames(resP) <- rownames(resP) <- nodes(g)[-L]
+colnames(resP) <- rownames(resP) <- graph::nodes(g)[-L]
 
 if (require(Rgraphviz)) {
-## plot the original DAG and the PAG
-op <- par(mfrow=c(1,2))
-plot(g, main="original (random) DAG")
-plotAG(resP)
-par(op)
+  ## plot the original DAG and the PAG
+  op <- par(mfrow=c(1,2))
+  plot(g, main="original (random) DAG")
+  plotAG(resP)
+  par(op)
 }
 }
 \keyword{multivariate}

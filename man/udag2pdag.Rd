@@ -1,17 +1,15 @@
 \name{udag2pdag}
 \alias{udag2pdag}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{Extend a pcAlgo-object containing a skeleton to a PDAG}
 \description{
-This function extends a pcAlgo-object containing a skeleton and
-corresponding conditional independence information to a Partially
-Directed Acyclic Graph (PDAG). The result is a pcAlgo-object 
-as well.
+  This function extends an object of class \code{"\linkS4class{pcAlgo}"}
+  containing a skeleton and corresponding conditional independence
+  information to a Partially Directed Acyclic Graph (PDAG).  The result
+  is a \code{"pcAlgo"}-object as well.
 }
 \usage{
 udag2pdag(gInput,verbose)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{gInput}{pcAlgo-object containing skeleton and
     cond. ind. information}
@@ -43,7 +41,7 @@ n <- 1000
 d.mat <- rmvDAG(n, myDAG, errDist = "normal")
 
 ## define independence test (partial correlations)
-indepTest <- gaussCItest 
+indepTest <- gaussCItest
 ## define sufficient statistics
 suffStat <- list(C = cor(d.mat), n = n)
 ## estimate skeleton

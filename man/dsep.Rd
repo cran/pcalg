@@ -15,9 +15,9 @@ dsep(a, b, S, g, john.pairs = NA)
     the Directed Acyclic Graph (object of \code{\link{class}}
     "graph", see \code{\link[graph]{graph-class}} from the
     package \pkg{graph})}
-  \item{john.pairs}{The shortest
-    path distance matrix for all pairs of nodes as computed by
-    \code{johnson.all.pairs.sp} in \pkg{graph}.} 
+  \item{john.pairs}{the shortest path distance matrix for all pairs of
+    nodes as computed by \code{\link[RBGL]{johnson.all.pairs.sp}} from
+    package \pkg{RBGL}.}
 }
 \value{TRUE if a and b are d-separated by S in G, otherwise FALSE.
 }

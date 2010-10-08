@@ -3,7 +3,7 @@
 \title{Test for d-separation in a DAG}
 \description{
   This function tests for d-separation of nodes in a DAG. The function
-  is written, so that it can 
+  is written, so that it can
   easily be used in \code{\link{skeleton}}, \code{\link{pc}}, \code{\link{fci}}.
 }
 \usage{
@@ -18,7 +18,7 @@ dsepTest(x, y, S, suffStat)
     \code{"graph"}, see \code{\link[graph]{graph-class}} from the
     package \pkg{graph}) and (2) element "jp" containing the shortest
     path distance matrix for all pairs of nodes as computed by
-    \code{johnson.all.pairs.sp} in \pkg{graph}.} 
+    \code{\link[RBGL]{johnson.all.pairs.sp}} from package \pkg{RBGL}.}
 }
 \value{If x and y are d-separated by S in DAG G the result is 1, otherwise it is
   0. This is analogous to the p-value of an ideal (without sampling
@@ -54,10 +54,10 @@ plot(myDAG, main = "randomDAG(10, prob = 0.2)")
 }
 
 ## define sufficient statistics (d-separation oracle)
-suffStat <- list(g = myDAG, jp = johnson.all.pairs.sp(myDAG))
+suffStat <- list(g = myDAG, jp = RBGL::johnson.all.pairs.sp(myDAG))
 
-dsepTest(1,6,NULL,suffStat) ## not d-separated
-dsepTest(1,6,3,suffStat) ## not d-separated by node 3
-dsepTest(1,6,c(3,4),suffStat) ## d-separated by node 3 and 4
+dsepTest(1,6, S= NULL,  suffStat) ## not d-separated
+dsepTest(1,6, S= 3,     suffStat) ## not d-separated by node 3
+dsepTest(1,6, S= c(3,4),suffStat) ## d-separated by node 3 and 4
 }
 

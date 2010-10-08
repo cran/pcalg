@@ -1,6 +1,8 @@
 library(pcalg)
 
 ## acyclic graphs
+stopifnot(require("ggm"))# e.g. isAcyclic() below
+
 nreps <- 30
 p <- 8
 n <- 1000

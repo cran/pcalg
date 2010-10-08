@@ -1,34 +1,36 @@
 \name{pcalg-internal}
 %
-\alias{wgtMatrix}
 \alias{adj.check}
+\alias{allDags}
 \alias{amat2dag}
+\alias{check.new.coll}
+\alias{checkTriple}
+\alias{ci.test}
+\alias{discr.path}
+\alias{faith.check}
 \alias{find.sink}
+\alias{find.upd}
+\alias{flipEdges}
+\alias{gAlgo-class}%-> *do* document! (FIXME)
 \alias{labelEdges}
+\alias{legal.psep}
+\alias{lm.cov}
 \alias{make.edge.df}
 \alias{orderEdges}
-\alias{flipEdges}
-\alias{lm.cov}
-\alias{causalEffect}
-\alias{check.new.coll}
 \alias{pcAlgo.Perfect}
-\alias{trueCov}
-\alias{allDags}
-\alias{ci.test}
 \alias{reach}
-\alias{discr.path}
+\alias{triple2numb}% maybe document ?
+\alias{trueCov}
 \alias{ucp}
 \alias{upd}
-\alias{find.upd}
-\alias{legal.psep}
-\alias{gAlgo-class}
+\alias{wgtMatrix}
 %
 \title{Internal Pcalg Functions}
 \description{
   Internal functions of package \pkg{pcalg}
 }
 \usage{
-wgtMatrix(g)
+wgtMatrix(g, transpose=TRUE)
 adj.check(gm,x)
 amat2dag(amat)
 find.sink(gm)

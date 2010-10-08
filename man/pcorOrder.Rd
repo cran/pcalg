@@ -22,8 +22,9 @@ pcorOrder(i,j, k, C, cut.at = 0.9999999)
 \details{The partial correlations are computed using a recusive formula
   if the size of the conditioning set is one. For larger conditioning
   sets, the pseudoinverse of parts of the correlation matrix is
-  computed. The pseudoinverse instead of the inverse is used in order to
-  avoid numerical problems.
+  computed (by \code{\link[corpcor]{pseudoinverse}()} from package
+  \pkg{corpcor}).  The pseudoinverse instead of the inverse is used in
+  order to avoid numerical problems.
 }
 \seealso{
   \code{\link{condIndFisherZ}} for testing zero partial correlation.

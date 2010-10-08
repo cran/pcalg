@@ -1,8 +1,32 @@
-import(MASS, graph, robustbase)
 
+importFrom("robustbase",
+	   covOGK, hard.rejection,
+	   Qn, s_Qn, scaleTau2 #, Sn, s_Sn, s_mad, s_IQR
+	   )
+
+#import(graph)# importFrom(graph, )
+importClassesFrom("graph", graph, graphNEL)
+importMethodsFrom("graph",
+		  ## addEdge,
+		  coerce,# as(., ...)
+		  edges, edgeData, edgeDataDefaults,
+		  nodes,
+		  numNodes, numEdges,
+		  subGraph, ugraph)
+
+importFrom("RBGL",
+	   biConnComp, johnson.all.pairs.sp, separates)
+## also    sp.between -- but only for deprecated beta.special(), hence RBGL::*
+importMethodsFrom("RBGL",
+		  bfs)
+
+
+# importFrom("MASS", mvrnorm)
 importFrom("ggm", isAcyclic,transClos,topOrder)
+
 importFrom("graphics", plot)
 
+## FIXME: do *NOT* export those that are "internal" <--> man/pcalg-internal.Rd
 export(randomDAG,
        wgtMatrix,
        rmvDAG,
@@ -59,10 +83,15 @@ export(randomDAG,
        idaFast,
        legal.psep,
        qreach,
-       plotSG)
+       plotSG,
+       triple2numb,
+       pc.cons.intern,
+       checkTriple,
+       faith.check)
 
-exportClasses("pcAlgo")
-exportClasses("fciAlgo")
-exportClasses("gAlgo")
+exportClasses("pcAlgo",
+              "fciAlgo",
+              "gAlgo")
+
 exportMethods("summary","show","plot")
 
