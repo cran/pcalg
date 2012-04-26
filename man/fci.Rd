@@ -140,6 +140,11 @@ fci(suffStat, indepTest, p, alpha, verbose = FALSE, fixedGaps = NULL,
   T.S. Richardson and P. Spirtes (2002). Ancestral graph Markov models.
   \emph{Annals of Statistics} \bold{30} 962-1030.
 
+  Markus Kalisch, Martin Maechler, Diego Colombo, Marloes H. Maathuis,
+  Peter Buehlmann (2012). Causal Inference Using Graphical Models with
+  the R Package pcalg. \emph{Journal of Statistical Software}
+  \bold{47(11)} 1--26, \url{http://www.jstatsoft.org/v47/i11/}. 
+  
   P. Spirtes, C. Glymour and R. Scheines (2000).
   \emph{Causation, Prediction, and Search}, 2nd edition, MIT Press,
   Cambridge (MA).

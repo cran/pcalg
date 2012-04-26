@@ -92,7 +92,7 @@ At first sight, it is not clear that such a local configuration
 corresponds to a DAG in the equivalence class of the CPDAG, since it may be
 impossible to direct the remaining undirected edges without creating a
 directed cycle or a v-structure. However, Maathuis, Kalisch and
-Buhlmann (2009) showed that there is
+Buehlmann (2009) showed that there is
 at least one DAG in the equivalence class for each such local configuration.
 As a result, it follows that the
 multisets of total causal effects of the
@@ -115,7 +115,7 @@ be estimate by the local method.
   possible total causal effects of \code{x} on \code{y}.
 }
 \references{
-  M.H. Maathuis, M. Kalisch, P. Buhlmann (2009).
+  M.H. Maathuis, M. Kalisch, P. Buehlmann (2009).
   Estimating high-dimensional intervention effects from observational data.
   \emph{Annals of Statistics} \bold{37}, 3133--3164.
 
@@ -123,6 +123,10 @@ be estimate by the local method.
   Predicting causal effects in large-scale systems from observational data.
   \emph{Nature Methods, to appear}.
 
+  Markus Kalisch, Martin Maechler, Diego Colombo, Marloes H. Maathuis, Peter Buehlmann (2012). Causal Inference Using Graphical Models with the R
+  Package pcalg. \emph{Journal of Statistical Software} \bold{47(11)}
+  1--26, \url{http://www.jstatsoft.org/v47/i11/}.
+  
   Pearl (2005). \emph{Causality. Models, reasoning and inference}.
   Cambridge University Press, New York.
 }

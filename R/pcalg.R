@@ -1021,11 +1021,11 @@ shd <- function(g1,g2)
   if (is(g2, "pcAlgo")) g2 <- g2@graph
 
   if (is(g1, "graphNEL")) {
-    m1 <- wgtMatrix(g1, transp=FALSE)
+    m1 <- wgtMatrix(g1, transpose=FALSE)
     m1[m1 != 0] <- 1
   }
   if (is(g2, "graphNEL")) {
-    m2 <- wgtMatrix(g2, transp=FALSE)
+    m2 <- wgtMatrix(g2, transpose=FALSE)
     m2[m2 != 0] <- 1
   }
 
@@ -3814,7 +3814,7 @@ dsep <- function(a,b,S,g,john.pairs=NA)
   gS <- subGraph(anc.set,g)
 
   ## Moralize in amatM
-  amat <- wgtMatrix(gS, transp=FALSE)
+  amat <- wgtMatrix(gS, transpose=FALSE)
   amat[amat!=0] <- 1
   amatM <- amat
   ind <- which(amat==1,arr.ind=TRUE)

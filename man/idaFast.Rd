@@ -45,6 +45,11 @@ idaFast(x.pos, y.pos.set, mcov, graphEst)
   Estimating high-dimensional intervention effects from observational data.
   \emph{Annals of Statistics} \bold{37}, 3122--3164.
 
+ Markus Kalisch, Martin Maechler, Diego Colombo, Marloes H. Maathuis,
+  Peter Buehlmann (2012). Causal Inference Using Graphical Models with
+  the R Package pcalg. \emph{Journal of Statistical Software}
+  \bold{47(11)} 1--26, \url{http://www.jstatsoft.org/v47/i11/}. 
+  
   M.H. Maathuis, D. Colombo, M. Kalisch, P. Buehlmann (2010).
   Predicting causal effects in large-scale systems from observational data.
   \emph{Nature Methods, to appear}.

@@ -1,0 +1,23 @@
+citHeader("To cite pcalg in publications use:")
+
+citEntry(entry = "Article",
+  title        = "Causal Inference Using Graphical Models with the {R} Package {pcalg}",
+  author       = personList(as.person("Markus Kalisch"),
+                   as.person("Martin M\\\"achler"),
+                   as.person("Diego Colombo"),
+                   as.person("Marloes H. Maathuis"),
+                   as.person("Peter B\\\"uhlmann")),
+  journal      = "Journal of Statistical Software",
+  year         = "2012",
+  volume       = "47",
+  number       = "11",
+  pages        = "1--26",
+  url          = "http://www.jstatsoft.org/v47/i11/",
+
+  textVersion  =
+  paste("Markus Kalisch, Martin Maechler, Diego Colombo, Marloes H. Maathuis, Peter Buehlmann (2012).",
+        "Causal Inference Using Graphical Models with the R Package pcalg.",
+        "Journal of Statistical Software, 47(11), 1-26.",
+        "URL http://www.jstatsoft.org/v47/i11/.")
+)
+

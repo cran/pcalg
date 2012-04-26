@@ -1,6 +1,6 @@
 Package: pcalg
-Version: 1.1-4
-Date: 2010-05-06
+Version: 1.1-5
+Date: 2012-04-26
 Author: Markus Kalisch, Martin Maechler, Diego Colombo
 Maintainer: Markus Kalisch <kalisch@stat.math.ethz.ch>
 Title: Estimation of CPDAG/PAG and causal inference using the IDA
@@ -19,6 +19,6 @@ Imports: graph, RBGL, ggm, robustbase, graphics, vcd
 Suggests: MASS, Matrix, graph, Rgraphviz, ggm
 License: GPL (>= 2)
 URL: http://pcalg.r-forge.r-project.org/
-Packaged: 2011-05-09 12:57:09 UTC; kalisch
+Packaged: 2012-04-26 13:08:55 UTC; kalisch
 Repository: CRAN
-Date/Publication: 2011-05-09 15:30:33
+Date/Publication: 2012-04-26 17:34:25

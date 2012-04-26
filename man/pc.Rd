@@ -160,6 +160,11 @@ pc(suffStat, indepTest, p, alpha, verbose = FALSE, fixedGaps = NULL,
   R. Scheines (2000).  \emph{Causation, Prediction, and Search}, 2nd
   edition. The MIT Press.
 
+   Markus Kalisch, Martin Maechler, Diego Colombo, Marloes H. Maathuis,
+  Peter Buehlmann (2012). Causal Inference Using Graphical Models with
+  the R Package pcalg. \emph{Journal of Statistical Software}
+  \bold{47(11)} 1--26, \url{http://www.jstatsoft.org/v47/i11/}. 
+  
   M. Kalisch and P. Buehlmann (2007).
   Estimating high-dimensional directed acyclic graphs with the PC-algorithm.
   \emph{JMLR} \bold{8} 613-636.
