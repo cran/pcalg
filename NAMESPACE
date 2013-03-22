@@ -14,6 +14,8 @@ importMethodsFrom("graph",
 		  numNodes, numEdges,
 		  subGraph, ugraph)
 
+importFrom("corpcor", pseudoinverse)# for pcorOrder()
+
 importFrom("RBGL",
 	   biConnComp, johnson.all.pairs.sp, separates)
 ## also    sp.between -- but only for deprecated beta.special(), hence RBGL::*

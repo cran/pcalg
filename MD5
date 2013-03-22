@@ -1,9 +1,9 @@
 1c213fc1c5a5ec68e7a5ba9293440dc3 *ChangeLog
-bdac9b9490a0bee501652b47ebc6fd21 *DESCRIPTION
+209442f9f774b57a43c491a0864513ce *DESCRIPTION
 5e38a13945a5102a654dd521ed0cf3c6 *MM_Notes.org
-c4acbe35cbbe1b223faa1ae789816e66 *NAMESPACE
+aca08fb6dd706608b76ccf3f3d66d4b5 *NAMESPACE
 0c02fb74e578e5acb3cc7686c5a08ea7 *R/AllClasses.R
-c56625234d362b34ed77fbfc2f1e37da *R/pcalg.R
+6a327f776c77fe8a71abea7237a01f3d *R/pcalg.R
 5e4c467d41af17f26c2a29c5e05d7864 *data/datalist
 1d8d4c43b9cbb9dc9dd57acd59f565bf *data/gmB.rda
 52ed0493e175a338c2f12cc1c48a9f9b *data/gmD.rda
@@ -11,11 +11,11 @@ c56625234d362b34ed77fbfc2f1e37da *R/pcalg.R
 e623e4adb0c21ea4a40609427c14008e *data/gmI.rda
 1b3a78b432a5e46b991f5ae5eb4b77f3 *data/gmL.rda
 6cd0c0f8410fd1ec5ab496641271e8c5 *inst/CITATION
-0d1ee156042f23c1c2a4a3abd0ca22ec *inst/doc/Figure1FAT.pdf
+7038533362133371e75d2631ab54809d *inst/doc/Figure1FAT.pdf
 0c6dd7a4713ed73c4079fca5734f2446 *inst/doc/Mybib.bib
 b9564ddd59a06782310989e8f33db55e *inst/doc/jsslogo.jpg
 8b5b122bf036a147d8289354c8f05ed8 *inst/doc/pcalgDoc.Rnw
-1662aba43675e34956cf6790391ea7fb *inst/doc/pcalgDoc.pdf
+b82db8b5aed05e3a3d8c3b3bad7eee70 *inst/doc/pcalgDoc.pdf
 389e2ca33f0d998aa90ea9b464bc1858 *inst/doc/sweaveCommand.R
 e7a2a9117d97986b2ab6afc6b4f77478 *inst/external/test_conservative_pc_data1.rda
 4dfbe2a4e41dc556b8812667b60d3549 *inst/external/test_conservative_pc_data2.rda
@@ -31,7 +31,7 @@ a9dd04493a7e59a3d6dc032a8e7587af *man/condIndFisherZ.Rd
 5944c3bf2aa6f0aba5cad93de66e11a4 *man/dsep.Rd
 87dbe788ab58d59a49e742419a3c220b *man/dsepTest.Rd
 d6526159486b90bf83e75df967975a2a *man/fci.Rd
-26c708de410c7c6f20fbdde395f7883e *man/fciAlgo-class.Rd
+f1a35e20e9cf218088183f96da7d9568 *man/fciAlgo-class.Rd
 61e2184e755bfe250694b7766358429c *man/gSquareBin.Rd
 4ffe561ad146313019c45d6b522bb4d5 *man/gSquareDis.Rd
 1d437ec25671f1946a1669ff4dc4b163 *man/gaussCItest.Rd
@@ -46,7 +46,7 @@ ffa77a3eebfc341ee92aab098ff9e577 *man/idaFast.Rd
 9822c4883f201f3df1fc7c68da239205 *man/mcor.Rd
 d915693ca40ef6f02bbc7b02647b8543 *man/pc.Rd
 caed295cf107502e18de9482d17fa006 *man/pc.cons.intern.Rd
-58c97634baf45d6ea3b3e16171371066 *man/pcAlgo-class.Rd
+f3c9f900f1ac7142391d52bd228a9e7d *man/pcAlgo-class.Rd
 663b6ac141581550a643dd8064a094ae *man/pcAlgo.Rd
 b104fafd4f52ee1112683e10c81a4cd0 *man/pcSelect.Rd
 a39c993c0e808403f3ad491615bc51c1 *man/pcSelect.presel.Rd
@@ -88,5 +88,5 @@ c3edbe0053cdc28f0c5b6b356d4dd12a *tests/test_rfci.R
 a684bee54a99100c8046191e19c61e9c *tests/test_shd.R
 05d8b6444388fd6de056819cecc9797a *tests/test_skeleton.R
 ac51744ec5cb81922c1a0e542bbc1387 *tests/test_udag2pag.R
-d8151fbe2a66fa908855d4d5ac171f45 *tests/test_udag2pdag.R
+ec51529b4e4912e50e7ea8f01dafc1e1 *tests/test_udag2pdag.R
 2f89962fea65228b8cfbbd93b298a174 *tests/test_wgtMatrix.R

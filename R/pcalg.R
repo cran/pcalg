@@ -373,10 +373,7 @@ pcorOrder <- function(i,j, k, C, cut.at = 0.9999999) {
   } else if (length(k)==1) {
     r <- (C[i, j] - C[i, k] * C[j, k])/sqrt((1 - C[j, k]^2) * (1 - C[i, k]^2))
   } else { ## length(k) >= 2
-    ## If corpcor was decent and had a name space, we'd just use
-    ## PM <- corpcor::pseudoinverse(C[c(i,j,k), c(i,j,k)])
-    stopifnot(require("corpcor", quietly=TRUE))
-    PM <- pseudoinverse(C[c(i,j,k), c(i,j,k)])
+    PM <- pseudoinverse(C[c(i,j,k), c(i,j,k)])## from package 'corpcor'
     r <- -PM[1, 2]/sqrt(PM[1, 1] * PM[2, 2])
   }
   if(is.na(r)) r <- 0
@@ -835,7 +832,7 @@ adj.check <- function(gm,x) {
 
 amat2dag <- function(amat) {
   ## Purpose: Transform the adjacency matrix of an PDAG to the adjacency
-  ## matrix of a DAG
+  ## matrix of a SOME DAG in the equiv. class
   ## ----------------------------------------------------------------------
   ## Arguments:
   ## - amat: adjacency matrix; x -> y if amat[x,y]=1,amat[y,x]=0
@@ -5088,8 +5085,8 @@ combn2 <- function(n,k)
 }
 
 
-skeleton.rfci <- function (suffStat, indepTest, p, alpha, verbose = FALSE, fixedGaps = NULL, 
-    fixedEdges = NULL, NAdelete = TRUE, m.max = Inf) 
+skeleton.rfci <- function (suffStat, indepTest, p, alpha, verbose = FALSE, fixedGaps = NULL,
+    fixedEdges = NULL, NAdelete = TRUE, m.max = Inf)
 {
   ## Purpose: find an initial skeleton conditioning on the adjacency sets
   ##          It is the same idea as the pc but we compute all the adjacency
@@ -5098,7 +5095,7 @@ skeleton.rfci <- function (suffStat, indepTest, p, alpha, verbose = FALSE, fixed
   ## Arguments: same as skeleton
   ## ----------------------------------------------------------------------
   ## Author: Diego Colombo, Date: 23 Nov 2010, 10:14
-  
+
   cl <- match.call()
   pval <- NULL
   sepset <- vector("list", p)
@@ -5141,17 +5138,17 @@ skeleton.rfci <- function (suffStat, indepTest, p, alpha, verbose = FALSE, fixed
     ind <- which(G, arr.ind = TRUE)
     ind <- ind[order(ind[, 1]), ]
     remainingEdgeTests <- nrow(ind)
-    if (verbose) 
-      cat("Order=", ord, "; remaining edges:", remainingEdgeTests, 
+    if (verbose)
+      cat("Order=", ord, "; remaining edges:", remainingEdgeTests,
           "\n", sep = "")
     ## compute the adjacency sets for any vertex
-    nbrsBool.tmp <- vector("list",p) 
+    nbrsBool.tmp <- vector("list",p)
     for (i in 1:p) {
       nbrsBool.tmp[[i]] <- G[, i]
     }
     for (i in 1:remainingEdgeTests) {
       if (verbose) {
-        if (i%%100 == 0) 
+        if (i%%100 == 0)
           cat("|i=", i, "|iMax=", nrow(ind), "\n")
       }
       x <- ind[i, 1]
@@ -5162,18 +5159,18 @@ skeleton.rfci <- function (suffStat, indepTest, p, alpha, verbose = FALSE, fixed
         nbrs <- seq_p[nbrsBool]
         length_nbrs <- length(nbrs)
         if (length_nbrs >= ord) {
-          if (length_nbrs > ord) 
+          if (length_nbrs > ord)
             done <- FALSE
           S <- seq(length = ord)
           repeat {
             n.edgetests[ord + 1] <- n.edgetests[ord + 1] + 1
             pval <- indepTest(x, y, nbrs[S], suffStat)
-            if (verbose) 
-              cat("x=", x, " y=", y, " S=", nbrs[S], 
+            if (verbose)
+              cat("x=", x, " y=", y, " S=", nbrs[S],
                   ": pval =", pval, "\n")
-            if (is.na(pval)) 
+            if (is.na(pval))
               pval <- ifelse(NAdelete, 1, 0)
-            if (pval > pMax[x, y]) 
+            if (pval > pMax[x, y])
               pMax[x, y] <- pval
             if (pval >= alpha) {
               G[x, y] <- G[y, x] <- FALSE
@@ -5182,7 +5179,7 @@ skeleton.rfci <- function (suffStat, indepTest, p, alpha, verbose = FALSE, fixed
             }
             else {
               nextSet <- getNextSet(length_nbrs, ord, S)
-              if (nextSet$wasLast) 
+              if (nextSet$wasLast)
                 break
               S <- nextSet$nextSet
             }
@@ -5194,7 +5191,7 @@ skeleton.rfci <- function (suffStat, indepTest, p, alpha, verbose = FALSE, fixed
   }
   for (i in 1:(p - 1)) {
     for (j in 2:p) {
-      pMax[i, j] <- pMax[j, i] <- max(pMax[i, j], pMax[j, 
+      pMax[i, j] <- pMax[j, i] <- max(pMax[i, j], pMax[j,
                                                        i])
     }
   }
@@ -5205,18 +5202,18 @@ skeleton.rfci <- function (suffStat, indepTest, p, alpha, verbose = FALSE, fixed
     colnames(G) <- rownames(G) <- as.character(1:p)
     Gobject <- as(G, "graphNEL")
   }
-  new("pcAlgo", graph = Gobject, call = cl, n = integer(0), 
-      max.ord = as.integer(ord - 1), n.edgetests = n.edgetests, 
+  new("pcAlgo", graph = Gobject, call = cl, n = integer(0),
+      max.ord = as.integer(ord - 1), n.edgetests = n.edgetests,
       sepset = sepset, pMax = pMax, zMin = matrix(NA, 1, 1))
 }
 
 
-rfci <- function (suffStat, indepTest, p, alpha, verbose = FALSE, fixedGaps = NULL, 
-    fixedEdges = NULL, NAdelete = TRUE, m.max = Inf) 
+rfci <- function (suffStat, indepTest, p, alpha, verbose = FALSE, fixedGaps = NULL,
+    fixedEdges = NULL, NAdelete = TRUE, m.max = Inf)
 {
   cl <- match.call()
-  skel <- skeleton.rfci(suffStat, indepTest, p, alpha, verbose=verbose, 
-                   fixedGaps = fixedGaps, fixedEdges = fixedEdges, NAdelete = NAdelete, 
+  skel <- skeleton.rfci(suffStat, indepTest, p, alpha, verbose=verbose,
+                   fixedGaps = fixedGaps, fixedEdges = fixedEdges, NAdelete = NAdelete,
                    m.max = m.max)
   g <- as(skel@graph, "matrix")
   sepset <- skel@sepset
@@ -5224,7 +5221,7 @@ rfci <- function (suffStat, indepTest, p, alpha, verbose = FALSE, fixedGaps = NU
   tmp <- find.unsh.triple(g,p)
   listM <- tmp$unshTripl
   vectM <- tmp$unshVect
- 
+
     tripleList <- NULL
 
   ##check and orient v-structures recursively
@@ -5233,8 +5230,8 @@ rfci <- function (suffStat, indepTest, p, alpha, verbose = FALSE, fixedGaps = NU
   sepset <- tmp1$sepset
   ##orient as many edge marks as possible
   res <- udag2apag(suffStat, indepTest, alpha, graph, sepset, verbose=verbose, unfVect=tripleList)
- 
-  max.ordSKEL <- skel@max.ord  
+
+  max.ordSKEL <- skel@max.ord
   max.ordPD <- 0
   n.edgetestsSKEL <- skel@n.edgetests
   n.edgetestsPD <- 0
@@ -5242,9 +5239,9 @@ rfci <- function (suffStat, indepTest, p, alpha, verbose = FALSE, fixedGaps = NU
   allPdsep <- vector("list", p)
   sepset <- res$sepset
   Amat <- res$graph
-  rfciRes <- new("fciAlgo", amat = Amat, call = cl, n = integer(0), 
-        max.ord = as.integer(max.ordSKEL), max.ordPDSEP = as.integer(max.ordPD), 
-        n.edgetests = n.edgetestsSKEL, n.edgetestsPDSEP = n.edgetestsPD, 
+  rfciRes <- new("fciAlgo", amat = Amat, call = cl, n = integer(0),
+        max.ord = as.integer(max.ordSKEL), max.ordPDSEP = as.integer(max.ordPD),
+        n.edgetests = n.edgetestsSKEL, n.edgetestsPDSEP = n.edgetestsPD,
         sepset = sepset, pMax = pMax, allPdsep = allPdsep)
   rfciRes
 }
@@ -5309,7 +5306,7 @@ find.unsh.triple <- function(g,p)
   }
   list(unshTripl=unshTripl, unshVect=unshVect)
 }
-  
+
 
 rfci.vstructures <- function(suffStat, indepTest, p, alpha, sepset, graph, unshTripl, unshVect, unfVect=NULL, verbose=FALSE)
 {
@@ -5368,7 +5365,7 @@ rfci.vstructures <- function(suffStat, indepTest, p, alpha, sepset, graph, unshT
                 graph[z, y] <- 2
                 if (verbose) {
                   cat("\n", x, "*->", y, "<-*", z, "\n")
-                  cat("Sxz=", sepset[[z]][[x]], "and", 
+                  cat("Sxz=", sepset[[z]][[x]], "and",
                       "Szx=", sepset[[x]][[z]], "\n")
                 }
               }
@@ -5382,7 +5379,7 @@ rfci.vstructures <- function(suffStat, indepTest, p, alpha, sepset, graph, unshT
                   graph[z, y] <- 2
                   if (verbose) {
                     cat("\n", x, "*->", y, "<-*", z, "\n")
-                    cat("Sxz=", sepset[[z]][[x]], "and", 
+                    cat("Sxz=", sepset[[z]][[x]], "and",
                         "Szx=", sepset[[x]][[z]], "\n")
                   }
                 }
@@ -5402,7 +5399,7 @@ dep.triple <- function(suffStat, indepTest, p, alpha, sepset, apag, unshTripl, u
   ## Purpose: test the two edges of any unshielded triple in unshTripl (column)
   ##          for dependence given SepSet. If independent find the minimal sepset,
   ##          delete the edge, define the triple as FALSE in trueVstruct and search
-  ##          in the graph for new triple or destroyed ones. Otherwise do nothing. 
+  ##          in the graph for new triple or destroyed ones. Otherwise do nothing.
   ## ----------------------------------------------------------------------
   ## Arguments: - suffStat, indepTest, p, alpha, sepset, apag: skeleton
   ##              parameters
@@ -5459,7 +5456,7 @@ dep.triple <- function(suffStat, indepTest, p, alpha, sepset, apag, unshTripl, u
               }
             }
           }
-      
+
           ##case 1: before we had a triangle and now it is an unshielded triple x-m-y
           indM <- which((apag[x, ] == 1 & apag[, x] == 1) & (apag[y, ] == 1 & apag[, y] == 1))
           indM <- setdiff(indM,c(x,y,z))##just to be sure
@@ -5489,7 +5486,7 @@ dep.triple <- function(suffStat, indepTest, p, alpha, sepset, apag, unshTripl, u
               ##define the triple as FALSE in trueVstruct
               if (q < y) {
                 ##first check if it exists
-                delTripl <- unshVect == triple2numb(p, q, x, y)  
+                delTripl <- unshVect == triple2numb(p, q, x, y)
                 if (any(delTripl)) {
                   ##if we haven't checked the triple yet, define it as FALSE
                   ##if (k < which.max(delTripl)) {
@@ -5535,7 +5532,7 @@ dep.triple <- function(suffStat, indepTest, p, alpha, sepset, apag, unshTripl, u
             }
           }
         }
-    
+
         ##check z-y
         del2 <- FALSE
         ##check first z and y given the whole sepset(x,z)
@@ -5567,7 +5564,7 @@ dep.triple <- function(suffStat, indepTest, p, alpha, sepset, apag, unshTripl, u
               }
             }
           }
-      
+
           ##case 1: before we had a triangle and now it is an unshielded triple z-m-y
           indM <- which((apag[z, ] == 1 & apag[, z] == 1) & (apag[y, ] == 1 & apag[, y] == 1))
           indM <- setdiff(indM,c(x,y,z))##just to be sure
@@ -5670,7 +5667,7 @@ dep.triple <- function(suffStat, indepTest, p, alpha, sepset, apag, unshTripl, u
 
 
 
-udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRUE, 10), verbose = FALSE, unfVect=NULL) 
+udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRUE, 10), verbose = FALSE, unfVect=NULL)
 {
   ## Purpose: use the 10 orientation rules to orient the skeleton.
   ##          Note that the preliminaries v-structures are already oriented
@@ -5696,7 +5693,7 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
           for (i in 1:dim(ind)[1]) {
             a <- ind[i, 1]
             b <- ind[i, 2]
-            indC <- which((apag[b, ] != 0 & apag[, b] == 
+            indC <- which((apag[b, ] != 0 & apag[, b] ==
                            1) & (apag[a, ] == 0 & apag[, a] == 0))
             indC <- setdiff(indC, a)
             if (length(indC) > 0) {
@@ -5705,7 +5702,7 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
                 apag[b, indC] <- 2
                 apag[indC, b] <- 3
                 if (verbose) {
-                  cat("\nRule 1:", a, "*->", b, "o-*", indC, 
+                  cat("\nRule 1:", a, "*->", b, "o-*", indC,
                       " where ", a, " and ", indC, " not connected: ", b, "->", indC, "\n")
                 }
               }
@@ -5718,7 +5715,7 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
                     apag[b, c] <- 2
                     apag[c, b] <- 3
                     if (verbose) {
-                      cat("\nRule 1':", a, "*->", b, "o-*", c, 
+                      cat("\nRule 1':", a, "*->", b, "o-*", c,
                           " where ", a, " and ", c, " not connected: ",a, b, c, "faithful triple", b, "->", c, "\n")
                     }
                   }
@@ -5734,15 +5731,15 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
           for (i in 1:dim(ind)[1]) {
             a <- ind[i, 1]
             c <- ind[i, 2]
-            indB <- which(((apag[a, ] == 2 & apag[, a] == 
-                            3) & (apag[c, ] != 0 & apag[, c] == 2)) | 
-                          ((apag[a, ] == 2 & apag[, a] != 0) & (apag[c, 
+            indB <- which(((apag[a, ] == 2 & apag[, a] ==
+                            3) & (apag[c, ] != 0 & apag[, c] == 2)) |
+                          ((apag[a, ] == 2 & apag[, a] != 0) & (apag[c,
                                                  ] == 3 & apag[, c] == 2)))
             if (length(indB) > 0) {
               apag[a, c] <- 2
               if (verbose) {
-                cat("\nRule 2:", a, "->", indB, "*->", 
-                    c, "or", a, "*->", indB, "->", c, "and", 
+                cat("\nRule 2:", a, "->", indB, "*->",
+                    c, "or", a, "*->", indB, "->", c, "and",
                     a, "*-o", c, ":", a, "*->", c, "\n")
               }
             }
@@ -5755,21 +5752,21 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
           for (i in 1:dim(ind)[1]) {
             b <- ind[i, 1]
             d <- ind[i, 2]
-            indAC <- which((apag[b, ] != 0 & apag[, b] == 
+            indAC <- which((apag[b, ] != 0 & apag[, b] ==
                             2) & (apag[, d] == 1 & apag[d, ] != 0))
             if (length(indAC) >= 2) {
               ##normal version
               if (length(unfVect)==0) {
                 counter <- 0
-                while ((counter < (length(indAC) - 1)) & 
+                while ((counter < (length(indAC) - 1)) &
                        (apag[d, b] != 2)) {
                   counter <- counter + 1
                   ii <- counter
-                  while ((ii < length(indAC)) & (apag[d, 
+                  while ((ii < length(indAC)) & (apag[d,
                                                      b] != 2)) {
                     ii <- ii + 1
-                    if (apag[indAC[counter], indAC[ii]] == 
-                        0 & apag[indAC[ii], indAC[counter]] == 
+                    if (apag[indAC[counter], indAC[ii]] ==
+                        0 & apag[indAC[ii], indAC[counter]] ==
                         0) {
                       apag[d, b] <- 2
                       if (verbose) {
@@ -5836,8 +5833,8 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
                   ##if b is in sepset
                   if ((b %in% sepset[[tmp.path[1]]][[tmp.path[length.path]]]) | (b %in% sepset[[tmp.path[length.path]]][[tmp.path[1]]])) {
                     if (verbose) {
-                      cat("\nNew Rule 4: There is a discriminating path between:", 
-                          tmp.path[1], "and", c, "for", b, "and", b, "is in Sepset of", 
+                      cat("\nNew Rule 4: There is a discriminating path between:",
+                          tmp.path[1], "and", c, "for", b, "and", b, "is in Sepset of",
                           c, "and", tmp.path[1], ":", b, "->", c, "\n")
                     }
                     apag[b, c] <- 2
@@ -5846,9 +5843,9 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
                   else {
                     ##if b is not in sepset
                     if (verbose) {
-                      cat("\nNew Rule 4: There is a discriminating path between:", 
-                          tmp.path[1], "and", c, "for", b, "and", b, "is not in Sepset of", 
-                          c, "and", tmp.path[1], ":", a, "<->", b, "<->", 
+                      cat("\nNew Rule 4: There is a discriminating path between:",
+                          tmp.path[1], "and", c, "for", b, "and", b, "is not in Sepset of",
+                          c, "and", tmp.path[1], ":", a, "<->", b, "<->",
                           c, "\n")
                     }
                     apag[a, b] <- apag[b, c] <- apag[c, b] <- 2
@@ -5866,10 +5863,10 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
           for (i in 1:dim(ind)[1]) {
             a <- ind[i, 1]
             b <- ind[i, 2]
-            indC <- which((apag[a, ] == 1 & apag[, a] == 
+            indC <- which((apag[a, ] == 1 & apag[, a] ==
                            1) & (apag[b, ] == 0 & apag[, b] == 0))
             indC <- setdiff(indC, b)
-            indD <- which((apag[b, ] == 1 & apag[, b] == 
+            indD <- which((apag[b, ] == 1 & apag[, b] ==
                            1) & (apag[a, ] == 0 & apag[, a] == 0))
             indD <- setdiff(indD, a)
             if (length(indC) > 0 & length(indD) > 0) {
@@ -5885,9 +5882,9 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
                       apag[c, d] <- apag[d, c] <- 3
                       apag[d, b] <- apag[b, d] <- 3
                       if (verbose) {
-                        cat("\nRule 5: There exists an uncovered circle path between", 
-                            a, "and", b, ":", a, "-", b, 
-                            "and", a, "-", c, "-", d, "-", 
+                        cat("\nRule 5: There exists an uncovered circle path between",
+                            a, "and", b, ":", a, "-", b,
+                            "and", a, "-", c, "-", d, "-",
                             b, "\n")
                       }
                     }
@@ -5902,9 +5899,9 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
                         apag[c, d] <- apag[d, c] <- 3
                         apag[d, b] <- apag[b, d] <- 3
                         if (verbose) {
-                          cat("\nRule 5': There exists a faithful uncovered circle path between", 
-                              a, "and", b, ":", a, "-", b, 
-                              "and", a, "-", c, "-", d, "-", 
+                          cat("\nRule 5': There exists a faithful uncovered circle path between",
+                              a, "and", b, ":", a, "-", b,
+                              "and", a, "-", c, "-", d, "-",
                               b, "\n")
                         }
                       }
@@ -5912,7 +5909,7 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
                   }
                   else {
                     path <- c(a, c, d, b)
-                    apag <- ucp(path = path, pag = apag, 
+                    apag <- ucp(path = path, pag = apag,
                                 verbose = verbose, unfVect=unfVect, p=p)
                   }
                 }
@@ -5927,12 +5924,12 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
           for (i in 1:dim(ind)[1]) {
             b <- ind[i, 1]
             c <- ind[i, 2]
-            indA <- which(apag[b, ] == 3 & apag[, b] == 
+            indA <- which(apag[b, ] == 3 & apag[, b] ==
                           3)
             if (length(indA) > 0) {
               apag[c, b] <- 3
               if (verbose) {
-                cat("\nRule 6:", a, "-", b, "o-*", c, ":", 
+                cat("\nRule 6:", a, "-", b, "o-*", c, ":",
                     b, "-*", c, "\n")
               }
             }
@@ -5945,7 +5942,7 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
           for (i in 1:dim(ind)[1]) {
             b <- ind[i, 1]
             c <- ind[i, 2]
-            indA <- which((apag[b, ] == 3 & apag[, b] == 
+            indA <- which((apag[b, ] == 3 & apag[, b] ==
                            1) & (apag[c, ] == 0 & apag[, c] == 0))
             indA <- setdiff(indA, c)
             if (length(indA) > 0) {
@@ -5953,8 +5950,8 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
               if (length(unfVect)==0) {
                 apag[c, b] <- 3
                 if (verbose) {
-                  cat("\nRule 7:", indA, "-o", b, "o-*", 
-                      c, "and", indA, " and", c, " are not adjacent:", 
+                  cat("\nRule 7:", indA, "-o", b, "o-*",
+                      c, "and", indA, " and", c, " are not adjacent:",
                       b, "-*", c, "\n")
                 }
               }
@@ -5966,8 +5963,8 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
                   if (!any(unfVect==triple2numb(p,a,b,c)) & !any(unfVect==triple2numb(p,c,b,a))) {
                     apag[c, b] <- 3
                     if (verbose) {
-                      cat("\nRule 7':", a, "-o", b, "o-*", 
-                          c, "and", a, " and", c, " are not adjacent and", a,b,c, "faithful:",  
+                      cat("\nRule 7':", a, "-o", b, "o-*",
+                          c, "and", a, " and", c, " are not adjacent and", a,b,c, "faithful:",
                           b, "-*", c, "\n")
                     }
                   }
@@ -5983,14 +5980,14 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
           for (i in 1:dim(ind)[1]) {
             a <- ind[i, 1]
             c <- ind[i, 2]
-            indB <- which(((apag[a, ] == 2 & apag[, a] == 
-                            3) | (apag[a, ] == 1 & apag[, a] == 3)) & 
+            indB <- which(((apag[a, ] == 2 & apag[, a] ==
+                            3) | (apag[a, ] == 1 & apag[, a] == 3)) &
                           (apag[c, ] == 3 & apag[, c] == 2))
             if (length(indB) > 0) {
               apag[c, a] <- 3
               if (verbose) {
-                cat("\nRule 8:", a, "->", indB, "->", c, 
-                    "or", a, "-o", indB, "->", c, "and", 
+                cat("\nRule 8:", a, "->", indB, "->", c,
+                    "or", a, "-o", indB, "->", c, "and",
                     a, "o->", c, ":", a, "->", c, "\n")
               }
             }
@@ -6003,30 +6000,30 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
           for (i in 1:dim(ind)[1]) {
             a <- ind[i, 1]
             c <- ind[i, 2]
-            indB <- which((apag[a, ] == 2 | apag[a, ] == 
-                           1) & (apag[, a] == 1 | apag[, a] == 3) & 
+            indB <- which((apag[a, ] == 2 | apag[a, ] ==
+                           1) & (apag[, a] == 1 | apag[, a] == 3) &
                           (apag[c, ] == 0 & apag[, c] == 0))
             indB <- setdiff(indB, c)
             if (length(indB) > 0) {
               for (k in 1:length(indB)) {
                 b <- indB[k]
-                indD <- which((apag[b, ] == 2 | apag[b, 
-                                     ] == 1) & (apag[, b] == 1 | apag[, b] == 
+                indD <- which((apag[b, ] == 2 | apag[b,
+                                     ] == 1) & (apag[, b] == 1 | apag[, b] ==
                                                       3) & (apag[a, ] == 0 & apag[, a] == 0))
                 indD <- setdiff(indD, a)
                 if (length(indD) > 0) {
                   for (l in 1:length(indD)) {
                     d <- indD[l]
                     if (apag[c, a] != 3) {
-                      if ((apag[c, d] == 1 | apag[c, d] == 
-                           3) & (apag[d, c] == 1 | apag[d, 
+                      if ((apag[c, d] == 1 | apag[c, d] ==
+                           3) & (apag[d, c] == 1 | apag[d,
                                        c] == 2)) {
                         ##normal version
                         if (length(unfVect)==0) {
                           apag[c, a] <- 3
                           if (verbose) {
-                            cat("\nRule 9: There exists an upd between", 
-                                a, "and", c, ":", a, " ->", 
+                            cat("\nRule 9: There exists an upd between",
+                                a, "and", c, ":", a, " ->",
                                 c, "\n")
                           }
                         }
@@ -6037,8 +6034,8 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
                           if (faithres==0) {
                             apag[c, a] <- 3
                             if (verbose) {
-                              cat("\nRule 9': There exists a faithful upd between", 
-                                  a, "and", c, ":", a, " ->", 
+                              cat("\nRule 9': There exists a faithful upd between",
+                                  a, "and", c, ":", a, " ->",
                                   c, "\n")
                             }
                           }
@@ -6046,7 +6043,7 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
                       }
                       else {
                         path <- c(c, a, b, d)
-                        apag <- upd(path = path, pag = apag, 
+                        apag <- upd(path = path, pag = apag,
                                     verbose = verbose, unfVect=unfVect, p=p)
                       }
                     }
@@ -6063,7 +6060,7 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
           for (i in 1:dim(ind)[1]) {
             a <- ind[i, 1]
             c <- ind[i, 2]
-            indB <- which((apag[c, ] == 3 & apag[, c] == 
+            indB <- which((apag[c, ] == 3 & apag[, c] ==
                            2))
             if (length(indB) >= 2) {
               for (j in 1:length(indB)) {
@@ -6072,18 +6069,18 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
                 if (length(indD) > 0 & apag[c, a] != 3) {
                   for (k in 1:length(indD)) {
                     d <- indD[k]
-                    if ((apag[a, b] == 1 | apag[a, b] == 
-                         2) & (apag[b, a] == 1 | apag[b, a] == 
-                               3) & (apag[a, d] == 1 | apag[a, d] == 
-                                     2) & (apag[d, a] == 1 | apag[d, a] == 
-                                           3) & (apag[d, b] == 0 & apag[b, d] == 
+                    if ((apag[a, b] == 1 | apag[a, b] ==
+                         2) & (apag[b, a] == 1 | apag[b, a] ==
+                               3) & (apag[a, d] == 1 | apag[a, d] ==
+                                     2) & (apag[d, a] == 1 | apag[d, a] ==
+                                           3) & (apag[d, b] == 0 & apag[b, d] ==
                                                  0)) {
                       ##normal version
                       if (length(unfVect)==0) {
                         apag[c, a] <- 3
                         if (verbose) {
-                          cat("\nRule 10 with mu = beta = ", 
-                              b, "and omega = theta =", d, 
+                          cat("\nRule 10 with mu = beta = ",
+                              b, "and omega = theta =", d,
                               ":", a, "->", c, "\n")
                         }
                       }
@@ -6093,43 +6090,43 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
                         if (!any(unfVect==triple2numb(p,b,a,d)) & !any(unfVect==triple2numb(p,d,a,b))) {
                           apag[c, a] <- 3
                           if (verbose) {
-                            cat("\nRule 10' with mu = beta = ", 
-                                b, "and omega = theta =", d, 
+                            cat("\nRule 10' with mu = beta = ",
+                                b, "and omega = theta =", d,
                                 "and",b,a,d,"faithful:", a, "->", c, "\n")
                           }
                         }
                       }
                     }
                     else {
-                      indA <- which((apag[a, ] == 1 | 
-                                     apag[a, ] == 2) & (apag[, a] == 
+                      indA <- which((apag[a, ] == 1 |
+                                     apag[a, ] == 2) & (apag[, a] ==
                                            1 | apag[, a] == 3), arr.ind = TRUE)
                       indA <- setdiff(indA, c)
                       if (length(indA >= 2)) {
                         for (l in 1:length(indA)) {
                           first.pos <- indA[l]
                           indAA <- setdiff(indA, first.pos)
-                          if ((length(indAA) > 0) & (apag[c, 
+                          if ((length(indAA) > 0) & (apag[c,
                                                           a] != 3)) {
                             for (s in 1:length(indAA)) {
                               sec.pos <- indAA[s]
-                              p1 <- find.upd(path = c(first.pos, 
-                                               b), a = a, pag = apag, 
+                              p1 <- find.upd(path = c(first.pos,
+                                               b), a = a, pag = apag,
                                              verbose = verbose, unfVect=unfVect, p=p)
-                              p2 <- find.upd(path = c(sec.pos, 
-                                               d), a = a, pag = apag, 
+                              p2 <- find.upd(path = c(sec.pos,
+                                               d), a = a, pag = apag,
                                              verbose = verbose, unfVect=unfVect, p=p)
                               if (p1$res == TRUE & p2$res == TRUE) {
                                 mu <- p1$uncov.path[1]
                                 omega <- p2$uncov.path[1]
-                                if ((mu != omega) & (apag[mu, 
-                                       omega] == 0) & (apag[omega, 
+                                if ((mu != omega) & (apag[mu,
+                                       omega] == 0) & (apag[omega,
                                                            mu] == 0)) {
                                   ##normal version
                                   if (length(unfVect)==0) {
                                     apag[c, a] <- 3
                                     if (verbose) {
-                                      cat("\nRule 10:", a, 
+                                      cat("\nRule 10:", a,
                                           "->", c, "\n")
                                     }
                                   }
@@ -6138,7 +6135,7 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
                                     if (!any(unfVect==triple2numb(p,mu,a,omega)) & !any(unfVect==triple2numb(p,omega,a,mu))) {
                                       apag[c, a] <- 3
                                       if (verbose) {
-                                        cat("\nRule 10':",mu,a,omega,"faithful:", a, 
+                                        cat("\nRule 10':",mu,a,omega,"faithful:", a,
                                             "->", c, "\n")
                                       }
                                     }
@@ -6165,14 +6162,14 @@ udag2apag <- function (suffStat, indepTest, alpha, apag, sepset, rules = rep(TRU
 
 CheckEdges <- function(suffStat, indepTest, p, alpha, apag, sepset, path, unfVect=NULL, verbose=FALSE)
 {
-  ## Purpose: check if every edge on the path should exist in R4 
+  ## Purpose: check if every edge on the path should exist in R4
   ## ----------------------------------------------------------------------
   ## Values: - updated sepset and apag
   ##         - checked==FALSE no edge has been deleted on the path
   ##                  ==TRUE the discriminating path doesn't exist anymore
   ## ----------------------------------------------------------------------
   ## Author: Diego Colombo, Date: 17 Aug 2010, 16:21
-  
+
   n.path <- length(path)
   ##did we delete an edge?
   done <- FALSE
@@ -6230,8 +6227,8 @@ CheckEdges <- function(suffStat, indepTest, p, alpha, apag, sepset, path, unfVec
                 apag <- tmp$graph
                 ##save the new sepset
                 sepset <- tmp$sepset
-              }              
-              done <- TRUE    
+              }
+              done <- TRUE
             }
           }
         }

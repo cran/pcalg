@@ -1,6 +1,6 @@
 Package: pcalg
-Version: 1.1-5
-Date: 2012-04-26
+Version: 1.1-6
+Date: 2013-03-22
 Author: Markus Kalisch, Martin Maechler, Diego Colombo
 Maintainer: Markus Kalisch <kalisch@stat.math.ethz.ch>
 Title: Estimation of CPDAG/PAG and causal inference using the IDA
@@ -14,11 +14,12 @@ Description: Standard and robust estimation of the equivalence class of
         available for estimating PAGs. Functions for causal inference
         using the IDA algorithm (based on do-calculus of Judea Pearl)
         are provided for CPDAGs.
-Depends: methods, abind, corpcor, sfsmisc
-Imports: graph, RBGL, ggm, robustbase, graphics, vcd
-Suggests: MASS, Matrix, graph, Rgraphviz, ggm
+Depends: methods, abind, sfsmisc
+Imports: graph, RBGL, ggm, corpcor, robustbase, graphics, vcd
+Suggests: MASS, Matrix, Rgraphviz
 License: GPL (>= 2)
 URL: http://pcalg.r-forge.r-project.org/
-Packaged: 2012-04-26 13:08:55 UTC; kalisch
+Packaged: 2013-03-22 14:29:15 UTC; maechler
+NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2012-04-26 17:34:25
+Date/Publication: 2013-03-22 15:46:01

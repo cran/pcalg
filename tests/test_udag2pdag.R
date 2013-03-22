@@ -1,5 +1,6 @@
 library(pcalg)
 
+.libPaths()
 ## acyclic graphs
 stopifnot(require("ggm"))# e.g. isAcyclic() below
 
@@ -31,7 +32,7 @@ cat('Time elapsed: ', (.pt <- proc.time()),"\n")
 ## find collider correctly
 set.seed(123)
 myDAG <- randomDAG(3, prob = 0.5)
-require(Matrix)
+stopifnot(require("Matrix"))
 as(myDAG,"sparseMatrix")
 d.mat <- rmvDAG(n, myDAG, errDist = "normal")
 res <- pcAlgo(d.mat, alpha = 0.05, corMethod = "standard",directed=TRUE)

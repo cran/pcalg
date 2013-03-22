@@ -2,7 +2,7 @@
 \title{Class "fciAlgo"}
 \docType{class}
 \alias{fciAlgo-class}
-\alias{plot,fciAlgo-method}
+\alias{plot,fciAlgo,ANY-method}
 \alias{show,fciAlgo-method}
 \alias{summary,fciAlgo-method}
 \description{This class of objects is returned by the function
