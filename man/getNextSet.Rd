@@ -10,13 +10,13 @@
 getNextSet(n,k,set)
 }
 \arguments{
-  \item{n}{number of elements to choose from (integer)}
-  \item{k}{size of chosen set (integer)}
-  \item{set}{previous set in list (numeric vector)}
+  \item{n}{Number of elements to choose from (integer)}
+  \item{k}{Size of chosen set (integer)}
+  \item{set}{Previous set in list (numeric vector)}
 }
 \value{List with two elements:
-  \item{nextSet}{next set in list (numeric vector)}
-  \item{wasLast}{logical indicating whether the end of the specified sequence is reached.}
+  \item{nextSet}{Next set in list (numeric vector)}
+  \item{wasLast}{Logical indicating whether the end of the specified sequence is reached.}
 }
 \details{
   The initial set is \code{1:k}.  Last index varies quickest.  Using the

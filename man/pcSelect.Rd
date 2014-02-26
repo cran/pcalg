@@ -18,28 +18,28 @@ pcSelect(y, dm, alpha, corMethod = "standard",
          verbose = FALSE, directed = FALSE)
 }
 \arguments{
-  \item{y}{response vector.}
-  \item{dm}{data matrix (rows: samples/observations, columns: variables);
+  \item{y}{Response vector.}
+  \item{dm}{Data matrix (rows: samples/observations, columns: variables);
     \code{nrow(dm) == length(y)}.}
-  \item{alpha}{significance level of individual partial correlation tests.}
+  \item{alpha}{Significance level of individual partial correlation tests.}
   \item{corMethod}{"standard" or "Qn" for standard or robust correlation
     estimation}
-  \item{verbose}{logical or in \eqn{\{0,1,2\}};
+  \item{verbose}{Logical or in \eqn{\{0,1,2\}};
     \describe{
-      \item{FALSE, 0:}{no output,}
-      \item{TRUE, 1:}{little output,}
-      \item{2:}{detailed output.}
+      \item{FALSE, 0:}{No output,}
+      \item{TRUE, 1:}{Little output,}
+      \item{2:}{Detailed output.}
     }
     Note that such output makes the function very much slower.
   }
-  \item{directed}{logical; should the output graph be directed?}
+  \item{directed}{Logical; should the output graph be directed?}
 }
 \value{
-  \item{G}{A boolean vector indicating which column of \code{dm} is
-    associated with \code{y}}
+  \item{G}{A \code{\link{logical}} vector indicating which column of
+    \code{dm} is associated with \code{y}.} 
   \item{zMin}{The minimal z-values when testing partial correlations
-    between \code{y} and each column of \code{dm}. The larger the number,
-    the more consistent is the edge with the data.}
+    between \code{y} and each column of \code{dm}.  The larger the
+    number, the more consistent is the edge with the data.}
 }
 \details{
   This function basically applies \code{\link{pc}} on the data
@@ -51,12 +51,14 @@ pcSelect(y, dm, alpha, corMethod = "standard",
 }
 
 \references{
-  Buehlmann, P., Kalisch, M. and Maathuis, M.H. (2009).
+  Buehlmann, P., Kalisch, M. and Maathuis, M.H. (2010).
   Variable selection for high-dimensional linear models:
   partially faithful distributions and the PC-simple algorithm.
-  \emph{To appear in Biometrika}.
+  \emph{Biometrika} \bold{97}, 261--278.
 }
-\seealso{\code{\link{pc}} which is the more general version of this function.
+\seealso{
+  \code{\link{pc}} which is the more general version of this function;
+  \code{\link{pcSelect.presel}} which applies \code{pcSelect()} twice.
 }
 \author{
   Markus Kalisch (\email{kalisch@stat.math.ethz.ch}) and Martin Maechler.

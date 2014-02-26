@@ -2,7 +2,6 @@ library(pcalg)
 
 .libPaths()
 ## acyclic graphs
-stopifnot(require("ggm"))# e.g. isAcyclic() below
 
 nreps <- 30
 p <- 8
@@ -23,7 +22,7 @@ for(u2pd in c("rand", "retry", "relaxed")) {
         undir.A[undir.A==1] <- 0
         undir.A[undir.A==2] <- 1
         res.dir <- res.A - undir.A
-        cyc.res[i] <- isAcyclic(res.dir)
+        cyc.res[i] <- ggm::isAcyclic(res.dir)
     }
     if (!all(cyc.res)) stop("Test of pcAlgo(*, directed): Cyclic part in PDAG!")
 } ## for(u2pd ...)
@@ -32,7 +31,7 @@ cat('Time elapsed: ', (.pt <- proc.time()),"\n")
 ## find collider correctly
 set.seed(123)
 myDAG <- randomDAG(3, prob = 0.5)
-stopifnot(require("Matrix"))
+library(Matrix)
 as(myDAG,"sparseMatrix")
 d.mat <- rmvDAG(n, myDAG, errDist = "normal")
 res <- pcAlgo(d.mat, alpha = 0.05, corMethod = "standard",directed=TRUE)

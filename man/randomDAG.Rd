@@ -6,14 +6,15 @@
   is topologically ordered from low to high node numbers.
 }
 \usage{
-randomDAG(n, prob, lB = 0.1, uB = 1)
+randomDAG(n, prob, lB = 0.1, uB = 1, V = as.character(1:n))
 }
 \arguments{
-  \item{n}{number of nodes}
+  \item{n}{Number of nodes, \eqn{n \ge 2}{N >= 2}.}
   \item{prob}{Probability of connecting a node to another node with
     higher topological ordering.}
-  \item{lB, uB}{Lower and upper limit of weights between connected nodes
-    (chosen uniformly at random).}
+  \item{lB, uB}{Lower and upper limit of edge weights, chosen uniformly
+    at random, i.e., by \code{\link{runif}(., min=lB, max=uB)}.}
+  \item{V}{\code{\link{character}} vector length \code{n} of node names.}
 }
 \value{
   An object of class \code{"graphNEL"}, see

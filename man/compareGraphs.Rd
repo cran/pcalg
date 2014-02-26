@@ -10,8 +10,8 @@
 compareGraphs(gl, gt)
 }
 \arguments{
-  \item{gl}{estimated graph (graph object)}
-  \item{gt}{true graph (graph object)}
+  \item{gl}{Estimated graph (graph object)}
+  \item{gt}{True graph (graph object)}
 }
 \value{A named numeric vector with three numbers:
   \item{tpr}{True Positive Rate: Number of correctly found edges (in

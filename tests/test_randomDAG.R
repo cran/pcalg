@@ -12,11 +12,10 @@ nEdg <- 0
 nreps <- 10
 acyc <- rep(FALSE,nreps)
 
-stopifnot(require("ggm"))# e.g. isAcyclic() below
 for (i in 1:nreps) {
   myDAG <- randomDAG(p,s,lB,uB)
   amat <- as(myDAG,"matrix")
-  acyc[i] <- isAcyclic(amat)
+  acyc[i] <- ggm::isAcyclic(amat)
   wgts <- c(wgts,amat[amat!=0])
   nEdg <- nEdg + graph::numEdges(myDAG)
 }

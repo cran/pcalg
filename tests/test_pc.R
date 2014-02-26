@@ -12,16 +12,17 @@ showProc.time <- local({
 ##################################################
 ## Standard PC
 ##################################################
+##library(RBGL)
 nreps <- 10
 
+p <- 10
 set.seed(234)
 for (ii in 1:nreps) {
-  p <- 10
   ## generate and draw random DAG :
   myDAG <- randomDAG(p, prob = 0.3)
   myCPDAG <- dag2cpdag(myDAG)
   suffStat <- list(C = cov2cor(trueCov(myDAG)), n = 10^9)
-  res <- pc(suffStat, indepTest=gaussCItest, p, 0.99)
+  res <- pc(suffStat, indepTest=gaussCItest, 0.99, p=p)
   if( shd(res, myCPDAG) != 0)
     stop("Test pc wrong: CPDAG ",ii," was not found correctly")
 }
@@ -42,18 +43,17 @@ g <- randomDAG(p,2/(p-1))
 ## generate n samples of DAG using standard normal error distribution
 ##random data
 
-load(system.file("external", "test_conservative_pc_data1.rda", package = "pcalg"))
+(load(system.file("external", "test_conservative_pc_data1.rda", package = "pcalg")))
 ## set.seed(67*37)
 ## new.mat <- rmvnorm(n,mean=rep(0,p),sigma=trueCov(g))
 ## save(new.mat, file = "/u/kalisch/research/packages/pcalg/inst/external/test_conservative_pc_data1.rda")
 ## load(file = "/u/kalisch/research/packages/pcalg/inst/external/test_conservative_pc_data1.rda")
 
 suffStat.data <- list(C=cor(new.mat1),n=n)
-indepTest.data <- gaussCItest
 
 ##pcAlgo conservative sample
-dag1 <- pc(suffStat.data, indepTest.data, p, alpha=0.005, u2pd="relaxed",conservative=TRUE)
-
+dag1 <- pc(suffStat.data, gaussCItest, alpha=0.005, p=p,
+	   u2pd="relaxed", conservative=TRUE)
 ##adjacency matrix
 dag1.amat <- as(dag1@graph,"matrix")
 
@@ -88,10 +88,9 @@ load(system.file("external", "test_conservative_pc_data2.rda", package = "pcalg"
 ## load(file = "/u/kalisch/research/packages/pcalg/inst/external/test_conservative_pc_data2.rda")
 
 suffStat.data <- list(C=cor(new.mat2),n=n)
-indepTest.data <- gaussCItest
-
-##pcAlgo conservative sample
-dag2 <- pc(suffStat.data, indepTest.data, p, alpha=0.005, verbose=FALSE, u2pd="relaxed", conservative=TRUE)
+## pcAlgo conservative sample
+dag2 <- pc(suffStat.data, gaussCItest, alpha=0.005, p=p,
+           u2pd="relaxed", conservative=TRUE)
 
 ##adjacency matrix
 dag2.amat <- as(dag2@graph,"matrix")
@@ -116,58 +115,17 @@ if (!correctEst2) stop("Test sample conservative PC wrong: example 2!")
 showProc.time()
 
 
-## Example 3
-## new.mat <- read.table("/u/colombo/Diss/RAusw/AFCI/Conservative_algorithms/test_conservative_pc_data3.txt")
-## save(new.mat, file = "/u/kalisch/research/packages/pcalg/inst/external/test_conservative_pc_data3.rda")
-## load(file = "/u/kalisch/research/packages/pcalg/inst/external/test_conservative_pc_data3.rda")
-load(system.file("external", "test_conservative_pc_data3.rda", package = "pcalg"))
-
-##always save the transpose of the matrix to be loaded in Tetrad
-##write(t(new.mat),file="test_conservative_pc_data3.txt",ncolumns=15)
-suffStat.data <- list(C=cor(new.mat3),n=n)
-indepTest.data <- gaussCItest
-
-##pcAlgo conservative sample
-dag3 <- pc(suffStat.data, indepTest.data, 15, alpha=0.005, verbose=FALSE, u2pd="relaxed", conservative=TRUE)
-
-##adjacency matrix
-dag3.amat <- as(dag3@graph,"matrix")
-
-##check the output with Tetrad
-amat.tetrad3 <- matrix(0,15,15)
-amat.tetrad3[1,2] <- amat.tetrad3[1,3] <- amat.tetrad3[1,10] <- 1
-amat.tetrad3[2,1] <- amat.tetrad3[2,5] <- amat.tetrad3[2,6] <- amat.tetrad3[2,12] <- 1
-amat.tetrad3[3,1] <- amat.tetrad3[3,9] <- 1
-amat.tetrad3[4,5] <- amat.tetrad3[4,7] <- 1
-amat.tetrad3[5,10] <- 1
-amat.tetrad3[6,2] <- amat.tetrad3[6,9] <- amat.tetrad3[6,11] <- 1
-amat.tetrad3[7,4] <- amat.tetrad3[7,8] <- 1
-amat.tetrad3[8,15] <- 1
-amat.tetrad3[9,12] <- amat.tetrad3[9,14] <- 1
-amat.tetrad3[10,1] <- amat.tetrad3[10,5] <- amat.tetrad3[10,12] <- amat.tetrad3[10,13] <- 1
-amat.tetrad3[11,6] <- amat.tetrad3[11,13] <- 1
-amat.tetrad3[12,2] <- amat.tetrad3[12,15] <- 1
-amat.tetrad3[13,15] <- 1
-amat.tetrad3[14,7] <- 1
-amat.tetrad3[15,14] <- 1
-
-correctEst3 <- all(dag3.amat == amat.tetrad3)
-if (!correctEst3) stop("Test sample conservative PC wrong: example 3!")
-showProc.time()
-
-
 ##PC algorithm population
 ##_____________________________________________________________________________
 ## Example 4
 p <- 15
 set.seed(15673)
-g <- randomDAG(p,2/(p-1))
+g <- randomDAG(p, 2/(p-1))
 
 ##population version
 suffStat <- list(C=cov2cor(trueCov(g)),n=10^9)
-indepTest <- gaussCItest
-dag4 <- pc(suffStat, indepTest, p, alpha=0.9999, verbose=FALSE, u2pd="relaxed")
-dag5 <- pc(suffStat, indepTest, p, alpha=0.9999, verbose=FALSE, u2pd="relaxed",conservative=TRUE)
+dag4 <- pc(suffStat, gaussCItest, alpha=0.9999, p=p, u2pd="relaxed")
+dag5 <- pc(suffStat, gaussCItest, alpha=0.9999, p=p, u2pd="relaxed",conservative=TRUE)
 
 ##adjacency matrix
 dag4.amat <- as(dag4@graph,"matrix")
@@ -185,9 +143,8 @@ g <- randomDAG(p,2/(p-1))
 
 ##population version
 suffStat <- list(C=cov2cor(trueCov(g)),n=10^9)
-indepTest <- gaussCItest
-dag6 <- pc(suffStat, indepTest, p, alpha=0.9999, verbose=FALSE, u2pd="relaxed")
-dag7 <- pc(suffStat, indepTest, p, alpha=0.9999, verbose=FALSE, u2pd="relaxed",conservative=TRUE)
+dag6 <- pc(suffStat, gaussCItest, alpha=0.9999, p=p, u2pd="relaxed")
+dag7 <- pc(suffStat, gaussCItest, alpha=0.9999, p=p, u2pd="relaxed",conservative=TRUE)
 
 ##adjacency matrix
 dag6.amat <- as(dag6@graph,"matrix")
@@ -204,9 +161,8 @@ g <- randomDAG(p,2/(p-1))
 
 ##population version
 suffStat <- list(C=cov2cor(trueCov(g)),n=10^9)
-indepTest <- gaussCItest
-dag8 <- pc(suffStat, indepTest, p, alpha=0.9999, u2pd="relaxed")
-dag9 <- pc(suffStat, indepTest, p, alpha=0.9999, u2pd="relaxed", conservative=TRUE)
+dag8 <- pc(suffStat, gaussCItest, alpha=0.9999, p=p, u2pd="relaxed")
+dag9 <- pc(suffStat, gaussCItest, alpha=0.9999, p=p, u2pd="relaxed", conservative=TRUE)
 
 ##adjacency matrix
 dag8.amat <- as(dag8@graph,"matrix")

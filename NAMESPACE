@@ -1,100 +1,150 @@
+useDynLib(pcalg)
+
+###----- Imports ------------------------------------------------------
+
+importFrom("utils", str)# for all the help examples
+
+importFrom("graphics", plot.default, plot)
+
+## try to import all we need, but not more
+importFrom("methods",
+           setClass, setClassUnion, setMethod, setOldClass, setValidity,
+           getClass, getClassDef, callGeneric, as, is, extends,
+	   new, validObject,
+	   signature, representation, prototype)
+
+## aargh: slow loading {currently just for getGraph() and similar}
+## importFrom("Matrix", coerce)
+## importClassesFrom("Matrix", Matrix, sparseMatrix, TsparseMatrix)
+
+importFrom("abind", abind)
+importFrom("corpcor", pseudoinverse)
 
 importFrom("robustbase",
 	   covOGK, hard.rejection,
 	   Qn, s_Qn, scaleTau2 #, Sn, s_Sn, s_mad, s_IQR
 	   )
 
-#import(graph)# importFrom(graph, )
-importClassesFrom("graph", graph, graphNEL)
+importClassesFrom("graph", graph, graphAM, graphNEL)
 importMethodsFrom("graph",
 		  ## addEdge,
 		  coerce,# as(., ...)
 		  edges, edgeData, edgeDataDefaults,
-		  nodes,
-		  numNodes, numEdges,
+		  isDirected,
+		  nodes, numNodes, numEdges,
 		  subGraph, ugraph)
 
-importFrom("corpcor", pseudoinverse)# for pcorOrder()
+importFrom("igraph", graph.adjacency, igraph.from.graphNEL, is.chordal,
+	   plot.igraph)
 
 importFrom("RBGL",
-	   biConnComp, johnson.all.pairs.sp, separates)
+	   biConnComp, johnson.all.pairs.sp, separates, bfs, connectedComp)
 ## also    sp.between -- but only for deprecated beta.special(), hence RBGL::*
-importMethodsFrom("RBGL",
-		  bfs)
+
+importFrom("ggm", isAcyclic, transClos, topOrder)
+importFrom("Rcpp", evalCpp) # Needed for any package relying on Rcpp headers...
+  # Otherwise, there are runtime errors.
 
 
-# importFrom("MASS", mvrnorm)
-importFrom("ggm", isAcyclic,transClos,topOrder)
+###----- Exports ------------------------------------------------------
 
-importFrom("graphics", plot)
+export(getGraph)# our S4 generic including methods
 
-## FIXME: do *NOT* export those that are "internal" <--> man/pcalg-internal.Rd
-export(randomDAG,
+export(trueCov,
+       randomDAG,
        wgtMatrix,
        rmvDAG,
-       pcAlgo,
        pcSelect,
-       pcSelect.presel,
        zStat,
        condIndFisherZ,
        pcorOrder,
        compareGraphs,
        getNextSet,
        mcor,
+       pcSelect.presel,
        corGraph,
-       make.edge.df,
-       orderEdges,
-       labelEdges,
        dag2cpdag,
-       find.sink,
-       adj.check,
-       pdag2dag,
-       amat2dag,
-       udag2pdag,
+       ## adj.check,
+       udag2pdag, udag2pdagSpecial, udag2pdagRelaxed,
        shd,
-       trueCov,
-       ci.test,
-       udag2pdagSpecial,
-       udag2pdagRelaxed,
+       pcAlgo, pcAlgo.Perfect,
+       pdag2dag,
+       udag2pag,
        beta.special,
        beta.special.pcObj,
-       lm.cov,
        causalEffect,
-       check.new.coll,
-       allDags,
-       pcAlgo.Perfect,
-       reach,
-       discr.path,
-       ucp,
-       upd,
-       find.upd,
-       udag2pag,
+       dreach, qreach,
        plotAG,
        skeleton,
        pc,
-       fci,
        gSquareBin,
        gSquareDis,
        gaussCItest,
+       # gaussCItest.fast,
+       dsep,
        dsepTest,
        disCItest,
        binCItest,
-       dsep,
-       pdsep,
        ida,
        idaFast,
-       legal.psep,
-       qreach,
+       legal.path,
        plotSG,
-       triple2numb,
        pc.cons.intern,
        checkTriple,
-       faith.check,
-       rfci)
+       triple2numb,
+       fci,
+       pdsep,
+       rfci,
+       find.unsh.triple,
+       udag2apag,
+       dag2pag, # skeleton.dag2pag,
+       iplotPC,
+       showEdgeList,
+       showAmat,
+       visibleEdge,
+       possibleDe,
+       pag2magAM,
+       backdoor,
+       ## Alain's :
+       r.gauss.pardag,
+       rmvnorm.ivent,
+       gies,
+       ges,
+       gds,
+       simy,
+       mat2targets,
+       dag2essgraph)
+
+## These are "internal" i.e., in man/pcalg-internal.Rd
+## _FIXME ?_                     ---------------------  
+export(##ancTS,
+       ## caus.inf,
+       ## has.new.coll,
+       ## ci.test,
+       ## dep.triple,
+       ## faith.check,
+       ## find.sink,
+       ## flipEdges,
+       ## minUncovCircPath,
+       ## minUncovPdPath,
+       ## minDiscrPath,
+       ## my.SpecialDag,
+       ## reach, # NB: dreach(), qreach() *are* non-internal
+       ## updateList,
+       ## FIXME{MM}: document !
+       rfci.vStruc,
+       allDags,
+       amat2dag)
+       
 
 exportClasses("pcAlgo",
               "fciAlgo",
-              "gAlgo")
+              "gAlgo",
+              "ParDAG",
+              "GaussParDAG",
+              "Score",
+              "GaussL0penIntScore",
+              "GaussL0penObsScore",
+              "EssGraph")
 
 exportMethods("summary","show","plot")
-

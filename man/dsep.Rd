@@ -5,19 +5,19 @@
   This function tests for d-separation of nodes in a DAG.
 }
 \usage{
-dsep(a, b, S, g, john.pairs = NA)
+dsep(a, b, S=NULL, g, john.pairs = NULL)
 }
 \arguments{
   \item{a}{Label (sic!) of node A}
   \item{b}{Label (sic!) of node B}
-  \item{S}{Labels (sic!) of set of nodes on which is conditioned}
-  \item{g}{Element "g" containing
-    the Directed Acyclic Graph (object of \code{\link{class}}
+  \item{S}{Labels (sic!) of set of nodes on which it is conditioned,
+    maybe empty}
+  \item{g}{The Directed Acyclic Graph (object of \code{\link{class}}
     "graph", see \code{\link[graph]{graph-class}} from the
     package \pkg{graph})}
-  \item{john.pairs}{the shortest path distance matrix for all pairs of
-    nodes as computed by \code{\link[RBGL]{johnson.all.pairs.sp}} from
-    package \pkg{RBGL}.}
+  \item{john.pairs}{The shortest path distance matrix for all pairs of
+    nodes as computed (also by default) in
+    \code{\link[RBGL]{johnson.all.pairs.sp}} from package \pkg{RBGL}.}
 }
 \value{TRUE if a and b are d-separated by S in G, otherwise FALSE.
 }

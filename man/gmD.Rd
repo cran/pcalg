@@ -11,7 +11,7 @@
 \format{
   The format is a list of two components
   \describe{
-    \item{x:}{int [1:10000, 1:5] 2 2 1 1 1 2 2 0 2 0 ...}
+    \item{x:}{Int [1:10000, 1:5] 2 2 1 1 1 2 2 0 2 0 ...}
     \item{g:}{Formal class 'graphNEL' [package "graph"] with 6 slots\cr
       .. ..@ nodes     : chr [1:5] "1" "2" "3" "4" ...\cr
       .. ..@ edgeL     :List of 5\cr

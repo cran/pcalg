@@ -1,47 +1,99 @@
 \name{binCItest}
+\alias{gSquareBin}
 \alias{binCItest}
-\title{Test for (conditional) independence for binary data}
+\title{G square Test for (Conditional) Independence of Binary Variables}
 \description{
-  This function tests for (condtitional) independence between binary
-  random variables. The function is written, so that it can be
-  easily used in \code{\link{skeleton}}, \code{\link{pc}} and \code{\link{fci}}.
+  \eqn{G^2} test for (conditional) independence of
+  \emph{binary} variables \eqn{X} and \eqn{Y} given the (possibly empty)
+  set of binary variables \eqn{S}.
+
+  \code{binCItest()} is a wrapper of \code{gSquareBin()}, to be easily
+  used in \code{\link{skeleton}}, \code{\link{pc}} and
+  \code{\link{fci}}.
 }
 \usage{
-binCItest(x, y, S, suffStat)
+gSquareBin(x, y, S, dm, adaptDF = FALSE, verbose = FALSE)
+binCItest (x, y, S, suffStat)
 }
 \arguments{
-  \item{x}{Position of variable X in the adjacency matrix}
-  \item{y}{Position of variable Y in the adjacency matrix}
-  \item{S}{Position of conditioning variables in the adjacency matrix}
-  \item{suffStat}{A list with two elements: (1) Element "dm" containing
-    the data matrix (columns are variables, rows are samples) and (2)
-    element "adaptDF" as a boolean variable indicating 
-    whether to lower the degrees of freedom by one for each zero
-    count. (The value for the degrees of freedom cannot go below 1.)}
+  \item{x,y}{(integer) position of variable \eqn{X} and \eqn{Y},
+    respectively, in the adjacency matrix.}
+  \item{S}{(integer) positions of zero or more conditioning variables in the
+    adjacency matrix.}
+  \item{dm}{data matrix (with \eqn{\{0,1\}} entries).}
+  \item{adaptDF}{logical specifying if the degrees of freedom should be
+    lowered by one for each zero count.  The value for the degrees of
+    freedom cannot go below 1.}
+  \item{suffStat}{a \code{\link{list}} with two elements,
+    \code{"dm"}, and \code{"adaptDF"} corresponding to the above two
+    arguments of \code{gSquareBin()}.}
+  \item{verbose}{logical indicating if detailed output is to be provided.}
 }
-\value{The p-value of the test.
+\value{
+  The p-value of the test.
 }
+\details{
+  The \eqn{G^2} statistic is used to test for (conditional)
+  independence of X and Y given a set S (can be \code{NULL}).  This
+  function is a specialized version of \code{\link{gSquareDis}} which is
+  for discrete variables with more than two levels.
+}
+\references{
+  R.E. Neapolitan (2004).
+  Learning Bayesian Networks. \emph{Prentice Hall Series in Artificial
+  Intelligence}. Chapter 10.3.1
+}
+\seealso{
+  \code{\link{gSquareDis}} for a (conditional) independence test
+  for discrete variables with more than two levels.
 
-\details{This function is based on \code{\link{gSquareBin}}; see its
-  help file for details.}
-
-\seealso{\code{\link{dsepTest}}, \code{\link{gaussCItest}} and
+  \code{\link{dsepTest}}, \code{\link{gaussCItest}} and
   \code{\link{disCItest}} for similar functions for a d-separation
-  oracle, a conditional independence test for gaussian variables and
-  a conditional independence test for discrete variables, respectively.}
+  oracle, a conditional independence test for Gaussian variables and
+  a conditional independence test for discrete variables, respectively.
 
+  \code{\link{skeleton}}, \code{\link{pc}} or \code{\link{fci}} which
+  need a testing function such as \code{binCItest}.
+}
 \author{
-  Markus Kalisch (\email{kalisch@stat.math.ethz.ch})
+  Nicoletta Andri and Markus Kalisch (\email{kalisch@stat.math.ethz.ch})
 }
 \examples{
-## Simulate data
+n <- 100
 set.seed(123)
-x <- sample(1:2,100,TRUE)
-y <- sample(1:2,100,TRUE)
-z <- sample(1:2,100,TRUE)
+## Simulate *independent data of {0,1}-variables:
+x <- rbinom(n, 1, pr=1/2)
+y <- rbinom(n, 1, pr=1/2)
+z <- rbinom(n, 1, pr=1/2)
 dat <- cbind(x,y,z)
 
-suffStat <- list(dm = dat, adaptDF = FALSE)
-binCItest(1,3,2,suffStat)
-}
+binCItest(1,3,2, list(dm = dat, adaptDF = FALSE)) # 0.36, not signif.
+binCItest(1,3,2, list(dm = dat, adaptDF = TRUE )) # the same, here
 
+## Simulate data from a chain of 3 variables: x1 -> x2 -> x3
+set.seed(12)
+b0 <- 0
+b1 <- 1
+b2 <- 1
+n <- 10000
+x1 <- rbinom(n, size=1, prob=1/2) ## = sample(c(0,1), n, replace=TRUE)
+
+## NB:  plogis(u) := "expit(u)" := exp(u) / (1 + exp(u))
+p2 <- plogis(b0 + b1*x1) ; x2 <- rbinom(n, 1, prob = p2) # {0,1}
+p3 <- plogis(b0 + b2*x2) ; x3 <- rbinom(n, 1, prob = p2) # {0,1}
+
+ftable(xtabs(~ x1+x2+x3))
+dat <- cbind(x1,x2,x3)
+
+## Test marginal and conditional independencies
+gSquareBin(3,1,NULL,dat, verbose=TRUE)
+gSquareBin(3,1, 2,  dat)
+gSquareBin(1,3, 2,  dat) # the same
+gSquareBin(1,3, 2,  dat, adaptDF=TRUE)
+\dontshow{%% NB: more in --->>  ../tests/test_gSquareBin.R
+stopifnot(all.equal(gSquareBin(3,1, 2, dat),
+                    gSquareBin(1,3, 2, dat)),
+          all.equal(gSquareBin(3,1, 2, dat, adaptDF=TRUE),
+                    gSquareBin(1,3, 2, dat, adaptDF=TRUE)))
+}%dont
+}

@@ -21,3 +21,22 @@ citEntry(entry = "Article",
         "URL http://www.jstatsoft.org/v47/i11/.")
 )
 
+citEntry(entry = "Article",
+  title        = "Characterization and greedy learning of interventional {M}arkov
+                  equivalence classes of directed acyclic graphs",
+  author       = personList(as.person("Alain Hauser"),
+                   as.person("Peter B\\\"uhlmann")),
+  journal      = "Journal of Machine Learning Research",
+  year         = "2012",
+  volume       = "13",
+  pages        = "2409--2464",
+  url          = "http://jmlr.org/papers/v13/hauser12a.html",
+
+  textVersion  =
+  paste("Alain Hauser, Peter Buehlmann (2012).",
+        "Characterization and greedy learning of interventional Markov",
+        "equivalence classes of directed acyclic graphs",
+        "Journal of Machine Learning Research, 13, 2409-2464.",
+        "URL http://jmlr.org/papers/v13/hauser12a.html.")
+)
+

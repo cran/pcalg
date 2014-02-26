@@ -15,3 +15,18 @@ wmat <- wgtMatrix(g)
 if (!all(wmat==matrix(0,3,3))) {
   stop("Test of wgtMatrix: Problem when used on empty graph!")
 }
+
+## test if weight parameters are correct
+set.seed(34)
+g <- randomDAG(5,0.8)
+trMat <- matrix(0, 5,5)
+trMat[1,5] <- 0.305
+trMat[1,4] <- 0.863
+trMat[1,2] <- 0.354
+trMat[2,4] <- 0.392
+trMat[2,5] <- 0.495
+trMat[3,4] <- 0.278
+
+if (!all(round(wgtMatrix(g),3) == t(trMat))) {
+  stop("Test in wgtMatrix: Weights have wrong value!")
+}

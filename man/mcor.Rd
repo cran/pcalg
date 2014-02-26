@@ -10,7 +10,7 @@ mcor(dm, method = c("standard", "Qn", "QnStable",
                     "ogkScaleTau2",  "ogkQn", "shrink"))
 }
 \arguments{
-  \item{dm}{numeric matrix of data; rows are samples, columns are variables.}
+  \item{dm}{Numeric matrix of data; rows are samples, columns are variables.}
   \item{method}{"standard" (default), "Qn", "QnStable", "ogkQn" and "shrink"
     envokes standard,
     elementwise robust (based on \eqn{Q_n} scale estimator, see

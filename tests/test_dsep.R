@@ -21,3 +21,21 @@ for (i in 1:nreps) {
 }
 
 if (!all(ok)) stop("Test dsep wrong: dsep oracle made a mistake!")
+
+#### Test with a graph that is NOT top. sorted (need not be)
+amat <- rbind(c(0,1,1,1,0,1,0),
+              c(0,0,0,0,0,0,0),
+              c(0,1,0,1,0,0,0),
+              c(0,0,0,0,0,0,0),
+              c(1,0,1,0,0,1,0),
+              c(0,0,0,0,0,0,0),
+              c(1,0,0,0,1,0,0))
+               
+colnames(amat) <- rownames(amat) <- as.character(1:7)
+g <- as(amat,"graphNEL")
+
+ok <- rep(FALSE, 2)
+ok[1] <- ( dsep("7","2", c("1","5"),g) == TRUE ) ## should be TRUE
+ok[2] <- ( dsep("7","2", c("3","5"),g) == FALSE ) ## should be FALSE
+
+if (!all(ok)) stop("Test dsep wrong: dsep oracle made a mistake!")

@@ -10,9 +10,9 @@ plotAG(amat)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{amat}{adjacency matrix M with edge marks. The edge marks are
-  coded in the following way: M[i,j]=M[j,i]=0: no edge; M[i,j]=1, M[j,i]
-  != 0: i *-o j; M[i,j]=2, M[j,i]!=0: i*->j; M[i,j]=3, M[j,i]!=0: i*-j.}
+  \item{amat}{Adjacency matrix (coding 0,1,2,3 for no edge, circle,
+    arrowhead, tail; e.g., \code{amat[a,b] = 2} and \code{amat[b,a] = 3}
+    implies a -> b)} 
 }
 \author{Markus Kalisch (\email{kalisch@stat.math.ethz.ch})}
 

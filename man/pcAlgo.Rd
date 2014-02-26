@@ -1,38 +1,42 @@
 \name{pcAlgo}
+\title{PC-Algorithm [OLD]: Estimate Skeleton or Equivalence Class of a DAG}
 \alias{pcAlgo}
-\title{PC-Algorithm: Estimate the Underlying Graph (Skeleton) or
-  Equivalence Class (CPDAG) of a DAG}
+\alias{pcAlgo.Perfect}
 \description{
   This function is DEPRECATED! Use \code{\link{skeleton}}, \code{\link{pc}} or
   \code{\link{fci}} instead.
+
+  Use the PC-algorithm to estimate the underlying graph
+  (\dQuote{skeleton}) or the equivalence class (CPDAG) of a DAG.
 }
 \usage{
 pcAlgo(dm = NA, C = NA, n=NA, alpha, corMethod = "standard",
        verbose=FALSE, directed=FALSE, G=NULL, datatype = "continuous",
        NAdelete=TRUE, m.max=Inf, u2pd = "rand", psepset=FALSE)
+%% pcAlgo.Perfect() is also deprecated and was never documented
 }
 \arguments{
-  \item{dm}{data matrix; rows correspond to samples, cols correspond to
+  \item{dm}{Data matrix; rows correspond to samples, cols correspond to
     nodes.}
-  \item{C}{correlation matrix; this is an alternative for specifying the
+  \item{C}{Correlation matrix; this is an alternative for specifying the
     data matrix.}
-  \item{n}{sample size; this is only needed if the data matrix is not
+  \item{n}{Sample size; this is only needed if the data matrix is not
     provided.}
-  \item{alpha}{significance level for the individual partial correlation tests.}
-  \item{corMethod}{a character string speciyfing the method for
+  \item{alpha}{Significance level for the individual partial correlation tests.}
+  \item{corMethod}{A character string speciyfing the method for
     (partial) correlation estimation.
     "standard", "QnStable", "Qn" or "ogkQn" for standard and robust (based on
     the Qn scale estimator without and with OGK) correlation
-    estimation. For robust estimation, we recommend QnStable.}
+    estimation.  For robust estimation, we recommend \code{"QnStable"}.}
   \item{verbose}{0-no output, 1-small output, 2-details;using 1 and 2
   makes the function very much slower}
   \item{directed}{If \code{FALSE}, the underlying skeleton is computed;
     if \code{TRUE}, the underlying CPDAG is computed}
-  \item{G}{the adjacency matrix of the graph from which the algorithm
+  \item{G}{The adjacency matrix of the graph from which the algorithm
     should start (logical)}
-  \item{datatype}{distinguish between discrete and continuous data}
-  \item{NAdelete}{delete edge if pval=NA (for discrete data)}
-  \item{m.max}{maximal size of conditioning set}
+  \item{datatype}{Distinguish between discrete and continuous data}
+  \item{NAdelete}{Delete edge if pval=NA (for discrete data)}
+  \item{m.max}{Maximal size of conditioning set}
   \item{u2pd}{Function used for converting skeleton to cpdag. "rand"
     (use udag2pdag); "relaxed" (use udag2pdagRelaxed); "retry" (use
     udag2pdagSpecial)}

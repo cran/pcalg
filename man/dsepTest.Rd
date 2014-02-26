@@ -2,44 +2,47 @@
 \alias{dsepTest}
 \title{Test for d-separation in a DAG}
 \description{
-  This function tests for d-separation of nodes in a DAG. The function
-  is written, so that it can
-  easily be used in \code{\link{skeleton}}, \code{\link{pc}}, \code{\link{fci}}.
+  Tests for d-separation of nodes in a DAG.  \code{dsepTest()} is
+  written to be easily used in \code{\link{skeleton}}, \code{\link{pc}},
+  \code{\link{fci}}.
 }
 \usage{
-dsepTest(x, y, S, suffStat)
+dsepTest(x, y, S=NULL, suffStat)
 }
 \arguments{
-  \item{x}{Position of variable X in the adjacency matrix}
-  \item{y}{Position of variable Y in the adjacency matrix}
-  \item{S}{Positions of conditioning variables in the adjacency matrix}
-  \item{suffStat}{A list with two elements: (1) Element "g" containing
-    the Directed Acyclic Graph (object of \code{\link{class}}
-    \code{"graph"}, see \code{\link[graph]{graph-class}} from the
-    package \pkg{graph}) and (2) element "jp" containing the shortest
-    path distance matrix for all pairs of nodes as computed by
-    \code{\link[RBGL]{johnson.all.pairs.sp}} from package \pkg{RBGL}.}
+  \item{x,y}{integer position of variable x and y in the adjacency matrix.}
+  \item{S}{integer positions of conditioning variables in the adjacency matrix,
+    possibly empty.}
+  \item{suffStat}{a \code{\link{list}} with two elements,
+    \describe{
+      \item{\code{"g"}}{Containing the Directed Acyclic Graph (object of
+	\code{\link{class}} \code{"graph"}, see
+	\code{\link[graph]{graph-class}} from the package \pkg{graph}), and}
+      \item{\code{"jp"}}{Containing the shortest path distance
+	matrix for all pairs of nodes as computed by
+	\code{\link[RBGL]{johnson.all.pairs.sp}} from package
+	\pkg{RBGL}.}
+      }}
 }
-\value{If x and y are d-separated by S in DAG G the result is 1, otherwise it is
-  0. This is analogous to the p-value of an ideal (without sampling
-  error) conditional independence test on any distribution that is
-  faithful to the DAG G.
+\value{If x and y are d-separated by S in DAG G the result is 1,
+  otherwise it is 0.  This is analogous to the p-value of an ideal
+  (without sampling error) conditional independence test on any
+  distribution that is faithful to the DAG G.
 }
 
-\details{The function is based on \code{\link{dsep}}. For details on
-d-separation see the Lauritzen (2004).}
-
+\details{The function is based on \code{\link{dsep}}.  For details on
+  d-separation see the reference Lauritzen (2004).
+}
 \references{
   S.L. Lauritzen (2004),
   Graphical Models, \emph{Oxford University Press}.
-
 }
 
 \seealso{\code{\link{gaussCItest}}, \code{\link{disCItest}} and
   \code{\link{binCItest}} for similar functions for a conditional
   independence test for gaussian, discrete and
-  binary variables, respectively.}
-
+  binary variables, respectively.
+}
 \author{
   Markus Kalisch (\email{kalisch@stat.math.ethz.ch})
 }
