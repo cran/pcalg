@@ -2,8 +2,9 @@
 
 # Clean up temporary files from the build process
 
-rm -rf autom4te.cache
-rm -f config.log config.status src/Makevars src/*.o src/*.so src/symbols.rds
+# rm -rf autom4te.cache
+# rm -f config.log config.status
+rm -f src/*.o src/*.so src/symbols.rds
 find . -name \*~ | xargs rm -f
 
 exit 0

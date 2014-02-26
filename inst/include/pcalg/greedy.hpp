@@ -2,7 +2,7 @@
  * Classes for greedy estimation of causal structures
  *
  * @author Alain Hauser
- * $Id: greedy.hpp 219 2014-01-30 15:57:29Z alhauser $
+ * $Id: greedy.hpp 248 2014-03-03 11:27:22Z alhauser $
  */
 
 #ifndef GREEDY_HPP_
@@ -380,7 +380,7 @@ protected:
 	 *
 	 * Help function for maximization of BIC via DP.
 	 */
-	std::set<uint> _bitsToParents(const int vertex, const uint32_t bits);
+	std::set<uint> _bitsToParents(const uint vertex, const uint32_t bits);
 
 	/**
 	 * Yields the "optimal" intervention target (without restriction on

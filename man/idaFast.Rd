@@ -85,7 +85,7 @@ stopifnot(all.equal(eff.estF, tol = 1e-15,
                     rbind("5"= eff.est1, "6"= eff.est2, "7"= eff.est3)) ,
           all.equal(idaFast(2, c(7,5), covTrue, myCPDAG),
                     rbind("7"= ida(2, 7, covTrue, myCPDAG),
-                          "5"= ida(2, 5, covTrue, myCPDAG)), tol = 1e-15)
+                          "5"= ida(2, 5, covTrue, myCPDAG)), tolerance = 1e-15)
  )
 }%dont
 }

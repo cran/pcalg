@@ -2,24 +2,23 @@
  * Main file of the Greedy Interventional Equivalence Search library for R
  *
  * @author Alain Hauser
- * $Id: gies.cpp 231 2014-02-25 18:09:30Z alhauser $
+ * $Id: gies.cpp 250 2014-03-03 19:41:29Z alhauser $
  */
 
 #include <vector>
 #include <string>
 #include <algorithm>
 #include <boost/lambda/lambda.hpp>
-#include <boost/lambda/bind.hpp>
 #include <boost/graph/adjacency_list.hpp>
 
 // Define BGL class for undirected graph
 typedef boost::adjacency_list<boost::setS, boost::vecS, boost::undirectedS> UndirectedGraph;
 
-#include "constraint.hpp"
-#include "score.hpp"
-#include "greedy.hpp"
+#include "pcalg/constraint.hpp"
+#include "pcalg/score.hpp"
+#include "pcalg/greedy.hpp"
 #define DEFINE_GLOBAL_DEBUG_STREAM
-#include "gies_debug.hpp"
+#include "pcalg/gies_debug.hpp"
 
 using namespace boost::lambda;
 
@@ -32,13 +31,12 @@ EssentialGraph castGraph(SEXP argInEdges)
 {
 	int i;
 	Rcpp::List listInEdges(argInEdges);
-	std::vector<uint> vecParents;
-	std::vector<uint>::iterator vi;
 	EssentialGraph result(listInEdges.size());
+
 	for (i = 0; i < listInEdges.size(); ++i) {
-		vecParents = listInEdges[i];
+		Rcpp::IntegerVector vecParents((SEXP)(listInEdges[i]));
 		// Adapt indices to C++ convention
-		for (vi = vecParents.begin(); vi != vecParents.end(); ++vi)
+		for (Rcpp::IntegerVector::iterator vi = vecParents.begin(); vi != vecParents.end(); ++vi)
 			result.addEdge(*vi - 1, i);
 	}
 
@@ -54,9 +52,8 @@ Rcpp::List wrapGraph(EssentialGraph graph)
 	Rcpp::IntegerVector vecEdges;
 	std::set<uint> edges;
 	std::set<uint>::iterator si;
-	int i;
 
-	for (i = 0; i < graph.getVertexCount(); ++i) {
+	for (uint i = 0; i < graph.getVertexCount(); ++i) {
 		edges = graph.getInEdges(i);
 		vecEdges = Rcpp::IntegerVector();
 		for (si = edges.begin(); si != edges.end(); ++si)
@@ -271,7 +268,7 @@ RcppExport SEXP causalInference(
 
 	// Cast option for limits in vertex degree
 	dout.level(1) << "Casting maximum vertex degree...\n";
-	Rcpp::NumericVector maxDegree = options["maxDegree"];
+	Rcpp::NumericVector maxDegree((SEXP)(options["maxDegree"]));
 	if (maxDegree.size() > 0) {
 		if (maxDegree.size() == 1) {
 			if (maxDegree[0] >= 1.) {
@@ -290,14 +287,16 @@ RcppExport SEXP causalInference(
 	}
 	
 	// Cast option for vertices which are not allowed to have parents
+	// TODO: activate function in R, and check for conversion from R to C indexing convention
 	std::vector<uint> childrenOnly = Rcpp::as< std::vector<uint> >(options["childrenOnly"]);
-	std::for_each(childrenOnly.begin(), childrenOnly.end(), bind(&EssentialGraph::setChildrenOnly, &graph, _1, true));
+	for (std::vector<uint>::iterator vi = childrenOnly.begin(); vi != childrenOnly.end(); ++vi)
+		graph.setChildrenOnly(*vi - 1, true);
 	int stepLimit;
 
 	// Cast option for fixed gaps: logical matrix, assumed to be symmetric by now
 	if (!Rf_isNull(options["fixedGaps"])) {
 		Rcpp::LogicalMatrix gapsMatrix((SEXP)(options["fixedGaps"]));
-		uint n_gaps;
+		uint n_gaps = 0;
 		for (i = 0; i < p; ++i)
 			for (j = i + 1; j < p; ++j)
 				if (gapsMatrix(i, j))
@@ -318,13 +317,13 @@ RcppExport SEXP causalInference(
 		dout.level(1) << "Performing GIES...\n";
 
 		// Enable caching, if requested
-		if (options["caching"])
+		if (Rcpp::as<bool>(options["caching"]))
 			graph.enableCaching();
 
 		// Perform a greedy search, with or without turning phase
 		// TODO: evtl. zusätzlichen Parameter einfügen, der wiederholtes Suchen
 		// auch ohne Drehphase erlaubt...
-		if (options["turning"]) {
+		if (Rcpp::as<bool>(options["turning"])) {
 			bool cont;
 			do {
 				cont = false;
@@ -346,7 +345,7 @@ RcppExport SEXP causalInference(
 		dout.level(1) << "Performing " << algName << "...\n";
 
 		// Limit to single step if requested
-		stepLimit = options["maxsteps"];
+		stepLimit = Rcpp::as<int>(options["maxsteps"]);
 		if (stepLimit == 0)
 			stepLimit = graph.getVertexCount()*graph.getVertexCount();
 
@@ -368,7 +367,7 @@ RcppExport SEXP causalInference(
 		dout.level(1) << "Performing " << algName << "...\n";
 
 		// Limit to single step if requested
-		stepLimit = options["maxsteps"];
+		stepLimit = Rcpp::as<int>(options["maxsteps"]);
 		if (stepLimit == 0)
 			stepLimit = graph.getVertexCount()*graph.getVertexCount();
 
@@ -388,7 +387,7 @@ RcppExport SEXP causalInference(
 	else if (algName == "GDS") {
 		// TODO: evtl. caching für GDS implementieren...
 		// Perform a greedy search, with or without turning phase
-		if (options["turning"]) {
+		if (Rcpp::as<bool>(options["turning"])) {
 			bool cont;
 			do {
 				cont = false;
@@ -417,7 +416,8 @@ RcppExport SEXP causalInference(
 	delete score;
 	// TODO "interrupt" zurückgeben, falls Ausführung unterbrochen wurde. Problem:
 	// check_interrupt() scheint nur einmal true zurückzugeben...
-	return Rcpp::List::create(Rcpp::Named("in.edges") = wrapGraph(graph),
+	return Rcpp::List::create(
+			Rcpp::Named("in.edges") = wrapGraph(graph),
 			Rcpp::Named("steps") = steps);
 
 	END_RCPP
@@ -489,13 +489,12 @@ RcppExport SEXP condIndTestGauss(
 	// Exception handling
 	BEGIN_RCPP
 
-	int i;
-
 	// Cast arguments; note index shift between R and C++!
 	uint u = Rcpp::as<uint>(argVertex1) - 1;
 	uint v = Rcpp::as<uint>(argVertex2) - 1;
 	std::vector<uint> S = Rcpp::as<std::vector<uint> >(argCondSet);
-	for (i = 0; i < S.size(); ++i) S[i]--;
+	for (std::vector<uint>::iterator si = S.begin(); si != S.end(); ++si)
+		(*si)--;
 	uint n = Rcpp::as<uint>(argSampleSize);
 	Rcpp::NumericMatrix cor(argCor);
 
@@ -567,7 +566,6 @@ RcppExport SEXP estimateSkeleton(
 	pMax.fill(-1.);
 	std::vector<uint> emptySet;
 	std::vector<int> edgeTests(1);
-	double pval;
 	for (i = 0; i < p; i++)
 		for (j = i + 1; j < p; j++) {
 			if (fixedMatrix(i, j))
@@ -586,7 +584,12 @@ RcppExport SEXP estimateSkeleton(
 	// Estimate skeleton
 	graph.setIndepTest(indepTest);
 	dout.level(1) << "Fitting skeleton to data...\n";
-	graph.fitCondInd(alpha, pMax, sepSet, edgeTests, options["m.max"], options["NAdelete"]);
+	graph.fitCondInd(alpha,
+			pMax,
+			sepSet,
+			edgeTests,
+			Rcpp::as<int>(options["m.max"]),
+			Rcpp::as<bool>(options["NAdelete"]));
 
 	// Delete test object
 	delete indepTest;

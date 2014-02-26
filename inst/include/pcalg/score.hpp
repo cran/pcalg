@@ -3,7 +3,7 @@
  * given some data
  *
  * @author Alain Hauser
- * $Id: score.hpp 231 2014-02-25 18:09:30Z alhauser $
+ * $Id: score.hpp 248 2014-03-03 11:27:22Z alhauser $
  */
 
 #ifndef SCORE_HPP_
@@ -24,6 +24,14 @@ typedef unsigned int uint;
 class TargetFamily : public std::vector<std::set<uint> >
 {
 public:
+	/**
+	 * Constructors
+	 */
+	TargetFamily() :
+		std::vector<std::set<uint> >() {};
+	TargetFamily(std::vector<std::set<uint> >::size_type n) :
+		std::vector<std::set<uint> >(n) {};
+
 	/**
 	 * Checks whether the family of targets protects a (hypothetical) arrow
 	 * of a graph

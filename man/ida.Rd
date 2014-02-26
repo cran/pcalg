@@ -188,7 +188,7 @@ stopifnot(all.equal(sort(unique(g.ida)),
 stopifnot(all.equal(sort(unique(g.ida)), sort(unique(l.ida))))
 ## and the true causal effect is contained in both sets, up to a small
 ## estimation error (0.868 vs. 0.857)
-stopifnot(all.equal(ce.2.5, max(l.ida), tol = 0.02))
+stopifnot(all.equal(ce.2.5, max(l.ida), tolerance = 0.02))
 }
 \keyword{multivariate}
 \keyword{models}

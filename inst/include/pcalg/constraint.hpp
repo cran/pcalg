@@ -24,6 +24,13 @@ class IndepTest
 {
 public:
 	/**
+	 * Virtual destructor
+	 *
+	 * Needed because of different storage of data.
+	 */
+	virtual ~IndepTest() {}
+
+	/**
 	 * Virtual test function: must be implemented in all derived classes
 	 *
 	 * @param	u	First variable index

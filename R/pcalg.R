@@ -2621,10 +2621,10 @@ skeleton <- function(suffStat, indepTest, alpha, labels, p,
   seq_p <- seq_len(p)
   method <- match.arg(method)
   ## C++ version still has problems under Windows; will have to check why
-  if (method == "stable.fast" && .Platform$OS.type == "windows") {
-    method <- "stable"
-    warning("Method 'stable.fast' is not available under Windows; using 'stable' instead.")
-  }
+#  if (method == "stable.fast" && .Platform$OS.type == "windows") {
+#    method <- "stable"
+#    warning("Method 'stable.fast' is not available under Windows; using 'stable' instead.")
+#  }
 
   ## G := !fixedGaps, i.e. G[i,j] is true  iff  i--j  will be investigated
   if (is.null(fixedGaps)) {
@@ -2654,7 +2654,7 @@ skeleton <- function(suffStat, indepTest, alpha, labels, p,
       indepTestName <- "rfun"
     options <- list(
         verbose = as.integer(verbose), 
-        m.max = as.integer(ifelse(m.max == Inf, -1, m.max)),
+        m.max = as.integer(ifelse(is.infinite(m.max), p, m.max)),
         NAdelete = NAdelete)
     res <- .Call("estimateSkeleton", G, suffStat, indepTestName, indepTest, alpha, fixedEdges, options);
     G <- res$amat
