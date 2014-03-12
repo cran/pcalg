@@ -4598,6 +4598,8 @@ pdsep <- function (skel, suffStat, indepTest, p, sepset, alpha, pMax, m.max = In
 
   G <- (as(skel, "matrix") != 0)
   n.edgetests <- rep(0, 1000)
+  ord <- 0
+  allPdsep.tmp <- vector("list", p)
   if(biCC)
     conn.comp <- lapply(biConnComp(skel), as.numeric)
   if (any(G)) {
