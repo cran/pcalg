@@ -1,11 +1,11 @@
 ## GIES algorithm
 ## 
 ## Author: Alain Hauser <alhauser@ethz.ch>
-## $Id: gies.R 224 2014-02-06 14:23:53Z alhauser $
+## $Id: gies.R 265 2014-06-28 13:36:06Z alhauser $
 ###############################################################################
 
 ##################################################
-## Help functions for simulations
+## Auxiliary functions for simulations
 ##################################################
 
 #' Randomly generates a Gaussian causal model

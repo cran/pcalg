@@ -2,7 +2,7 @@
 #' GIES, GES, DP
 #' 
 #' @author Alain Hauser
-#' $Id: test_gies.R 224 2014-02-06 14:23:53Z alhauser $
+#' $Id: test_gies.R 266 2014-06-30 14:16:49Z alhauser $
 
 cat("Testing the causal inference algorithms for interventional data:\n")
 
@@ -49,5 +49,43 @@ for (nf in names(fcns)) {
   }
   cat("[Ok]\n")
 }
+
+## Test stepwise execution of GIES
+cat(if(doExtras)"\n\n", "GIES stepwise", if(doExtras)":\n" else ": ... ",
+    if(doExtras) paste0(paste(rep("=", 14), collapse=""), "\n"),
+    sep = "")
+for (cpp in c(FALSE, TRUE)) {
+  ## Randomly permute data
+  for (i in 1:nreps) {
+    perm <- 1:nrow(gauss.data)
+    if (i > 1) {
+      set.seed(i)
+      perm <- sample(perm)
+    }
+    score <- new("GaussL0penIntScore", 
+        targets = gauss.targets, 
+        target.index = gauss.target.index[perm], 
+        data = gauss.data[perm, ],
+        use.cpp = cpp)
+    
+    ## Stepwise execution
+    essgraph <- new("EssGraph", nodes = as.character(1:p), score = score)
+    cont <- TRUE
+    while(cont) {
+      cont <- FALSE
+      while(essgraph$greedy.step("forward")) cont <- TRUE
+      while(essgraph$greedy.step("backward")) cont <- TRUE
+      while(essgraph$greedy.step("backward")) cont <- TRUE
+    }
+    for (i in 1:p) {
+      if(doExtras) cat("  use.cpp = ", cpp,"; i = ", i, "\n", sep="")
+      if (!isTRUE(all.equal(est.graph$essgraph$.in.edges[[i]],
+              gauss.parents[[i]], tolerance = tol)))
+        stop("Parents are not estimated correctly.")
+    }
+    print(proc.time())
+  }
+}
+
 
 cat(if(doExtras) "\n", "Done.\n")

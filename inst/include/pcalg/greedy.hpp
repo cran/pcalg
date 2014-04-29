@@ -2,7 +2,7 @@
  * Classes for greedy estimation of causal structures
  *
  * @author Alain Hauser
- * $Id: greedy.hpp 248 2014-03-03 11:27:22Z alhauser $
+ * $Id: greedy.hpp 256 2014-04-09 11:54:39Z alhauser $
  */
 
 #ifndef GREEDY_HPP_
@@ -545,11 +545,6 @@ public:
 	 * TODO: perhaps change the class of the result...
 	 */
 	EssentialGraph getRepresentative() const;
-
-	/**
-	 * Yields all representatives of the equivalence class
-	 */
-	std::vector<boost::dynamic_bitset<> > getAllRepresentatives() const;
 
 	/**
 	 * Enable caching.

@@ -2,7 +2,7 @@
 ### Part 1 : S4 classes used by pc and r/fci
 ##################################################
 
-## $Id: AllClasses.R 224 2014-02-06 14:23:53Z alhauser $
+## $Id: AllClasses.R 266 2014-06-30 14:16:49Z alhauser $
 
 setClass("gAlgo",
          representation(call = "call",
@@ -322,7 +322,7 @@ setRefClass("Score",
           else
             perm <- 1:length(target.index)
 
-          pp.dat$targets <<- targets
+          pp.dat$targets <<- lapply(targets, sort)
           pp.dat$target.index <<- target.index[perm]
           pp.dat$data <<- data[perm, ]
           pp.dat$vertex.count <<- ncol(data)
@@ -345,17 +345,26 @@ setRefClass("Score",
 
         #' Checks whether a vertex is valid
         validate.vertex = function(vertex) {
-          stopifnot(is.whole(vertex))
+          # stopifnot(is.whole(vertex)) ## Take this again when is.whole is implemented in 'sfsmisc'
+          stopifnot(abs(vertex - round(vertex)) < sqrt(.Machine$double.eps))
           stopifnot(1 <= vertex && vertex <= pp.dat$vertex.count)
         },
 
         #' Checks whether a vector is a valid list of parents
         validate.parents = function(parents) {
-          stopifnot(is.whole(parents))
-          stopifnot(length(unique(parents)) == length(parents))
-          stopifnot(1 <= parents, parents <= pp.dat$vertex.count)
+          stopifnot(all(parents %in% 1:pp.dat$vertex.count))
+          stopifnot(anyDuplicated(parents) == 0)
         },
 
+        #' Getter and setter function for the targets
+        getTargets = function() {
+          pp.dat$targets
+        },
+        
+        setTargets = function(targets) {
+          pp.dat$targets <<- lapply(targets, sort)
+        },
+        
         #' Creates a list of options for the C++ functions for the internal
         #' calculation of scores and MLEs
         c.fcn.options = function(DEBUG.LEVEL = 0) {
@@ -595,35 +604,70 @@ setRefClass("EssGraph",
     fields = list(
         .nodes = "vector",
         .in.edges = "list",
-        targets = "list",
-        score = "Score"
+        .targets = "list",
+        .score = "Score"
     ),
 
     validity = function(object) {
-      if (any(names(object$.in.edges) != object$.nodes))
+      ## Check nodes
+      if (any(names(object$.in.edges) != object$.nodes)) {
         return("The elements of 'in.edges' must be named after the nodes.")
-      if (!all(sapply(object$.in.edges, is.numeric)))
+      }
+      
+      ## Check in-edges
+      if (!all(sapply(object$.in.edges, is.numeric))) {
         return("The vectors in 'in.edges' must contain numbers.")
-
-      edgeRange <- range(unlist(object$.in.edges))
-      if (object$edge.count() > 0 &&
-          (edgeRange[1] < 1 || edgeRange[2] > object$node.count()))
-        return("Invalid range of edge sources.")
-
+      }
+      if (!all(unique(unlist(object$.in.edges)) %in% 1:object$node.count())) {
+        return(sprintf("Invalid edge source(s): edge sources must be in the range 1:%d.", 
+          object$node.count()))
+      }
+      
+      ## Check targets
+      if (anyDuplicated(object$.targets)) {
+        return("Targets are not unique.")
+      }
+      if (!all(unique(unlist(object$.targets)) %in% 1:object$node.count())) {
+        return(sprintf("Invalid target(s): targets must be in the range 1:%d.", 
+          object$node.count()))
+      }
+      
+      ## Check score
+      if (!is.null(score <- object$getScore())) {
+        targets <- object$getTargets()
+        if (length(score$getTargets()) != length(targets) ||
+            !all.equal(duplicated(c(targets, score$getTargets())),
+                    rep(c(FALSE, TRUE), each = length(targets)))) {
+          return("Targets do not coincide with that of the scoring object.")
+        }
+      }
+      
       return(TRUE)
     },
 
     methods = list(
         #' Constructor
-        initialize = function(nodes, in.edges, ...) {
-          .nodes <<- nodes
-          if (missing(in.edges))
-            .in.edges <<- replicate(length(nodes), integer(0))
-          else
-            .in.edges <<- in.edges
-          names(.in.edges) <<- nodes
+        initialize = function(nodes, 
+            in.edges = replicate(length(nodes), integer(0)), 
+            targets = list(integer(0)),
+            score = NULL) {
+          ## Store nodes names
+          if (missing(nodes)) {
+            stop("Argument 'nodes' must be specified.")
+          }
+          .nodes <<- as.character(nodes)
+          
+          ## Store in-edges
+          # TODO: improve error checking; possibly put it into separate function
+          stopifnot(is.list(in.edges) && length(in.edges) == length(nodes))
+          .in.edges <<- in.edges
+          names(.in.edges) <<- .nodes
 
-          callSuper(...)
+          ## Store targets
+          setTargets(targets)
+          
+          ## Store score
+          setScore(score)
         },
 
         #' Yields the number of nodes
@@ -636,6 +680,26 @@ setRefClass("EssGraph",
           sum(sapply(.in.edges, length))
         },
 
+        #' Getter and setter functions for score object
+        getScore = function() {
+          .score
+        },
+        
+        setScore = function(score) {
+          if (!is.null(score)) {
+            .score <<- score
+          }
+        },
+        
+        #' Getter and setter functions for targets list
+        getTargets = function() {
+          .targets
+        },
+        
+        setTargets = function(targets) {
+          .targets <<- lapply(targets, sort)
+        },
+        
         #' Creates a list of options for the C++ function "causalInference";
         #' internal function
         causal.inf.options = function(caching = TRUE,
@@ -655,7 +719,9 @@ setRefClass("EssGraph",
         },
 
         #' Performs one greedy step
-        greedy.step = function(direction = c("forward", "backward", "turning")) {
+        greedy.step = function(direction = c("forward", "backward", "turning"), verbose = FALSE) {
+          stopifnot(!is.null(score <- getScore()))
+          
           ## Cast direction
           direction <- match.arg(direction)
           alg.name <- switch(direction,
@@ -663,42 +729,58 @@ setRefClass("EssGraph",
               backward = "GIES-B",
               turning = "GIES-T")
 
-          substr(direction, 1, 1) <- toupper(substr(direction, 1, 1))
-
           new.graph <- .Call("causalInference",
               .in.edges,
               score$pp.dat,
               alg.name,
               score$c.fcn,
-              causal.inf.options(caching = FALSE, maxsteps = 1),
+              causal.inf.options(caching = FALSE, maxSteps = 1, verbose = verbose),
               PACKAGE = "pcalg")
           if (identical(new.graph, "interrupt"))
             return(FALSE)
           
           if (new.graph$steps > 0) {
-            .in.edges <<- new.graph$.in.edges
+            .in.edges <<- new.graph$in.edges
             names(.in.edges) <<- .nodes
           }
 
           return(new.graph$steps == 1)
         },
 
-        greedy.search = function(direction) {
-          score.fcn <- ifelse(score$decomp,
-              function(vertex, parents) score$local.score(vertex, parents),
-              function(edges) score$global.score.int(edges))
-          substr(direction, 1, 1) <- toupper(substr(direction, 1, 1))
-
-          new.graph <- .Call(sprintf("greedy%s", direction), .in.edges, score.fcn)
-          if (new.graph$steps > 0)
+        greedy.search = function(direction = c("forward", "backward", "turning")) {
+          stopifnot(!is.null(score <- getScore()))
+          
+          ## Cast direction
+          direction <- match.arg(direction)
+          alg.name <- switch(direction,
+              forward = "GIES-F",
+              backward = "GIES-B",
+              turning = "GIES-T")
+          
+          new.graph <- .Call("causalInference",
+              .in.edges,
+              score$pp.dat,
+              alg.name,
+              score$c.fcn,
+              causal.inf.options(caching = FALSE),
+              PACKAGE = "pcalg")
+          if (identical(new.graph, "interrupt"))
+            return(FALSE)
+          
+          if (new.graph$steps > 0) {
             .in.edges <<- new.graph$in.edges
-
+            names(.in.edges) <<- .nodes
+          }
+          
           return(new.graph$steps)
         },
 
         #' Performs a causal inference from an arbitrary start DAG
         #' with a specified algorithm
         caus.inf = function(algorithm, ...) {
+          stopifnot(!is.null(score <- getScore()))
+          stopifnot(algorithm %in% c("GIES", "GIES-F", "GIES-B", "GIES-T", "GIES-STEP", "GDS", "SiMy"))
+          
           new.graph <- .Call("causalInference",
               .in.edges,
               score$pp.dat,
@@ -727,12 +809,14 @@ setRefClass("EssGraph",
 
         #' Calculates the parameters of a DAG via MLE (wrapper function only)
         mle.fit = function(dag) {
+          stopifnot(!is.null(score <- getScore()))
           dag$.params <- score$global.mle(dag)
           return(dag)
         },
 
         #' Yields a representative (estimating parameters via MLE)
         repr = function() {
+          stopifnot(!is.null(score <- getScore()))
           in.edges <- .Call("representative", .in.edges, PACKAGE = "pcalg")
           result <- new(score$.pardag.class, nodes = .nodes, in.edges = in.edges)
           result$.params <- score$global.mle(result)

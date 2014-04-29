@@ -2,7 +2,7 @@
  * Main file of the Greedy Interventional Equivalence Search library for R
  *
  * @author Alain Hauser
- * $Id: gies.cpp 250 2014-03-03 19:41:29Z alhauser $
+ * $Id: gies.cpp 266 2014-06-30 14:16:49Z alhauser $
  */
 
 #include <vector>
@@ -345,7 +345,7 @@ RcppExport SEXP causalInference(
 		dout.level(1) << "Performing " << algName << "...\n";
 
 		// Limit to single step if requested
-		stepLimit = Rcpp::as<int>(options["maxsteps"]);
+		stepLimit = Rcpp::as<int>(options["maxSteps"]);
 		if (stepLimit == 0)
 			stepLimit = graph.getVertexCount()*graph.getVertexCount();
 
@@ -367,7 +367,7 @@ RcppExport SEXP causalInference(
 		dout.level(1) << "Performing " << algName << "...\n";
 
 		// Limit to single step if requested
-		stepLimit = Rcpp::as<int>(options["maxsteps"]);
+		stepLimit = Rcpp::as<int>(options["maxSteps"]);
 		if (stepLimit == 0)
 			stepLimit = graph.getVertexCount()*graph.getVertexCount();
 
@@ -406,11 +406,15 @@ RcppExport SEXP causalInference(
 		// Construct equivalence class
 		graph.replaceUnprotected();
 	}
+
 	// DP
 	else if (algName == "SiMy") {
 		graph.siMySearch();
 		graph.replaceUnprotected();
 	}
+
+	// Other algorithm: throw an error
+	else throw std::runtime_error(algName + ": invalid algorithm name");
 
 	// Return new list of in-edges and steps
 	delete score;

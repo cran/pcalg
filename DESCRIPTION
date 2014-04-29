@@ -1,6 +1,6 @@
 Package: pcalg
-Version: 2.0-2
-Date: 2014-03-12
+Version: 2.0-3
+Date: 2014-04-29
 Author: Diego Colombo, Alain Hauser, Markus Kalisch, Martin Maechler
 Maintainer: Markus Kalisch <kalisch@stat.math.ethz.ch>
 Title: Methods for graphical models and causal inference
@@ -11,8 +11,8 @@ Description: This package contains several functions for causal structure
   and GIES (for a mix of observational and interventional data without hidden
   variables). For causal inference the IDA algorithm and the generalized
   backdoor criterion is implemented.
-Depends: R (>= 3.0.0)
-LinkingTo: Rcpp, RcppArmadillo, BH
+Depends: R (>= 3.0.2)
+LinkingTo: Rcpp (>= 0.11.0), RcppArmadillo, BH
 Imports: graphics, utils, methods, abind, graph, RBGL, igraph, ggm,
         corpcor, robustbase, vcd, Rcpp
 Suggests: MASS, Matrix, Rgraphviz, mvtnorm, sfsmisc
@@ -23,7 +23,7 @@ License: GPL (>= 2)
 URL: http://pcalg.r-forge.r-project.org/
 Repository: CRAN
 Repository/R-Forge/Project: pcalg
-Repository/R-Forge/Revision: 255
-Repository/R-Forge/DateTimeStamp: 2014-03-13 09:53:50
-Date/Publication: 2014-03-19 16:10:18
-Packaged: 2014-03-13 11:19:07 UTC; rforge
+Repository/R-Forge/Revision: 266
+Repository/R-Forge/DateTimeStamp: 2014-06-30 14:16:49
+Date/Publication: 2014-07-01 09:32:59
+Packaged: 2014-06-30 16:16:47 UTC; rforge
