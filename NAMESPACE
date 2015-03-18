@@ -25,17 +25,22 @@ importFrom("robustbase",
 	   Qn, s_Qn, scaleTau2 #, Sn, s_Sn, s_mad, s_IQR
 	   )
 
+importFrom("graph",
+		reverseEdgeDirections,
+		edgeRenderInfo, "edgeRenderInfo<-")
 importClassesFrom("graph", graph, graphAM, graphNEL)
 importMethodsFrom("graph",
 		  ## addEdge,
 		  coerce,# as(., ...)
-		  edges, edgeData, edgeDataDefaults,
+		  edges, edgeData, 
+		  edgeDataDefaults, "edgeDataDefaults<-",
 		  isDirected,
-		  nodes, numNodes, numEdges,
+		  nodes, "nodes<-",
+		  numNodes, numEdges,
 		  subGraph, ugraph)
 
 importFrom("igraph", graph.adjacency, igraph.from.graphNEL, is.chordal,
-	   plot.igraph)
+	   plot.igraph, graph.dfs)
 
 importFrom("RBGL",
 	   biConnComp, johnson.all.pairs.sp, separates, bfs, connectedComp)
@@ -45,6 +50,9 @@ importFrom("ggm", isAcyclic, transClos, topOrder)
 importFrom("Rcpp", evalCpp) # Needed for any package relying on Rcpp headers...
   # Otherwise, there are runtime errors.
 
+importFrom("bdsmatrix", gchol) ## for jointIda ("MCD")
+
+importFrom("sfsmisc", digitsBase)
 
 ###----- Exports ------------------------------------------------------
 
@@ -105,6 +113,7 @@ export(trueCov,
        possibleDe,
        pag2magAM,
        backdoor,
+       jointIda,
        ## Alain's :
        r.gauss.pardag,
        rmvnorm.ivent,
@@ -113,7 +122,9 @@ export(trueCov,
        gds,
        simy,
        mat2targets,
-       dag2essgraph)
+       # targets2mat,
+       dag2essgraph,
+       fciPlus)
 
 ## These are "internal" i.e., in man/pcalg-internal.Rd
 ## _FIXME ?_                     ---------------------  

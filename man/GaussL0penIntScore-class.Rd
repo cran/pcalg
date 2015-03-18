@@ -90,7 +90,7 @@ new("GaussL0penIntScore",
   }
 }
 \author{
-  Alain Hauser (\email{alain.hauser@biology.unibe.ch})
+  Alain Hauser (\email{alain.hauser@bfh.ch})
 }
 \examples{
 ##################################################

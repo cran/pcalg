@@ -9,7 +9,8 @@
   indicating also the edge marks.
 }
 \usage{
-udag2pag(pag, sepset, rules = rep(TRUE, 10), unfVect = NULL, verbose = FALSE)
+udag2pag(pag, sepset, rules = rep(TRUE, 10), unfVect = NULL,
+  verbose = FALSE, orientCollider = TRUE)
 }
 \arguments{
   \item{pag}{Adjacency matrix of the final skeleton of size p*p (coding
@@ -27,6 +28,7 @@ udag2pag(pag, sepset, rules = rep(TRUE, 10), unfVect = NULL, verbose = FALSE)
     triples (as returned by \code{\link{pc.cons.intern}}).  This is
     needed in the conservative and majority rule versions of FCI.}
   \item{verbose}{If \code{TRUE}, detailed output is provided.}
+  \item{orientCollider}{if \code{TRUE}, collider are oriented.}
 }
 \details{
   The skeleton is transformed into an FCI-PAG using rules by Zhang (2008).

@@ -29,7 +29,7 @@ mat2targets(A)
     \code{targets[[target.index[i]]]}.}
 }
 \author{
-  Alain Hauser (\email{alain.hauser@biology.unibe.ch})
+  Alain Hauser (\email{alain.hauser@bfh.ch})
 }
 \seealso{
   \code{\linkS4class{Score}}, \code{\link{gies}}, \code{\link{simy}}

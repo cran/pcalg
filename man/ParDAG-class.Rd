@@ -71,7 +71,7 @@
   }
 }
 \author{
-  Alain Hauser (\email{alain.hauser@biology.unibe.ch})
+  Alain Hauser (\email{alain.hauser@bfh.ch})
 }
 \seealso{
   \code{\linkS4class{GaussParDAG}}

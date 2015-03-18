@@ -2,7 +2,7 @@
  * greedy.cpp
  *
  * @author Alain Hauser
- * $Id: greedy.cpp 256 2014-04-09 11:54:39Z alhauser $
+ * $Id: greedy.cpp 282 2015-02-27 19:06:37Z alhauser $
  */
 
 #include "pcalg/greedy.hpp"
@@ -1179,7 +1179,7 @@ bool EssentialGraph::greedyForward()
 	ArrowChange insertion, optInsertion;
 
 	// For DEBUGGING purposes: print phase
-	dout.level(3) << "== starting forward phase...\n";
+	dout.level(1) << "== starting forward phase...\n";
 
 	// Initialize optimal score gain
 	optInsertion.score = _minScoreDiff;
@@ -1216,7 +1216,7 @@ bool EssentialGraph::greedyForward()
 	// If the score can be augmented, do it
 	if (!check_interrupt() && optInsertion.score > _minScoreDiff) {
 		// For DEBUGGING purposes: print inserted arrow
-		dout.level(3) << "  inserting edge (" << optInsertion.source << ", " << v_opt << ") with C = "
+		dout.level(1) << "  inserting edge (" << optInsertion.source << ", " << v_opt << ") with C = "
 				<< optInsertion.clique << ", S = " << optInsertion.score << "\n";
 		insert(optInsertion.source, v_opt, optInsertion.clique);
 //		#if DEBUG_OUTPUT_LEVEL >= 2
@@ -1234,7 +1234,7 @@ bool EssentialGraph::greedyBackward()
 	ArrowChange deletion, optDeletion;
 
 	// For DEBUGGING purposes: print phase
-	dout.level(3) << "== starting backward phase...\n" ;
+	dout.level(1) << "== starting backward phase...\n" ;
 
 	// Initialize optimal score gain
 	optDeletion.score = _minScoreDiff;
@@ -1275,7 +1275,7 @@ bool EssentialGraph::greedyTurn()
 	ArrowChange turning, optTurning;
 
 	// For DEBUGGING purposes: print phase
-	dout.level(3) << "== starting turning phase...\n" ;
+	dout.level(1) << "== starting turning phase...\n" ;
 
 	// Initialize optimal score gain
 	optTurning.score = _minScoreDiff;
@@ -1411,7 +1411,7 @@ bool EssentialGraph::greedyDAGForward()
 				diffScore = - _score->local(v, C_new);
 				C_new.insert(u);
 				diffScore += _score->local(v, C_new);
-				dout.level(2) << "  Score diff. for edge " << u << " --> " << v << " : " <<
+				dout.level(3) << "  Score diff. for edge " << u << " --> " << v << " : " <<
 						diffScore << std::endl;
 
 				// If new score is better than previous optimum
@@ -1455,7 +1455,7 @@ bool EssentialGraph::greedyDAGBackward()
 			diffScore = - _score->local(v, C_new);
 			C_new.erase(*ui);
 			diffScore += _score->local(v, C_new);
-			dout.level(2) << "  Score diff. for edge " << *ui << " --> " << v << " : " <<
+			dout.level(3) << "  Score diff. for edge " << *ui << " --> " << v << " : " <<
 					diffScore << std::endl;
 
 			// If new score is better than previous optimum, store (u, v, C) as new optimum
@@ -1502,7 +1502,7 @@ bool EssentialGraph::greedyDAGTurn()
 				C_new.erase(*ui);
 				D_new.insert(v);
 				diffScore += _score->local(v, C_new) + _score->local(*ui, D_new);
-				dout.level(2) << "  Score diff. for edge " << *ui << " --> " << v << " : " <<
+				dout.level(3) << "  Score diff. for edge " << *ui << " --> " << v << " : " <<
 						diffScore << std::endl;
 
 				// If new score is better than previous optimum, store (u, v, C) as new optimum

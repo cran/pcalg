@@ -131,3 +131,6 @@
 
 
 
+
+* Change convention: If something strange happens with a test, KEEP edge
+* Make up some clever way to deal with NAs in the continuous case (phps also in other cases) and prepare test functions for users

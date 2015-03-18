@@ -24,7 +24,8 @@
 }
 \usage{
 udag2pdag       (gInput, verbose)
-udag2pdagRelaxed(gInput, verbose, unfVect=NULL, solve.confl=FALSE)
+udag2pdagRelaxed(gInput, verbose, unfVect=NULL, solve.confl=FALSE,
+  orientCollider = TRUE, rules = rep(TRUE, 3))
 udag2pdagSpecial(gInput, verbose, n.max=100)
 }
 \arguments{
@@ -41,6 +42,10 @@ udag2pdagSpecial(gInput, verbose, n.max=100)
     a PDAG because bi-directed edges can be present.}
   \item{n.max}{maximum number of tries for re-orienting doubly visited
     edges in \code{udag2pdagSpecial}.}
+  \item{orientCollider}{if \code{TRUE}, collider are oriented.}
+  \item{rules}{Array of length 3 containing \code{TRUE} or \code{FALSE}
+    for each rule. \code{TRUE} in position i means that rule i (Ri) will
+    be applied.  By default, all rules are used.}
 }
 \details{
   \describe{

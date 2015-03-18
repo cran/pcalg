@@ -76,7 +76,7 @@ new("GaussL0penObsScore",
   }
 }
 \author{
-  Alain Hauser (\email{alain.hauser@biology.unibe.ch})
+  Alain Hauser (\email{alain.hauser@bfh.ch})
 }
 \examples{
 ##################################################

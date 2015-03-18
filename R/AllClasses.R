@@ -2,7 +2,7 @@
 ### Part 1 : S4 classes used by pc and r/fci
 ##################################################
 
-## $Id: AllClasses.R 266 2014-06-30 14:16:49Z alhauser $
+## $Id: AllClasses.R 273 2014-07-24 15:08:08Z alhauser $
 
 setClass("gAlgo",
          representation(call = "call",
@@ -719,7 +719,7 @@ setRefClass("EssGraph",
         },
 
         #' Performs one greedy step
-        greedy.step = function(direction = c("forward", "backward", "turning"), verbose = FALSE) {
+        greedy.step = function(direction = c("forward", "backward", "turning"), verbose = FALSE, ...) {
           stopifnot(!is.null(score <- getScore()))
           
           ## Cast direction
@@ -734,7 +734,7 @@ setRefClass("EssGraph",
               score$pp.dat,
               alg.name,
               score$c.fcn,
-              causal.inf.options(caching = FALSE, maxSteps = 1, verbose = verbose),
+              causal.inf.options(caching = FALSE, maxSteps = 1, verbose = verbose, ...),
               PACKAGE = "pcalg")
           if (identical(new.graph, "interrupt"))
             return(FALSE)

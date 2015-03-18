@@ -50,7 +50,7 @@ dag2essgraph(dag, targets = list(integer(0)))
   Prediction, and Search}, MIT Press, Cambridge (MA).
 }
 \author{
-  Alain Hauser (\email{alain.hauser@biology.unibe.ch})
+  Alain Hauser (\email{alain.hauser@bfh.ch})
 }
 \seealso{
   \code{\link{dag2cpdag}}, \code{\linkS4class{Score}}, \code{\linkS4class{EssGraph}}

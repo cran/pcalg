@@ -16,7 +16,7 @@ log.q1pm <- function(r) log1p(2*r/(1-r))
 
 
 check.Rgraphviz <- function() {
-  if(!require("Rgraphviz"))
+  if(!requireNamespace("Rgraphviz"))
     stop("Package 'Rgraphviz' (from Bioconductor) must be installed for plotting graphs!")
 }
 

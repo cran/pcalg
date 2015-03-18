@@ -67,7 +67,7 @@ simy(p, targets, score, verbose = FALSE, ...)
   Conference on Uncertainty in Artificial Intelligence (UAI 2006)}, 445--452
 }
 \author{
-  Alain Hauser (\email{alain.hauser@biology.unibe.ch})
+  Alain Hauser (\email{alain.hauser@bfh.ch})
 }
 \seealso{
   \code{\link{gies}}, \code{\linkS4class{Score}}, \code{\linkS4class{EssGraph}}

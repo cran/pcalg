@@ -103,7 +103,7 @@ gies(p, targets, score, fixedGaps = NULL,
   \emph{Journal of Machine Learning Research} \bold{13}, 2409--2464.
 }
 \author{
-  Alain Hauser (\email{alain.hauser@biology.unibe.ch})
+  Alain Hauser (\email{alain.hauser@bfh.ch})
 }
 \seealso{
   \code{\link{ges}}, \code{\linkS4class{Score}}, \code{\linkS4class{EssGraph}}

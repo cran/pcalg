@@ -1,21 +1,23 @@
 Package: pcalg
-Version: 2.0-3
-Date: 2014-04-29
+Version: 2.0-10
+Date: 2015-03-18
 Author: Diego Colombo, Alain Hauser, Markus Kalisch, Martin Maechler
 Maintainer: Markus Kalisch <kalisch@stat.math.ethz.ch>
-Title: Methods for graphical models and causal inference
-Description: This package contains several functions for causal structure
+Title: Methods for Graphical Models and Causal Inference
+Description: Functions for causal structure
   learning and causal inference using graphical models. The main algorithms
   for causal structure learning are PC (for observational data without hidden
   variables), FCI and RFCI (for observational data with hidden variables),
-  and GIES (for a mix of observational and interventional data without hidden
+  and GIES (for a mix of data from observational studies
+  (i.e. observational data) and data from experiments
+  involving interventions (i.e. interventional data) without hidden
   variables). For causal inference the IDA algorithm and the generalized
   backdoor criterion is implemented.
 Depends: R (>= 3.0.2)
 LinkingTo: Rcpp (>= 0.11.0), RcppArmadillo, BH
 Imports: graphics, utils, methods, abind, graph, RBGL, igraph, ggm,
-        corpcor, robustbase, vcd, Rcpp
-Suggests: MASS, Matrix, Rgraphviz, mvtnorm, sfsmisc
+        corpcor, robustbase, vcd, Rcpp, bdsmatrix, sfsmisc
+Suggests: MASS, Matrix, Rgraphviz, mvtnorm
 ByteCompile: yes
 NeedsCompilation: yes
 Encoding: UTF-8
@@ -23,7 +25,7 @@ License: GPL (>= 2)
 URL: http://pcalg.r-forge.r-project.org/
 Repository: CRAN
 Repository/R-Forge/Project: pcalg
-Repository/R-Forge/Revision: 266
-Repository/R-Forge/DateTimeStamp: 2014-06-30 14:16:49
-Date/Publication: 2014-07-01 09:32:59
-Packaged: 2014-06-30 16:16:47 UTC; rforge
+Repository/R-Forge/Revision: 287
+Repository/R-Forge/DateTimeStamp: 2015-03-18 12:23:08
+Date/Publication: 2015-03-19 11:22:01
+Packaged: 2015-03-18 12:46:38 UTC; rforge

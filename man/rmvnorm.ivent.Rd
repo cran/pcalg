@@ -29,7 +29,7 @@ rmvnorm.ivent(n, object, target = integer(0), target.value = numeric(0))
   \code{p} matrix is returned with one sample per row.
 }
 \author{
-  Alain Hauser (\email{alain.hauser@biology.unibe.ch})
+  Alain Hauser (\email{alain.hauser@bfh.ch})
 }
 \examples{
 set.seed(307)

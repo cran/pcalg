@@ -67,7 +67,7 @@ r.gauss.pardag(p, prob, top.sort = FALSE, normalize = FALSE,
   \emph{Journal of Machine Learning Research} \bold{13}, 2409--2464.
 }
 \author{
-  Alain Hauser (\email{alain.hauser@biology.unibe.ch})
+  Alain Hauser (\email{alain.hauser@bfh.ch})
 }
 \seealso{
   \code{\linkS4class{GaussParDAG}}, \code{\link{randomDAG}}
