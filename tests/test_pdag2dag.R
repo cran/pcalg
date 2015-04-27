@@ -19,6 +19,14 @@ g3 <- as(amat3,"graphNEL")
 d3 <- pdag2dag(g3)
 res3 <- !d3$success
 
-if (!all(c(res1,res2,res3))) {
+## expl4 - labels (bug: 24Mar2015)
+amatT4 <- cbind(c(0,0,0), c(1,0,0), c(1,1,0))
+colnames(amatT4) <- rownames(amatT4) <- c("cxs", "def", "dfe")
+m <- rbind(c(0,1,1), c(1,0,1), c(1,1,0))
+colnames(m) <- rownames(m) <- c("cxs", "def", "dfe")
+g <- as(m, "graphNEL")
+res4 <- identical(wgtMatrix(pdag2dag(g)$graph), amatT4)
+
+if (!all(c(res1,res2,res3,res4))) {
   stop("Test of pdag2dag: Problem when extending PDAG!")
 }

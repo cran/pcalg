@@ -12,6 +12,36 @@ trueCov <- function(dag, back.compatible = FALSE)
   tcrossprod(solve(diag(p) - wm))
 }
 
+## buggy randomDAG:
+## randomDAG <- function (n, prob, lB = 0.1, uB = 1, V = as.character(1:n))
+## {
+##     stopifnot(n >= 2, is.numeric(prob), length(prob) == 1,
+## 	      0 <= prob, prob <= 1,
+## 	      is.numeric(lB), is.numeric(uB), lB <= uB)
+##     edL <- vector("list", n)
+##     nmbEdges <- 0L
+##     for (i in seq_len(n - 2)) {
+##         listSize <- rbinom(1, n - i, prob)
+##         nmbEdges <- nmbEdges + listSize
+##         edgeList <- sample(seq(i + 1, n), size = listSize)
+##         weightList <- runif(length(edgeList), min = lB, max = uB)
+##         edL[[i]] <- list(edges = edgeList, weights = weightList)
+##     }
+##     if (nmbEdges > 0) {
+## 	edL[[n-1]] <-
+## 	    if (rbinom(1, 1, prob) == 1)
+## 		list(edges = n,
+## 		     weights = runif(1, min = lB, max = uB))
+## 	    else
+## 		list(edges = integer(0), weights = numeric(0))
+## 	edL[[n]] <- list(edges = integer(0), weights = numeric(0))
+## 	names(edL) <- V
+## 	new("graphNEL", nodes = V, edgeL = edL, edgemode = "directed")
+##     }
+##     else
+## 	new("graphNEL", nodes = V, edgemode = "directed")
+## }
+
 randomDAG <- function (n, prob, lB = 0.1, uB = 1, V = as.character(1:n))
 {
     stopifnot(n >= 2, is.numeric(prob), length(prob) == 1,
@@ -26,13 +56,19 @@ randomDAG <- function (n, prob, lB = 0.1, uB = 1, V = as.character(1:n))
         weightList <- runif(length(edgeList), min = lB, max = uB)
         edL[[i]] <- list(edges = edgeList, weights = weightList)
     }
+    ## i=n-1 separately
+    ## (because of sample(7,1) is actually sample(1:7,1) and not 7)
+    listSize <- rbinom(1, 1, prob)
+    if (listSize > 0) {
+        nmbEdges <- nmbEdges + 1
+        edgeList <- n
+        weightList <- runif(1, min = lB, max = uB)
+    } else {
+          edgeList <- integer(0)
+          weightList <- numeric(0)
+      }
+    edL[[n-1]] <- list(edges = edgeList, weights = weightList)
     if (nmbEdges > 0) {
-	edL[[n-1]] <-
-	    if (rbinom(1, 1, prob) == 1)
-		list(edges = n,
-		     weights = runif(1, min = lB, max = uB))
-	    else
-		list(edges = integer(0), weights = numeric(0))
 	edL[[n]] <- list(edges = integer(0), weights = numeric(0))
 	names(edL) <- V
 	new("graphNEL", nodes = V, edgeL = edL, edgemode = "directed")
@@ -40,6 +76,7 @@ randomDAG <- function (n, prob, lB = 0.1, uB = 1, V = as.character(1:n))
     else
 	new("graphNEL", nodes = V, edgemode = "directed")
 }
+
 
 ## A version of this is also in	/u/maechler/R/MM/Pkg-ex/graph/weightmatrix.R
 ## another on in  Matrix/R/sparseMatrix.R  function graph.wgtMatrix() :
@@ -1392,6 +1429,7 @@ pdag2dag <- function(g, keepVstruct=TRUE) {
     p <- dim(gm)[1]
 
     gm2 <- gm
+    cn2 <- colnames(gm2)
     a <- gm
     go.on <- TRUE
     go.on2 <- FALSE
@@ -1408,8 +1446,12 @@ pdag2dag <- function(g, keepVstruct=TRUE) {
             ## orient edges
             inc.to.x <- which(a[,x]==1 & a[x,]==1) ## undirected
             if (length(inc.to.x)>0) {
-              real.inc.to.x <- as.numeric(row.names(a)[inc.to.x])
-              real.x <- as.numeric(row.names(a)[x])
+              ## map var.names to col pos in orig adj matrix
+              ## bug: real.inc.to.x <- as.numeric(row.names(a)[inc.to.x])
+              v1 <- row.names(a)[inc.to.x]
+              real.inc.to.x <- which(cn2 %in% v1)
+              v2 <- row.names(a)[x]
+              real.x <- which(cn2 %in% v2)
               gm2[real.x,real.inc.to.x] <- rep(1,length(inc.to.x))
               gm2[real.inc.to.x,real.x] <- rep(0,length(inc.to.x))
             }

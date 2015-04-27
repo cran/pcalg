@@ -1,8 +1,6 @@
 Package: pcalg
-Version: 2.0-10
-Date: 2015-03-18
-Author: Diego Colombo, Alain Hauser, Markus Kalisch, Martin Maechler
-Maintainer: Markus Kalisch <kalisch@stat.math.ethz.ch>
+Version: 2.2-0
+Date: 2015-04-27
 Title: Methods for Graphical Models and Causal Inference
 Description: Functions for causal structure
   learning and causal inference using graphical models. The main algorithms
@@ -13,19 +11,27 @@ Description: Functions for causal structure
   involving interventions (i.e. interventional data) without hidden
   variables). For causal inference the IDA algorithm and the generalized
   backdoor criterion is implemented.
+Maintainer: Markus Kalisch <kalisch@stat.math.ethz.ch>
+Authors@R: c(person("Markus","Kalisch",
+                    email="kalisch@stat.math.ethz.ch", role=c("aut","cre")),
+  person("Alain", "Hauser", role="aut"),  person("Martin","Maechler", role="aut"),
+  person("Diego", "Colombo", role="ctb"), person("Doris", "Entner", role="ctb"),
+  person("Patrik","Hoyer", role="ctb"),   person("Antti", "Hyttinen", role="ctb"),
+  person("Jonas", "Peters", role="ctb"))
+Author: Markus Kalisch [aut, cre], Alain Hauser [aut], Martin Maechler [aut],
+  Diego Colombo [ctb], Doris Entner [ctb], Patrik Hoyer [ctb],
+  Antti Hyttinen [ctb], Jonas Peters [ctb]
 Depends: R (>= 3.0.2)
 LinkingTo: Rcpp (>= 0.11.0), RcppArmadillo, BH
 Imports: graphics, utils, methods, abind, graph, RBGL, igraph, ggm,
-        corpcor, robustbase, vcd, Rcpp, bdsmatrix, sfsmisc
+        corpcor, robustbase, vcd, Rcpp, bdsmatrix, sfsmisc, fastICA,
+        clue, gmp
 Suggests: MASS, Matrix, Rgraphviz, mvtnorm
 ByteCompile: yes
 NeedsCompilation: yes
 Encoding: UTF-8
 License: GPL (>= 2)
 URL: http://pcalg.r-forge.r-project.org/
+Packaged: 2015-05-11 12:56:35 UTC; kalischm
 Repository: CRAN
-Repository/R-Forge/Project: pcalg
-Repository/R-Forge/Revision: 287
-Repository/R-Forge/DateTimeStamp: 2015-03-18 12:23:08
-Date/Publication: 2015-03-19 11:22:01
-Packaged: 2015-03-18 12:46:38 UTC; rforge
+Date/Publication: 2015-05-13 17:01:04

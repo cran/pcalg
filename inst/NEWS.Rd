@@ -1,6 +1,34 @@
 \name{NEWS}
 \title{pcalg News}
 \encoding{UTF-8}
+\section{CHANGES IN VERSION 2.2-0}{
+  \itemize{
+    \item Function \code{randDAG} for generating random directed acyclic
+    graphs (DAGs) with fixed expected number of neighbours. Several
+    different methods are provided, each intentionally biased towards
+    certain properties. The methods are based on the analogue functions
+    in the \pkg{igraph} package.
+    \item Function \code{unifDAG} and \code{unifDAG.approx} for uniform
+    sampling of a labelled directed acyclic graph (DAG) with combinatorial
+    enumeration.
+  }
+}
+
+\section{CHANGES IN VERSION 2.1-0}{
+  \itemize{
+    \item Function \code{LINGAM} for estimating the structure of Linear
+    non-Gaussian Additive Models
+  }
+}
+
+\section{CHANGES IN VERSION 2.0-4}{
+  \itemize{
+    \item Function \code{fciPlus} for a fast (but accurate) version of
+    \code{fci} (note that the already existing function \code{rfci} is a
+    fast \emph{approximation} of \code{fci})
+  }
+}
+
 \section{CHANGES IN VERSION 2.0-1}{
   \itemize{
     \item Functions \code{gds}, \code{gies}, \code{ges} for score based learning

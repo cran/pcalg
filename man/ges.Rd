@@ -11,8 +11,8 @@
   algorithm of Chickering (2002).
 }
 \usage{
-ges(p, score, fixedGaps = NULL, 
-  turning = TRUE, maxDegree = integer(0), verbose = FALSE, ...) 
+ges(p, score, fixedGaps = NULL,
+    turning = TRUE, maxDegree = integer(0), verbose = FALSE, ...)
 }
 \arguments{
   \item{p}{Number of variables.}

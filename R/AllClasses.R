@@ -2,7 +2,7 @@
 ### Part 1 : S4 classes used by pc and r/fci
 ##################################################
 
-## $Id: AllClasses.R 273 2014-07-24 15:08:08Z alhauser $
+## $Id: AllClasses.R 300 2015-04-22 17:27:00Z mmaechler $
 
 setClass("gAlgo",
          representation(call = "call",
@@ -239,11 +239,11 @@ setRefClass("ParDAG",
         simulate = function(n, target = integer(0), int.level = numeric(0)) {
           stop("simulate() is not implemented in this class.")
         },
-    
+
         #' Fits parameters by MLE using a scoring object
         mle.fit = function(score) {
           .params <<- score$global.mle(.self)
-        } 
+        }
         ),
 
     "VIRTUAL")
@@ -360,11 +360,11 @@ setRefClass("Score",
         getTargets = function() {
           pp.dat$targets
         },
-        
+
         setTargets = function(targets) {
           pp.dat$targets <<- lapply(targets, sort)
         },
-        
+
         #' Creates a list of options for the C++ functions for the internal
         #' calculation of scores and MLEs
         c.fcn.options = function(DEBUG.LEVEL = 0) {
@@ -420,7 +420,7 @@ setRefClass("GaussL0penIntScore",
 
     fields = list(
         .format = "character"),
-        
+
     validity = function(object) {
       p <- ncol(object$pp.dat$data)
       if (!is.null(object$pp.dat$scatter)) {
@@ -468,7 +468,7 @@ setRefClass("GaussL0penIntScore",
             .format <<- ifelse(p >= nrow(data) || p >= 500, "raw", "scatter")
           ## TODO change following line as soon as "raw" format is implemented and tested
           .format <<- "scatter"
-          
+
           ## Use C++ functions if requested
           if (use.cpp)
             c.fcn <<- ifelse(.format == "scatter", "gauss.l0pen.scatter", "gauss.l0pen.raw")
@@ -613,25 +613,25 @@ setRefClass("EssGraph",
       if (any(names(object$.in.edges) != object$.nodes)) {
         return("The elements of 'in.edges' must be named after the nodes.")
       }
-      
+
       ## Check in-edges
       if (!all(sapply(object$.in.edges, is.numeric))) {
         return("The vectors in 'in.edges' must contain numbers.")
       }
       if (!all(unique(unlist(object$.in.edges)) %in% 1:object$node.count())) {
-        return(sprintf("Invalid edge source(s): edge sources must be in the range 1:%d.", 
+        return(sprintf("Invalid edge source(s): edge sources must be in the range 1:%d.",
           object$node.count()))
       }
-      
+
       ## Check targets
       if (anyDuplicated(object$.targets)) {
         return("Targets are not unique.")
       }
       if (!all(unique(unlist(object$.targets)) %in% 1:object$node.count())) {
-        return(sprintf("Invalid target(s): targets must be in the range 1:%d.", 
+        return(sprintf("Invalid target(s): targets must be in the range 1:%d.",
           object$node.count()))
       }
-      
+
       ## Check score
       if (!is.null(score <- object$getScore())) {
         targets <- object$getTargets()
@@ -641,14 +641,14 @@ setRefClass("EssGraph",
           return("Targets do not coincide with that of the scoring object.")
         }
       }
-      
+
       return(TRUE)
     },
 
     methods = list(
         #' Constructor
-        initialize = function(nodes, 
-            in.edges = replicate(length(nodes), integer(0)), 
+        initialize = function(nodes,
+            in.edges = replicate(length(nodes), integer(0)),
             targets = list(integer(0)),
             score = NULL) {
           ## Store nodes names
@@ -656,7 +656,7 @@ setRefClass("EssGraph",
             stop("Argument 'nodes' must be specified.")
           }
           .nodes <<- as.character(nodes)
-          
+
           ## Store in-edges
           # TODO: improve error checking; possibly put it into separate function
           stopifnot(is.list(in.edges) && length(in.edges) == length(nodes))
@@ -665,7 +665,7 @@ setRefClass("EssGraph",
 
           ## Store targets
           setTargets(targets)
-          
+
           ## Store score
           setScore(score)
         },
@@ -684,22 +684,22 @@ setRefClass("EssGraph",
         getScore = function() {
           .score
         },
-        
+
         setScore = function(score) {
           if (!is.null(score)) {
             .score <<- score
           }
         },
-        
+
         #' Getter and setter functions for targets list
         getTargets = function() {
           .targets
         },
-        
+
         setTargets = function(targets) {
           .targets <<- lapply(targets, sort)
         },
-        
+
         #' Creates a list of options for the C++ function "causalInference";
         #' internal function
         causal.inf.options = function(caching = TRUE,
@@ -721,7 +721,7 @@ setRefClass("EssGraph",
         #' Performs one greedy step
         greedy.step = function(direction = c("forward", "backward", "turning"), verbose = FALSE, ...) {
           stopifnot(!is.null(score <- getScore()))
-          
+
           ## Cast direction
           direction <- match.arg(direction)
           alg.name <- switch(direction,
@@ -738,7 +738,7 @@ setRefClass("EssGraph",
               PACKAGE = "pcalg")
           if (identical(new.graph, "interrupt"))
             return(FALSE)
-          
+
           if (new.graph$steps > 0) {
             .in.edges <<- new.graph$in.edges
             names(.in.edges) <<- .nodes
@@ -749,14 +749,14 @@ setRefClass("EssGraph",
 
         greedy.search = function(direction = c("forward", "backward", "turning")) {
           stopifnot(!is.null(score <- getScore()))
-          
+
           ## Cast direction
           direction <- match.arg(direction)
           alg.name <- switch(direction,
               forward = "GIES-F",
               backward = "GIES-B",
               turning = "GIES-T")
-          
+
           new.graph <- .Call("causalInference",
               .in.edges,
               score$pp.dat,
@@ -766,12 +766,12 @@ setRefClass("EssGraph",
               PACKAGE = "pcalg")
           if (identical(new.graph, "interrupt"))
             return(FALSE)
-          
+
           if (new.graph$steps > 0) {
             .in.edges <<- new.graph$in.edges
             names(.in.edges) <<- .nodes
           }
-          
+
           return(new.graph$steps)
         },
 
@@ -780,7 +780,7 @@ setRefClass("EssGraph",
         caus.inf = function(algorithm, ...) {
           stopifnot(!is.null(score <- getScore()))
           stopifnot(algorithm %in% c("GIES", "GIES-F", "GIES-B", "GIES-T", "GIES-STEP", "GDS", "SiMy"))
-          
+
           new.graph <- .Call("causalInference",
               .in.edges,
               score$pp.dat,
@@ -833,21 +833,24 @@ setRefClass("EssGraph",
         }
         ))
 
-#' Coercion to a graphNEL instance
-setAs("EssGraph", "graphNEL",
-    def = function(from) {
-      result <- new("graphNEL",
-          nodes = from$.nodes,
-          edgeL = from$.in.edges,
-          edgemode = "directed")
-      return(reverseEdgeDirections(result))
-    })
+##' Coercion to a graphNEL instance
+.ess2graph <- function(from)
+    reverseEdgeDirections(new("graphNEL",
+                              nodes = from$.nodes,
+                              edgeL = from$.in.edges,
+                              edgemode = "directed"))
 
-#' Coercion to a (logical) matrix
+setAs("EssGraph", "graphNEL", .ess2graph)
+setAs("EssGraph", "graph", .ess2graph)
+
+## NOTE: Coercion to SparseMatrix is more efficient via
+## ----  via "graphNEL" for larger p :
+##' Coercion to a (logical) matrix
 setAs("EssGraph", "matrix",
     def = function(from) {
-      p <- from$node.count()
-      sapply(1:p, function(i) 1:p %in% from$.in.edges[[i]])
+      ip <- seq_len(p <- from$node.count())
+      vapply(ip, function(i) ip %in% from$.in.edges[[i]],
+             logical(p))
     })
 
 #' Plot method (needs Rgraphviz to work!!)
@@ -856,11 +859,10 @@ setAs("EssGraph", "matrix",
 setMethod("plot", "EssGraph",
     function(x, y, ...) {
       if (!validObject(x))
-        stop("The parametric DAG model to be plotted is not valid")
-
+        stop("Invalid parametric DAG model (\"EssGraph\")")
       if (missing(y))
         y <- "dot"
-      invisible(plot(as(x, "graphNEL"), y, ...))
+      invisible(plot(.ess2graph(x), y, ...))
     })
 
 #' Gaussian causal model

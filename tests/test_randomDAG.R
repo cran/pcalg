@@ -36,5 +36,9 @@ if (min(wgts) < lB || max(wgts) > uB) {
 if (!all(acyc))
   stop("Test of randomDAG: Graph is not acyclic!")
 
+## Check special case
+if (graph::numEdges(randomDAG(n=2,prob=1)) != 1) {
+    stop("Test of randomDAG: Error with special case n=2, prob=1!")
+}
 
 cat('Time elapsed: ', proc.time(),"\n")
