@@ -1,6 +1,15 @@
 \name{NEWS}
 \title{pcalg News}
 \encoding{UTF-8}
+\section{CHANGES IN VERSION 2.2-2}{
+  \itemize{
+    \item Function \code{gac} for testing if a set of nodes satisfies
+    the Generalized Adjustment Criterion (GAC). GAC is a sufficient and
+    necessary criterion for estimating causal effects via covariate
+    adjustment in DAGs, CPDAGs, MAGs and PAGs.
+  }
+}
+
 \section{CHANGES IN VERSION 2.2-0}{
   \itemize{
     \item Function \code{randDAG} for generating random directed acyclic

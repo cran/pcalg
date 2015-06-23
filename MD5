@@ -1,16 +1,17 @@
 1c213fc1c5a5ec68e7a5ba9293440dc3 *ChangeLog
-d41384f5f9f073b55ec2b9dd4e24339a *DESCRIPTION
-a95ab4045808cb9c3151ff0e916be720 *NAMESPACE
+eb33369ac047e54762df16d1c9913167 *DESCRIPTION
+576a9f6aab55ad90c8b4795dfa3dbb6a *NAMESPACE
 9bc8cc42e0bd62ce3e5035f4ce13df44 *R/Aaux.R
 c4aa496b189ecdacf5c28bb0f731fa4b *R/AllClasses.R
-24b5a430f034410e6e9a13859b05b990 *R/genRandDAG.R
+b56109eb4996110afc60ee14c777919a *R/gacFuns.R
+971aec20012c96f0169156e4d188537e *R/genRandDAG.R
 9707a1c2352a8bb762eb53b17e8aa221 *R/gies.R
 6db528ea1ffbf8741afbcafc034fff60 *R/lingamFuns.R
-da4c2b8a93af85e6763ea211bd0a1bea *R/pcalg.R
+6ce37438957569a4752207e5e9db8898 *R/pcalg.R
 9187a45035684cf827be71af16325d2c *R/sysdata.rda
 0db1ba6d57801a4d8fc6cdf996384a4d *R/zzz.R
 61c564316b72305aa593000286db2842 *TODO
-0e5cfe40a3155c68d02bd377836e73f6 *build/vignette.rds
+3705dfcb9723d8f35fc034fb2c91f119 *build/vignette.rds
 1dac936791d77cf63c94e78a3394238f *cleanup
 7cbe431a233e6c454e24f7b92d63fe75 *data/datalist
 1d8d4c43b9cbb9dc9dd57acd59f565bf *data/gmB.rda
@@ -20,7 +21,7 @@ da4c2b8a93af85e6763ea211bd0a1bea *R/pcalg.R
 01ad6c01910806745a34c7bc963c41b5 *data/gmInt.rda
 1b3a78b432a5e46b991f5ae5eb4b77f3 *data/gmL.rda
 811a9708268fbddd317bbca12ef93a55 *inst/CITATION
-bae117acda0b6e3079e261fbe9ef90d8 *inst/NEWS.Rd
+ad369e872e69403b6bf123ebc2f893cb *inst/NEWS.Rd
 47990df286c898e8821e60370c0b1e13 *inst/doc/mkVignettes.R
 dd6c7e6f7026fedf223a593566729a01 *inst/doc/pcalgDoc.R
 5d1cffaf8fa0e09882b92d5f6c5f95ee *inst/doc/pcalgDoc.Rnw
@@ -40,7 +41,7 @@ ece5fe7ddfabe25249bb40c57200fb42 *man/GaussL0penObsScore-class.Rd
 2f22805053d1e8bcd44550fdfc4a58bf *man/LINGAM.Rd
 2d6112003f36a8600fa64de0bf55a688 *man/ParDAG-class.Rd
 7a629ea5557abb54fb86a81ae1659240 *man/Score-class.Rd
-2b4890eb9ee2d2fd8c9e95e972993fcf *man/backdoor.Rd
+a20229f00ff57a30a20bf22c81c2522a *man/backdoor.Rd
 6feb25e396846cbb7c1fc4de8d7e2eaa *man/beta.special.Rd
 e5e54569fa1222405f18ee7c189b68cd *man/beta.special.pcObj.Rd
 a0e1a068f5e7e9fd983682d1f32a677a *man/binCItest.Rd
@@ -51,7 +52,7 @@ a0e1a068f5e7e9fd983682d1f32a677a *man/binCItest.Rd
 b56f2c964ee246d2f91dd4c5a3d526e5 *man/dag2cpdag.Rd
 f5bb502b04b5243c0f1a715c35205d15 *man/dag2essgraph.Rd
 ab95545f16fe261dfe199f44e91bef1d *man/dag2pag.Rd
-090fa4aea374ba4fea24274b38a5bec0 *man/disCItest.Rd
+d10420475e22d2abb14eff464d56efc1 *man/disCItest.Rd
 9b098d0a60f3a3aad11eae3f582995aa *man/dreach.Rd
 e89cc00623c136f141b0427a7476889a *man/dsep.Rd
 489e0cd6d854d9915368baa1803ff990 *man/dsepTest.Rd
@@ -60,6 +61,7 @@ cb403104e407cebb3e0768a55cc2e1c6 *man/fciAlgo-class.Rd
 4350052ea2a2ddf4467ce08923bf4bdd *man/fciPlus.Rd
 6c654742667b21e8c40e43ccda32a229 *man/find.unsh.triple.Rd
 b5d60262b3af5545bd646e96c95ee024 *man/gAlgo-class.Rd
+c02e1c7a066c595f58a6579c9f7bbd4a *man/gac.Rd
 730b0cfa6bf222f070fabba144266d35 *man/gds.Rd
 bb85025474a5b643644d9ab5aef842c0 *man/ges.Rd
 fdc0ad5d17fff5f2c8734504041af969 *man/getGraph.Rd
@@ -95,7 +97,7 @@ da2af80714506529ddd6beba2a0f9730 *man/pcalg-internal.Rd
 44721d7643ca55ffcad06065550a51b0 *man/qreach.Rd
 2ba564c75ab928aa4450fe7d23ede1e5 *man/r.gauss.pardag.Rd
 2363127bc273960242f9edbb31a285dd *man/randDAG.Rd
-bf410805fb009f2992c9530abdd3b205 *man/randomDAG.Rd
+2e4d8ee33fb2f6c8e90ad8b4a31233a2 *man/randomDAG.Rd
 98dbfb7e8b5ad7a813ee70b3105ac1fd *man/rfci.Rd
 d6eb86a8b2f04f416a59792f35cdaa2c *man/rmvDAG.Rd
 27ab6d09110842495dd1b29fc14f1543 *man/rmvnorm.ivent.Rd
@@ -118,6 +120,7 @@ c0b0045ea1c93212805e2221a2430419 *src/Makevars.win
 98afb8dfa2fd02134507511c207b72ad *src/greedy.cpp
 0c404ef330cd447453260446f898a97d *src/score.cpp
 83187ba1f22cdb1b239e07027ddf489a *tests/discr100k.rda
+f417aa1bd7c3493e07dcf7f9e2a021ff *tests/gacData.rda
 c1e79a56875774b0fe8fda1997f55736 *tests/test_LINGAM.R
 3e75e91dc9507a780c188cd62c65636b *tests/test_amat2dag.R
 886fbfd89fe8a61662163fa2df73ed98 *tests/test_backdoor.R
@@ -132,6 +135,7 @@ e11611f462df230cc44fc3571c714a87 *tests/test_dsep.R
 73fa6c8b1e717062e26e209e3ec6b07e *tests/test_fciPlus.R
 307ca34d05a216b3ad003ac8a962c806 *tests/test_gSquareBin.R
 2450dead25e385bbcbb30ab81984bc0b *tests/test_gSquareDis.R
+ae7d1151cae52ac33c9565d5765e8c04 *tests/test_gac.R
 62df22839190befd25174cf3d6b7291e *tests/test_getNextSet.R
 a373e550f9727cddf7bc72f19b589d53 *tests/test_gies.R
 026eda288c19708953516ee13b1ee8e0 *tests/test_ida.R
@@ -142,12 +146,12 @@ cd913f44dcba8673b0839dc90c1772c5 *tests/test_pc.R
 e1122c92bc936c67b0bf145482103cbc *tests/test_pcSelect.R
 ecaacf0c68bf72d9d96eeeeffd824357 *tests/test_pcorOrder.R
 76fd1ade1f75af8bbdcc8d88b655fbdc *tests/test_pdag2dag.R
-9fa631230411270f28cb09ae26238aae *tests/test_randDAG.R
+309239f6df5c32bb10e4050d27ce43ba *tests/test_randDAG.R
 aee8ad2108a151b25666eaf0ed1b4205 *tests/test_randomDAG.R
 13c07cbec4248100606533957dd6d20f *tests/test_rfci.R
 7853e03d1c258ed44b17debd5812ac71 *tests/test_rmvDAG.R
 a684bee54a99100c8046191e19c61e9c *tests/test_shd.R
-01224c04128879775eb5244dd6f3a3a4 *tests/test_skeleton.R
+ebc96d20c469e51fc26a7a7c622b82b3 *tests/test_skeleton.R
 df00f3357e3ac1368272abfac43b3640 *tests/test_udag2pdag.R
 baed988532fc1132d59f460d02e5fbd7 *tests/test_unifDAG.R
 cd40b46d3274a112953423a19f78d4c4 *tests/test_wgtMatrix.R

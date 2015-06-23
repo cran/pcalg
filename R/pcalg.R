@@ -7400,7 +7400,7 @@ extract.parent.sets <- function(x.pos,amat.cpdag,isCPDAG=FALSE){
   x.temp <- x.pos
   while (length(x.temp)>0){
     comp.temp <- graph.dfs(graph=graph.adjacency(amat.undir,mode='undirected'),x.temp[1],unreachable=F)$order
-    comp.temp <- comp.temp[!is.nan(comp.temp)]
+    comp.temp <- comp.temp[!is.na(comp.temp)]
     x.temp <- setdiff(x.temp,comp.temp)
     conn.comp.imp <- c(conn.comp.imp,list(comp.temp))
   }

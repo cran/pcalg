@@ -18,8 +18,9 @@ disCItest (x, y, S, suffStat)
   \item{x}{Position of variable X in the adjacency matrix}
   \item{y}{Position of variable Y in the adjacency matrix}
   \item{S}{Position of conditioning variables in the adjacency matrix}
-  \item{dm}{Data matrix (rows: samples, columns: variables) with binary
-    entries}
+  \item{dm}{Data matrix (rows: samples, columns: variables) with numeric
+    entries; the k levels for a given column are coded by the integers
+  0,1,...,k-1. (see example)}
   \item{nlev}{Vector with numbers of levels for each variable}
   \item{adaptDF}{Lower the degrees of freedom by one for each zero
     count.  The value for the degrees of freedom cannot go below 1.}
@@ -59,9 +60,9 @@ disCItest (x, y, S, suffStat)
 ## Simulate data
 n <- 100
 set.seed(123)
-x <- sample(0:2, n, TRUE)
-y <- sample(0:3, n, TRUE)
-z <- sample(0:1, n, TRUE)
+x <- sample(0:2, n, TRUE) ## three levels
+y <- sample(0:3, n, TRUE) ## four levels
+z <- sample(0:1, n, TRUE) ## two levels
 dat <- cbind(x,y,z)
 
 ## Analyze data

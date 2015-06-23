@@ -121,8 +121,8 @@ for(skel.meth in c("stable", "original", "stable.fast")) {
 
 if(FALSE) { ## experiments
 
-(load("test_skeleton_6.rda")); res6 <- res; D6 <- myDAG; str(res6, max=1)
-(load("test_skeleton_17.rda")); res17 <- res; D17 <- myDAG; str(res17, max=1)
+## (load("test_skeleton_6.rda")); res6 <- res; D6 <- myDAG; str(res6, max=1)
+## (load("test_skeleton_17.rda")); res17 <- res; D17 <- myDAG; str(res17, max=1)
 
 graph2ftM(D6)
 et6 <- lapply(seq_along(res6), function(j)

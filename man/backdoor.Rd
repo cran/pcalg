@@ -86,7 +86,7 @@ backdoor(amat, x, y, type = "pag", max.chordal = 10, verbose=FALSE)
 }
 \references{
   M.H. Maathuis and D. Colombo (2013). A generalized backdoor
-  criterion. arXiv preprint arXiv:1307.5636.
+  criterion. Annals of Statistics 43 1060-1088.
 
   J. Pearl (1993). Comment: Graphical models, causality and intervention.
   \emph{Statistical Science} \bold{8}, 266--269.

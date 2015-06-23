@@ -16,4 +16,11 @@ if (pval < 0.05) {
     stop("test_unifDAG: Edge weights don't look uniformly distributed!")
 }
 
+## check generation of negative weights (fixed Bug)
+set.seed(123)
+tmp1 <- randDAG(3,2,wFUN = list(runif, min = 2, max = 2))
+all( unlist(tmp1@edgeData@data) == 2 ) 
+set.seed(123)
+tmp2 <- randDAG(3,2,wFUN = list(runif, min = -2, max = -2))
+all( unlist(tmp2@edgeData@data) == -2 ) 
 

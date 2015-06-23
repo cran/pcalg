@@ -32,7 +32,8 @@ randomDAG(n, prob, lB = 0.1, uB = 1, V = as.character(1:n))
   This procedure is repeated for the next node in the original ordering
   and so on.
 }
-\seealso{\code{\link{rmvDAG}} for generating Data according to a
+\seealso{\code{\link{randDAG}} for a more elaborate version of this
+  function; \code{\link{rmvDAG}} for generating Data according to a
   DAG; \code{\link{compareGraphs}} for comparing the skeleton of a DAG
   with some other undirected graph (in terms of TPR, FPR and TDR).
 }

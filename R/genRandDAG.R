@@ -1,7 +1,31 @@
 ## Runif <- function(nrEdges,lB=0.1,uB=1){
 ##   runif(nrEdges,lB,uB)
 ## }
-
+m2g <- function(m) {
+    ## INPUT: valid adjacency matrix
+    ## m[i,j] = 1 corresponds to i -> j with weight 1
+    ## OUTPUT: corresponding graphNEL object
+    ## Improves 'as(Q,"graphNEL")' since neg weights are now OK
+    ## m2g is tested in bugs: Jun15_randDAG
+    n <- ncol(m)
+    V <- colnames(m)
+    edL <- vector("list", n)
+    nmbEdges <- 0L
+    for (i in seq_len(n)) {
+        idx <- which( m[i,] != 0 )
+        listSize <- length(idx)
+        nmbEdges <- nmbEdges + listSize
+        edgeList <- idx
+        weightList <- m[i,idx]
+        edL[[i]] <- list(edges = edgeList, weights = weightList)
+    }
+    if (nmbEdges > 0) {
+	names(edL) <- V
+	new("graphNEL", nodes = V, edgeL = edL, edgemode = "directed")
+    }
+    else
+	new("graphNEL", nodes = V, edgemode = "directed")
+}
 
 ## construct DAG (matrix Q) recursively ###########################
 sampleQ <- function(n,K,p.w=1/2){
@@ -191,7 +215,8 @@ undirunweight.to.dirweight <- function(Q,n,DAG,weighted,
   perm <- sample.int(n)
   Q <- Q[perm,perm]
   colnames(Q) <- rownames(Q) <- 1:n
-  as(Q,"graphNEL")
+  ## as(Q,"graphNEL")
+  m2g(Q)
 }
 
 powerLawDAG <- function(n,gamma){
@@ -251,8 +276,8 @@ geoDAG <- function(n,r,dim,geo=TRUE,DAG,weighted,
   perm <- sample.int(n)
   Q <- Q[perm,perm]
   colnames(Q) <- rownames(Q) <- 1:n
-  as(Q,"graphNEL")
-  
+  ## as(Q,"graphNEL")
+  m2g(Q)
 }
 
 
