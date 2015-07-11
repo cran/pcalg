@@ -2,7 +2,7 @@
 ### Part 1 : S4 classes used by pc and r/fci
 ##################################################
 
-## $Id: AllClasses.R 300 2015-04-22 17:27:00Z mmaechler $
+## $Id: AllClasses.R 313 2015-07-07 16:16:55Z mmaechler $
 
 setClass("gAlgo",
          representation(call = "call",
@@ -125,10 +125,8 @@ setMethod("plot", signature(x = "pcAlgo"),
           if (zvalue.lwd && numEdges(x@graph)!=0) {
               lwd.Matrix <- x@zMin
               lwd.Matrix <- ceiling(lwd.max*lwd.Matrix/max(lwd.Matrix))
-              z <- agopen(x@graph,
-                          name="lwdGraph",
-                          nodeAttrs = nodeAttrs,
-                          attrs = attrs)
+	      z <- Rgraphviz::agopen(x@graph, name = "lwdGraph",
+				     nodeAttrs = nodeAttrs, attrs = attrs)
               eLength <- length(z@AgEdge)
               for (i in 1:eLength) {
                   x <- as.numeric(z@AgEdge[[i]]@head)

@@ -33,8 +33,8 @@ cond2 <- function(x,y,z,m,type) {
     ## if no path is found, cond 2 is true
     all(pthFound == FALSE)
 }
-        
-      
+
+
 defStat <- function(ln, cn, nn, m, type = "pag") {
   ## INPUT: Node positions ln, cn, nn; adj.mat m (for DAG/CPDAG/MAG/PAG)
   ## OUTPUT: TRUE if path ln-cn-nn in m is def.stat. o/w FALSE
@@ -55,12 +55,12 @@ defStat <- function(ln, cn, nn, m, type = "pag") {
       isUnshielded <- (m[ln,nn]==0 & m[nn,ln]==0)
       isDefNonCollider <- ( (isUndirected & isUnshielded) | hasTail )
   }
-  
+
   if (isCollider) {
     res <- TRUE
   } else {
     if (isDefNonCollider) res <- TRUE
-  }    
+  }
 
   res
 }
@@ -81,26 +81,26 @@ forbiddenNodes <- function(m,x,y)
     ## OUTPUT: set of node positions of nodes in the forbidden set (sorted)
   n1 <- length(x)
   n2 <- length(y)
-  
-  possDeX <- possAnY <- c()  
+
+  possDeX <- possAnY <- c()
   for(i in 1:max(n1,n2))
   {
     if (i <= n1)
       #find all possible descendants of a node x[i] that are on a proper path
       #relative to x (exclude x[i] because descendants of x[i] that are not
-      #on a proper path are allowed) 
+      #on a proper path are allowed)
       possDeX <- union(possDeX, setdiff(possibleDeProper(m,x[i],x),x[i]))
-    
+
     if (i <= n2)
       #find all possible ancestors of a node y[i] that are
       #on a proper path relative to x
       possAnY <- union(possAnY, possibleAnProper(m,y[i],x))
-      
+
   }
-  
+
   #a set of all nodes on a proper possibly directed path from X to Y
   pdp <- intersect(possDeX,possAnY)
-  
+
   #the forbiden node set are all possible descendants of nodes in pdp
   fbnodes <- c()
   if (length(pdp) > 0) {
@@ -115,13 +115,13 @@ forbiddenNodes <- function(m,x,y)
   } else {
       return(fbnodes)
   }
-  
+
 }
 gac <- function(amat,x,y,z,type="pag") {
     ## output: TRUE if GAC is fulfilled; o/w FALSE
     res <- rep(NA, 3)
     f <- NULL
-    
+
     ## Condition (0)
     res[1] <- isAmenable(m=amat,x=x,y=y,type=type)
 
@@ -138,7 +138,7 @@ gac <- function(amat,x,y,z,type="pag") {
 isAmenable <- function(m,x,y, type = "pag") {
     ## INPUT: adj.matrix m; sets of node positions x and y; type in DAG, CPDAG,
     ## MAG or PAG
-    ## OUTPUT: TRUE if m is amenabel wrt x,y; o/w FALSE   
+    ## OUTPUT: TRUE if m is amenabel wrt x,y; o/w FALSE
     found <- FALSE ## if found == TRUE at any time, graph is not amenable wrt x,y
     ## DAG is always amenable
     if (type %in% c("cpdag", "mag", "pag")) {
@@ -188,7 +188,7 @@ isAmenable <- function(m,x,y, type = "pag") {
 }
 mcon <- function(ln,cn,nn,m,z,descList) {
   ## INPUT: node positions of last, current and next node on path; adj.mat. m
-    ## in DAG/CPDAGMAG/PAG format; 
+    ## in DAG/CPDAGMAG/PAG format;
   ## set z; descList as returned from desc(m)
   ## OUTPUT: TRUE if ln and nn are mcon given z on path ln-cn-nn
   res <- FALSE
@@ -242,7 +242,7 @@ newStackEls <- function(s,x,y,z,m,type) {
         descList <- desc(m)
         ln <- pth[lp-1]; cn <- pth[lp]
         nb <- setdiff(setdiff(as.vector(which(m[cn,]!=0 | m[,cn]!=0)), x), pth)
-        res <- vector("list", 0)
+        res <- list()
         j <- 0
         jj <- 0
         while( (!suc) & (j<length(nb)) ) {
@@ -261,7 +261,7 @@ newStackEls <- function(s,x,y,z,m,type) {
     }
     list(res=res, suc=suc)
 }
-        
+
 ## ## CPDAG
 ## cp <- function(m) {
 ##     require(Rgraphviz)
@@ -283,15 +283,15 @@ possibleAnProper <- function(m,x,y=NULL)
     ## OUTPUT
     ## All nodes with a possibly directed path from a to x not going through y
     ## including x itself
-    
+
     p <- length(m[,1]) ## nmb of nodes
     q <- v <- rep(0,p) ## queue
     ## q has col.pos. of unvisited nodes = queue
     ## v has col.pos. of visited nodes
-    i <- k <-  1 ## i: end of queue; k: current point in queue 
+    i <- k <-  1 ## i: end of queue; k: current point in queue
     q[1] <- x ## x is first node in queue
     tmp <- m ## ???
-    
+
     while(q[k]!=0 & k<=i) {## queue is not empty & current pos is within queue
         t <- q[k] ## take new node from queue
         v[k] <- t ## mark t as visited (if t is in v, it is visited)
@@ -302,8 +302,8 @@ possibleAnProper <- function(m,x,y=NULL)
                 ## only add nodes that:
                 ## aren't already scheduled for a visit
                 ## are not in y
-                if (!(j %in% q) & !(j %in% y)) {## 
-                    i <- i+1 ## incearse size of queue by one 
+                if (!(j %in% q) & !(j %in% y)) {##
+                    i <- i+1 ## incearse size of queue by one
                     q[i] <- j ## add node to queue
                 }
             }
@@ -311,28 +311,28 @@ possibleAnProper <- function(m,x,y=NULL)
     }
     sort(setdiff(v,c(0))) ## remove trailing zeros from initial vector
 }
-#finds all possible descendants of a node x in a graph 
+#finds all possible descendants of a node x in a graph
 #that are on a proper path relative to nodeset Y (that is, that don't go through Y)
 #m is the adjacency matrix
 possibleDeProper <- function(m,x,y=NULL,possible = TRUE)
 {
   ## INPUT: adj.mat. m in MAG/PAG or DAG/CPDAG coding; node pos x;
-  ## set of node pos y; 
+  ## set of node pos y;
   ## If possible == TRUE, possible Desc. are found; o/w descendents are found
   ## OUTPUT: Node positions of (possible) descendents (ignoring path trough y); sorted
   #q denotes unvisited nodes/ nodes in queue
   #v denotes visited nodes
-  q <- v <- rep(0,length(m[,1])) 
-  i <- k <-  1         
-  q[i] <- x           
-  
+  q <- v <- rep(0,length(m[,1]))
+  i <- k <-  1
+  q[i] <- x
+
   while(q[k]!=0 & k<=i)
   {
     t <- q[k]
     #mark t as visited
-    v[k] <- t       
+    v[k] <- t
     k <- k+1
-    #in this for cycle 
+    #in this for cycle
     #add all nodes that have a possibly directed
     #edge with node t and all parents of node t to queue
     for(j in 1:length(m[1,])) {
@@ -347,7 +347,7 @@ possibleDeProper <- function(m,x,y=NULL,possible = TRUE)
       if (collect) {
         #only add nodes that haven't been added
         #and that are on a proper path
-        if (!(j %in% q) & !(j %in% y))   
+        if (!(j %in% q) & !(j %in% y))
         {
           i <- i+1
           q[i] <- j

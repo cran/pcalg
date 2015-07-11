@@ -2,9 +2,14 @@ useDynLib(pcalg)
 
 ###----- Imports ------------------------------------------------------
 
-importFrom("utils", str)# for all the help examples
+importFrom("stats", cor, cor.test, cov, cov2cor,
+           fisher.test, pchisq, pnorm, qnorm,
+           rbinom, rcauchy, rnorm, rt, runif,
+           sd, symnum, uniroot)
 
-importFrom("graphics", plot.default, plot)
+importFrom("utils", combn, str)
+
+importFrom("graphics", par, plot.default, plot, title)
 
 ## try to import all we need, but not more
 importFrom("methods",

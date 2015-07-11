@@ -1,6 +1,6 @@
 Package: pcalg
-Version: 2.2-2
-Date: 2015-06-23
+Version: 2.2-3
+Date: 2015-07-11
 Title: Methods for Graphical Models and Causal Inference
 Description: Functions for causal structure
   learning and causal inference using graphical models. The main algorithms
@@ -24,15 +24,15 @@ Author: Markus Kalisch [aut, cre], Alain Hauser [aut], Martin Maechler [aut],
   Antti Hyttinen [ctb], Jonas Peters [ctb]
 Depends: R (>= 3.0.2)
 LinkingTo: Rcpp (>= 0.11.0), RcppArmadillo, BH
-Imports: graphics, utils, methods, abind, graph, RBGL, igraph, ggm,
-        corpcor, robustbase, vcd, Rcpp, bdsmatrix, sfsmisc, fastICA,
-        clue, gmp
+Imports: stats, graphics, utils, methods, abind, graph, RBGL, igraph,
+        ggm, corpcor, robustbase, vcd, Rcpp, bdsmatrix, sfsmisc,
+        fastICA, clue, gmp
 Suggests: MASS, Matrix, Rgraphviz, mvtnorm
 ByteCompile: yes
 NeedsCompilation: yes
 Encoding: UTF-8
 License: GPL (>= 2)
 URL: http://pcalg.r-forge.r-project.org/
-Packaged: 2015-06-24 05:33:42 UTC; kalischm
+Packaged: 2015-07-12 08:19:47 UTC; maechler
 Repository: CRAN
-Date/Publication: 2015-06-24 11:15:35
+Date/Publication: 2015-07-12 23:39:28

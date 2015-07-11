@@ -5,28 +5,36 @@
 \description{
   \eqn{G^2} test for (conditional) independence of \emph{discrete}
   variables \eqn{X} and \eqn{Y} given the (possibly empty) set of
-  discrete variables \eqn{S}. 
+  discrete variables \eqn{S}.
 
   \code{disCItest()} is a wrapper of \code{gSquareDis()}, to be easily
   used in \code{\link{skeleton}}, \code{\link{pc}} and \code{\link{fci}}.
 }
 \usage{
-gSquareDis(x, y, S, dm, nlev, adaptDF = FALSE, verbose = FALSE)
+gSquareDis(x, y, S, dm, nlev, adaptDF = FALSE, n.min = 10*df, verbose = FALSE)
 disCItest (x, y, S, suffStat)
 }
 \arguments{
-  \item{x}{Position of variable X in the adjacency matrix}
-  \item{y}{Position of variable Y in the adjacency matrix}
-  \item{S}{Position of conditioning variables in the adjacency matrix}
-  \item{dm}{Data matrix (rows: samples, columns: variables) with numeric
-    entries; the k levels for a given column are coded by the integers
-  0,1,...,k-1. (see example)}
-  \item{nlev}{Vector with numbers of levels for each variable}
-  \item{adaptDF}{Lower the degrees of freedom by one for each zero
-    count.  The value for the degrees of freedom cannot go below 1.}
-  \item{verbose}{Logical indicating if detailed output is to be provided.}
+  \item{x,y}{(integer) position of variable \eqn{X} and \eqn{Y},
+    respectively, in the adjacency matrix.}
+  \item{S}{(integer) positions of zero or more conditioning variables in the
+    adjacency matrix.}
+  \item{dm}{data matrix (rows: samples, columns: variables) with integer
+    entries; the k levels for a given column must be coded by the integers
+    0,1,...,k-1. (see example)}
+  \item{nlev}{vector with numbers of levels for each variable}
+  \item{adaptDF}{logical specifying if the degrees of freedom should be
+    lowered by one for each zero count.  The value for the degrees of
+    freedom cannot go below 1.}
+  \item{n.min}{the smallest \eqn{n} (number of observations,
+    \code{nrow(dm)}) for which the G^2 test is computed; for smaller
+    \eqn{n}, independence is assumed (\eqn{G^2 := 1}) with a warning.  The
+    default is \eqn{10 m}, where \eqn{m} is the degrees of freedom
+    assuming no structural zeros, here, the product of all the number of
+    levels \code{(nlev[x]-1) * (nlev[y]-1) * prod(nlev[S])}.}
+  \item{verbose}{logical indicating if detailed output is to be provided.}
 
-  \item{suffStat}{A list with three elements: \code{"dm"},
+  \item{suffStat}{a \code{\link{list}} with three elements, \code{"dm"},
     \code{"nlev"}, \code{"adaptDF"}; each corresponding to the above
     arguments of \code{gSquareDis()}.}
 }
@@ -38,10 +46,10 @@ disCItest (x, y, S, suffStat)
   of X and Y given a set S (can be \code{NULL}).  If only binary
   variables are involved, \code{\link{gSquareBin}} is a specialized
   (a bit more efficient) alternative to \code{gSquareDis()}.
-} 
+}
 \seealso{
   \code{\link{gSquareBin}} for a (conditional) independence test
-  for binary variables. 
+  for binary variables.
 
   \code{\link{dsepTest}}, \code{\link{gaussCItest}} and
   \code{\link{binCItest}} for similar functions for a d-separation

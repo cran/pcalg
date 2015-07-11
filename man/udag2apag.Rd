@@ -110,8 +110,8 @@ udag2apag(apag, suffStat, indepTest, alpha, sepset,
   \code{\link{dag2pag}}, \code{\link{udag2pdag}},
   \code{\link{udag2pdagSpecial}}, \code{\link{udag2pdagRelaxed}}
 }
-\examples{%% first part is  *identical* to >>>>>>>> ./rfci.Rd
-##################################################%  --------
+\examples{%% first part is  *identical* to >>>>>>>> ./rfci.Rd and ./udag2pag.Rd
+##################################################%  --------       -----------
 ## Example with hidden variables
 ## Zhang (2008), Fig. 6, p.1882
 ##################################################
@@ -120,13 +120,13 @@ udag2apag(apag, suffStat, indepTest, alpha, sepset,
 amat <- t(matrix(c(0,1,0,0,1, 0,0,1,0,0, 0,0,0,1,0, 0,0,0,0,0, 0,0,0,1,0),5,5))
 V <- LETTERS[1:5]
 colnames(amat) <- rownames(amat) <- V
-edL <- setNames(vector("list",length=5), V)
-edL[[1]] <- list(edges=c(2,4),weights=c(1,1))
-edL[[2]] <- list(edges=3,weights=c(1))
-edL[[3]] <- list(edges=5,weights=c(1))
-edL[[4]] <- list(edges=5,weights=c(1))
+edL <- setNames(vector("list",length=5), V) %% MM{FIXME}: nicer as in ./jointIda.Rd
+edL[[1]] <- list(edges= c(2,4),weights=c(1,1))
+edL[[2]] <- list(edges= 3,     weights=c(1))
+edL[[3]] <- list(edges= 5,     weights=c(1))
+edL[[4]] <- list(edges= 5,     weights=c(1))
 ## and leave  edL[[ 5 ]] empty
-g <- new("graphNEL", nodes=V, edgeL=edL,edgemode="directed")
+g <- new("graphNEL", nodes=V, edgeL=edL, edgemode="directed")
 if (require(Rgraphviz))
   plot(g)
 
@@ -143,33 +143,37 @@ true.cov <- cov.mat[-L,-L]
 true.corr <- cov2cor(true.cov)
 
 %% Here, ./rfci.Rd diverts and calls rfci() ...
-## generate 100000 samples of DAG using standard normal error distribution
-require(mvtnorm)
 n <- 100000
 alpha <- 0.01
 p <- ncol(true.corr)
-d.mat <- rmvnorm(n, mean = rep(0, p), sigma = true.cov)
 
-## estimate the skeleton of given data
-suffStat <- list(C = cor(d.mat), n = n)
-indepTest <- gaussCItest
-resD <- skeleton(suffStat, indepTest, alpha = alpha, labels=colnames(true.corr))
+if (require("MASS")) {
+  ## generate 100000 samples of DAG using standard normal error distribution
+  set.seed(289)
+  d.mat <- mvrnorm(n, mu = rep(0, p), Sigma = true.cov)
 
-## estimate all ordered unshielded triples
-amat.resD <- as(resD@graph, "matrix")
-(u.t <- find.unsh.triple(amat.resD)) # four of them
+  ## estimate the skeleton of given data
+  suffStat <- list(C = cor(d.mat), n = n)
+  indepTest <- gaussCItest
+  resD <- skeleton(suffStat, indepTest, alpha = alpha, labels=colnames(true.corr))
 
-## check and orient v-structures
-vstrucs <- rfci.vStruc(suffStat, indepTest, alpha=alpha,
-                       sepset = resD@sepset, g.amat = amat.resD,
-                       unshTripl= u.t$unshTripl, unshVect = u.t$unshVect,
-                       verbose = TRUE)
+  ## estimate all ordered unshielded triples
+  amat.resD <- as(resD@graph, "matrix")
+  print(u.t <- find.unsh.triple(amat.resD)) # four of them
 
-## Estimate the final skeleton and extend it into a PAG
-## (using all 10 rules, as per default):
-resP <- udag2apag(vstrucs$amat, suffStat, indepTest=indepTest, alpha=alpha,
-                  sepset=vstrucs$sepset, verbose = TRUE)
-(Amat <- resP$graph)
+  ## check and orient v-structures
+  vstrucs <- rfci.vStruc(suffStat, indepTest, alpha=alpha,
+			 sepset = resD@sepset, g.amat = amat.resD,
+			 unshTripl= u.t$unshTripl, unshVect = u.t$unshVect,
+			 verbose = TRUE)
+
+  ## Estimate the final skeleton and extend it into a PAG
+  ## (using all 10 rules, as per default):
+  resP <- udag2apag(vstrucs$amat, suffStat, indepTest=indepTest, alpha=alpha,
+		    sepset=vstrucs$sepset, verbose = TRUE)
+  print(Amat <- resP$graph)
+} # only if "MASS" is there
+
 }
 \keyword{multivariate}
 \keyword{models}

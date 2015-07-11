@@ -1,9 +1,9 @@
 \name{fci}
 \alias{fci}
-\title{Estimate a PAG, using the FCI-algorithm}
+\title{Estimate a PAG by the FCI Algorithm}
 \description{
   Estimate a Partial Ancestral Graph (PAG) from observational data, using
-  the FCI Algorithm.
+  the FCI (Fast Causal Inference) algorithm.
 }
 
 \usage{
@@ -18,40 +18,41 @@ fci(suffStat, indepTest, alpha, labels, p,
 }
 
 \arguments{
-  \item{suffStat}{Sufficient statistics: List containing all necessary
-    elements for the conditional independence decisions in the
-    function \code{indepTest}.}
-  \item{indepTest}{Predefined function for testing conditional independence. The
-    function is internally called as \code{indepTest(x,y,S,suffStat)}, and
+  \item{suffStat}{sufficient statistics: A named \code{\link{list}}
+    containing all necessary elements for the conditional independence
+    decisions in the function \code{indepTest}.}
+  \item{indepTest}{a \code{\link{function}} for testing conditional
+    independence.  The function is internally called as
+    \code{indepTest(x,y, S, suffStat)}, and
     tests conditional independence of \code{x} and \code{y} given
-    \code{S}. Here, \code{x} and \code{y} are variables, and \code{S} is
+    \code{S}.  Here, \code{x} and \code{y} are variables, and \code{S} is
     a (possibly empty) vector of variables (all variables are denoted
     by their column numbers
-    in the adjacency matrix). \code{suffStat} is a list containing
-    all relevant elements for the conditional independence
-    decisions. The return value of \code{indepTest} is the p-value of
-    the test for conditional independence.}
-  \item{alpha}{Significance level for the individual conditional
-    independence tests.}
-  \item{labels}{(optional) character vector of variable (or
+    in the adjacency matrix). \code{suffStat} is a list with all
+    relevant information, see above.  The return value of
+    \code{indepTest()} is the p-value of the test for conditional
+    independence.}
+  \item{alpha}{numeric significance level (in \eqn{(0, 1)}) for the
+    individual conditional independence tests.}
+  \item{labels}{(optional) \code{\link{character}} vector of variable (or
     \dQuote{node}) names.  Typically preferred to specifying \code{p}.}
   \item{p}{(optional) number of variables (or nodes).  May be specified
     if \code{labels} are not, in which case \code{labels} is set to
-    \code{1:p}.}
-  \item{skel.method}{Character string specifying method; the default,
+    \code{1:p}.}% FIXME: can get *both* from  suffStat$C  in the typical case
+  \item{skel.method}{character string specifying method; the default,
     \code{"stable"} provides an \emph{order-independent} skeleton, see
     \code{\link{skeleton}}.}
-  \item{type}{Character string specifying the version of the FCI
+  \item{type}{character string specifying the version of the FCI
     algorithm to be used.  By default, it is \code{"normal"}, and so the
     normal FCI algorithm is called.  If set to \code{"anytime"}, the
     \sQuote{Anytime FCI} is called and \code{m.max} needs to be specified.
     If set to \code{"adaptive"}, the \sQuote{Adaptive Anytime FCI} is
     called and \code{m.max} is not used.  For more information, see Details.}
-  \item{fixedGaps}{A logical matrix of dimension p*p. If entry
+  \item{fixedGaps}{\code{\link{logical}} matrix of dimension p*p. If entry
     \code{[i,j]} or \code{[j,i]} (or both) are TRUE, the edge i-j is
     removed before starting the algorithm. Therefore, this edge is
     guaranteed to be absent in the resulting graph.}
-  \item{fixedEdges}{A logical matrix of dimension p*p. If entry
+  \item{fixedEdges}{logical matrix of dimension p*p. If entry
     \code{[i,j]} or \code{[j,i]} (or both) are TRUE, the edge i-j is
     never considered for removal. Therefore, this edge is
     guaranteed to be present in the resulting graph.}

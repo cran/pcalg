@@ -5,11 +5,13 @@
 ##     3a) Fast version of  !(x %in% A  |  x %in  B)
 ##     3b) Fast version of  !(x %in% A ||  x %in  B) = 3a) where length(x)==1
 
-##' (1+r)/(1-r) = 1 + 2r/(1-r);  hence log(*) = log(1 + ..) = log1p(..)
+##' Compute \eqn{\log( (1+r)/(1-r) )} in a numerically stable way.  Note that
+##' \eqn{(1+r)/(1-r) = 1 + 2r/(1-r)};  hence the logarithm is
+##' \eqn{log(*) = log(1 + 2r/(1-r)) = log1p(2r/(1-r))}.
 ##'
-##' @title  log( (1+r)/(1-r) )  in a numerically stable fashion
-##' @param r in [0,1]
-##' @return
+##' @title  log( (1+r)/(1-r) )  in a Numerically Stable Way
+##' @param r numeric (vector) in \eqn{[0,1]}.
+##' @return numeric vector \dQuote{as} \code{r}.
 ##' @author Martin Maechler
 log.q1pm <- function(r) log1p(2*r/(1-r))
 
