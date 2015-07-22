@@ -18,34 +18,36 @@ pcSelect(y, dm, alpha, corMethod = "standard",
          verbose = FALSE, directed = FALSE)
 }
 \arguments{
-  \item{y}{Response vector.}
-  \item{dm}{Data matrix (rows: samples/observations, columns: variables);
+  \item{y}{response vector.}
+  \item{dm}{data matrix (rows: samples/observations, columns: variables);
     \code{nrow(dm) == length(y)}.}
-  \item{alpha}{Significance level of individual partial correlation tests.}
-  \item{corMethod}{"standard" or "Qn" for standard or robust correlation
-    estimation}
-  \item{verbose}{Logical or in \eqn{\{0,1,2\}};
+  \item{alpha}{significance level of individual partial correlation tests.}
+  \item{corMethod}{a string determining the method for correlation
+    estimation via \code{\link{mcor}()}; specifically any of the
+    \code{mcor(*, method = "..")} can be used, e.g., \code{"Qn"} for
+    one kind of robust correlation estimate.}
+  \item{verbose}{\code{\link{logical}} or in \eqn{\{0,1,2\}};
     \describe{
       \item{FALSE, 0:}{No output,}
       \item{TRUE, 1:}{Little output,}
       \item{2:}{Detailed output.}
     }
-    Note that such output makes the function very much slower.
+    Note that such diagnostic output may make the function considerably slower.
   }
-  \item{directed}{Logical; should the output graph be directed?}
+  \item{directed}{logical; should the output graph be directed?}
 }
 \value{
   \item{G}{A \code{\link{logical}} vector indicating which column of
-    \code{dm} is associated with \code{y}.} 
+    \code{dm} is associated with \code{y}.}
   \item{zMin}{The minimal z-values when testing partial correlations
     between \code{y} and each column of \code{dm}.  The larger the
     number, the more consistent is the edge with the data.}
 }
 \details{
   This function basically applies \code{\link{pc}} on the data
-  matrix obtained by joining \code{y} and \code{dm}. Since the output is
+  matrix obtained by joining \code{y} and \code{dm}.  Since the output is
   not concerned with the edges found within the columns of \code{dm},
-  the algorithm is adapted accordingly. Therefore, the runtime and the
+  the algorithm is adapted accordingly.  Therefore, the runtime and the
   ability to deal with large datasets is typically increased
   substantially.
 }
@@ -80,23 +82,27 @@ d.mat <- rmvDAG(n, myDAG, errDist = "normal")
 ## "cause" the tenth variable?
 y <- d.mat[,10]
 dm <- d.mat[,-10]
-(pcS <- pcSelect(d.mat[,10],d.mat[,-10], alpha=0.05))
+(pcS <- pcSelect(d.mat[,10], d.mat[,-10], alpha=0.05))
 ## You see, that variable 4,5,6 are considered as important
 ## By inspecting zMin,
 with(pcS, zMin[G])
 ## you can also see that the influence of variable 6
-## is very evident from the data (zMin is 21.32, so quite large - as
+## is most evident from the data (its zMin is 18.64, so quite large - as
 ## a rule of thumb for judging what is large, you could use quantiles
 ## of the Standard Normal Distribution)
 
-## The result should be the same when using pcAlgo
+## The result should be the "same" when using pcAlgo:
 resU <- pcAlgo(d.mat, alpha = 0.05, corMethod = "standard",directed=TRUE)
 resU
 if (require(Rgraphviz))
-  plot(resU,zvalue.lwd=TRUE)
-## as can be seen, the pcAlgo function also finds 4,5,6 as the important
-## variables
-## Again, variable 6 seems to be very evident from the data
+  plot(resU, zvalue.lwd=TRUE)
+## as can be seen, the PC algorithm also finds 4,5,6 as the important
+## variables for 10; and variable 6 seems to be the strongest.
+
+## as pcAlgo() is deprecated, now use pc() instead:
+res2 <- pc(list(C=cor(d.mat), n=n), indepTest=gaussCItest, p=p, alpha=0.05)
+if (require(Rgraphviz))
+  plot(res2, zvalue.lwd=TRUE)
 }
 \keyword{multivariate}
 \keyword{models}

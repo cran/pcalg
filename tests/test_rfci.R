@@ -7,9 +7,7 @@ packageDescription("pcalg")
 packageDescription("Matrix")
 
 ## load the functions for the simulations of this paper
-## source("/u/colombo/Diss/RAusw/First_paper_RFCI_simulations/functions_for_the_simulations.R")
-## source("/sfs/u/staff/kalisch/research/packages/pcalg/R/pcalg.R")
-
+## source("/u/colombo/Diss/RAusw/First_paper_RFCI/functions_for_the_simulations.R")
 
 ## RFCI improves the output
 ##______________________________________________

@@ -5,13 +5,13 @@
 \concept{essential graph}
 \title{Estimate Interventional Markov Equivalence Class of a DAG by GIES}
 \description{
-  Estimate the interventional essential graph representing the Markov 
+  Estimate the interventional essential graph representing the Markov
   equivalence class of a DAG using the greedy interventional equivalence search
   (GIES) algorithm of Hauser and Bühlmann (2012).
 }
 \usage{
-gies(p, targets, score, fixedGaps = NULL, 
-  turning = TRUE, maxDegree = integer(0), verbose = FALSE, ...)
+gies(p, targets, score, fixedGaps = NULL,
+     turning = TRUE, maxDegree = integer(0), verbose = FALSE, ...)
 }
 \arguments{
   \item{p}{Number of variables.}

@@ -1,4 +1,4 @@
-##################################################
+ ##################################################
 ## exported
 ##################################################
 LINGAM <- function(X, verbose = FALSE)
@@ -50,7 +50,7 @@ estLiNGAM <- function(X, only.perm = FALSE, fastICA.tol = 1e-14,
     ## Call the fastICA algorithm;  _FIXME_: allow all fastICA() arguments
     p <- ncol(X)
     icares <- fastICA(X, n.comp = p, tol = fastICA.tol,
-                      verbose = if(verbose >= 1) verbose - 1L)
+		      verbose = if(verbose >= 1) verbose - 1L else FALSE)
     W <- t(icares$K %*% icares$W)
 
     ## [Here, we really should perform some tests to see if the 'icasig'

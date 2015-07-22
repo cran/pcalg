@@ -1,9 +1,10 @@
 \name{disCItest}
 \alias{disCItest}
 \alias{gSquareDis}
-\title{G square Test for (conditional) Independence for Discrete Data}
+\title{G square Test for (Conditional) Independence of Discrete Variables}
 \description{
   \eqn{G^2} test for (conditional) independence of \emph{discrete}
+  (each with a \emph{finite} number of \dQuote{levels})
   variables \eqn{X} and \eqn{Y} given the (possibly empty) set of
   discrete variables \eqn{S}.
 
@@ -22,7 +23,8 @@ disCItest (x, y, S, suffStat)
   \item{dm}{data matrix (rows: samples, columns: variables) with integer
     entries; the k levels for a given column must be coded by the integers
     0,1,...,k-1. (see example)}
-  \item{nlev}{vector with numbers of levels for each variable}
+  \item{nlev}{optional vector with numbers of levels for each variable
+    in \code{dm}.}
   \item{adaptDF}{logical specifying if the degrees of freedom should be
     lowered by one for each zero count.  The value for the degrees of
     freedom cannot go below 1.}
@@ -32,7 +34,8 @@ disCItest (x, y, S, suffStat)
     default is \eqn{10 m}, where \eqn{m} is the degrees of freedom
     assuming no structural zeros, here, the product of all the number of
     levels \code{(nlev[x]-1) * (nlev[y]-1) * prod(nlev[S])}.}
-  \item{verbose}{logical indicating if detailed output is to be provided.}
+  \item{verbose}{logical or integer indicating that increased diagnostic output is to
+    be provided.}
 
   \item{suffStat}{a \code{\link{list}} with three elements, \code{"dm"},
     \code{"nlev"}, \code{"adaptDF"}; each corresponding to the above
@@ -74,8 +77,10 @@ z <- sample(0:1, n, TRUE) ## two levels
 dat <- cbind(x,y,z)
 
 ## Analyze data
-gSquareDis(1,3,2,dat,nlev = c(3,4,2))
-gSquareDis(1,3,2,dat,nlev = c(3,4,2), verbose=TRUE, adaptDF=TRUE)
+gSquareDis(1,3, S=2, dat, nlev = c(3,4,2)) # but nlev is optional:
+gSquareDis(1,3, S=2, dat, verbose=TRUE, adaptDF=TRUE)
+## with too little data, gives a warning (and p-value 1):
+gSquareDis(1,3, S=2, dat[1:60,], nlev = c(3,4,2))
 
 suffStat <- list(dm = dat, nlev = c(3,4,2), adaptDF = FALSE)
 disCItest(1,3,2,suffStat)

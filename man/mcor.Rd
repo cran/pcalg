@@ -10,24 +10,25 @@ mcor(dm, method = c("standard", "Qn", "QnStable",
                     "ogkScaleTau2",  "ogkQn", "shrink"))
 }
 \arguments{
-  \item{dm}{Numeric matrix of data; rows are samples, columns are variables.}
-  \item{method}{"standard" (default), "Qn", "QnStable", "ogkQn" and "shrink"
-    envokes standard,
+  \item{dm}{numeric data matrix; rows are observiations
+    (\dQuote{samples}), columns are variables.}
+  \item{method}{a string; \code{"standard"} (default), \code{"Qn"},
+    \code{"QnStable"}, \code{"ogkQn"} and \code{"shrink"} envokes standard,
     elementwise robust (based on \eqn{Q_n} scale estimator, see
-    \code{\link[robustbase]{Qn}}), robust (Qn using OGK, see
-    \code{\link[robustbase]{covOGK}}) or shrinked ()
+    \code{\link[robustbase]{Qn}}), robust (\eqn{Q_n} using OGK, see
+    \code{\link[robustbase]{covOGK}}) or shrinked % reference?
     correlation estimate respectively.}
 }
 \value{
   A correlation matrix estimated by the specified method.
 }
 \details{
-  The "standard" method envokes a standard correlation estimator. "Qn"
+  The \code{"standard"} method envokes a standard correlation estimator. \code{"Qn"}
   envokes a robust, elementwise correlation estimator based on the Qn scale
-  estimte. "QnStable" also uses the Qn scale estimator, but uses an
+  estimte. \code{"QnStable"} also uses the Qn scale estimator, but uses an
   improved way of transforming that into the correlation
-  estimator. "ogkQn" envokes a correlation estimator based on Qn using
-  OGK. "shrink" is only useful when used with pcSelect. An optimal
+  estimator. \code{"ogkQn"} envokes a correlation estimator based on Qn using
+  OGK. \code{"shrink"} is only useful when used with pcSelect. An optimal
   shrinkage parameter is used. Only correlation between response and
   covariates is shrinked.
 }
@@ -38,8 +39,8 @@ mcor(dm, method = c("standard", "Qn", "QnStable",
 }
 
 \references{
-  See those in the help pages for \code{Qn} and \code{covOGK} from package
-  \pkg{robustbase}.
+  See those in the help pages for \code{\link[robustbase]{Qn}} and
+  \code{\link[robustbase]{covOGK}} from package \pkg{robustbase}.
 %   Ricardo A. Maronna and Ruben H. Zamar (2002). "Robust Estimates of
 %   Location and Dispersion for High-Dimensional Datasets"; Technometrics,
 %   Nov. 2002, Vol. 44, No. 4.

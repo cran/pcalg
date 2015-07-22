@@ -1,10 +1,11 @@
 \name{fciAlgo-class}
-\title{Class "fciAlgo"}
+\title{Class "fciAlgo" of FCI Algorithm Results}
 \docType{class}
 \alias{fciAlgo-class}
 \alias{plot,fciAlgo,ANY-method}
 \alias{show,fciAlgo-method}
 \alias{summary,fciAlgo-method}
+\alias{print.fciAlgo}
 \description{This class of objects is returned by the function
   \code{\link{fci}} to represent the estimated PAG.
   Objects of this class have methods for the functions
@@ -18,7 +19,7 @@
   The slots \code{call}, \code{n}, \code{max.ord}, \code{n.edgetests},
   \code{sepset}, and \code{pMax} are inherited from class
   \code{"\linkS4class{gAlgo}"}, see there.
-  
+
   In addition, \code{"fciAlgo"} has slots
   \describe{
     \item{\code{amat}:}{a \code{\link{matrix}}: The
@@ -38,11 +39,23 @@
       that were performed when checking subsets of Possible D-SEP.}
   }
 }
-
 \section{Extends}{
   Class \code{"\linkS4class{gAlgo}"}.
 }
+\usage{% usage ..for methods with "surprising arguments":
+\S4method{show}{fciAlgo}(object)
+\S3method{print}{fciAlgo}(x, zero.print = ".", \dots)
 
+\S4method{plot}{fciAlgo,ANY}(x, y, main = NULL, \dots)
+}
+\arguments{
+  \item{x, object}{a \code{"fciAlgo"} object.}
+  \item{zero.print}{string for printing \code{0} (\sQuote{zero}) entries
+    in the adjacency matrix.}
+  \item{y}{(generic \code{plot()} argument; unused).}
+  \item{main}{main title, not yet supported.}
+  \item{\dots}{optional further arguments (passed from and to methods).}
+}
 \section{Methods}{
   \describe{
     \item{plot}{\code{signature(x = "fciAlgo")}: Plot the resulting graph}

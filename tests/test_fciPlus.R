@@ -1,12 +1,7 @@
 library(pcalg)
 
-showProc.time <- local({
-    pct <- proc.time()
-    function() { ## CPU elapsed __since last called__
-	ot <- pct ; pct <<- proc.time()
-	cat('Time elapsed: ', (pct - ot)[1:3],'\n')
-    }
-})
+source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
+##--> showProc.time(), assertError(), relErrV(), ...
 cat("doExtras:", (doExtras <- pcalg:::doExtras()), "\n")
 
 ##################################################
@@ -94,12 +89,12 @@ p. <- r1$p.
 suffStat1 <- list(C = cov2cor(r1$trueCov.1), n = 10^9)
 
 ## FCI+: neue Variante
-system.time(
+showSys.time(
   fciplus.fit <- fciPlus(suffStat1, indepTest = indepTest1, alpha = 0.99, p = p.)
 )
 
 ## Fit FCI
-system.time(
+showSys.time(
   fci.fit <- fci(suffStat1, indepTest = indepTest1, alpha = 0.99, p = p.,
                  rules = rep(TRUE, 10), verbose = FALSE)
 )
@@ -127,15 +122,15 @@ if(doExtras) { ## more tests
      suffStat1 <- list(C = cov2cor(rr$trueCov.1), n = 10^9)
 
      ## FCI+: neue Variante
-     print(system.time(
+     showSys.time(
        fciplus.fit <- fciPlus(suffStat1, indepTest = indepTest1, alpha = 0.99, p = p.)
-     ))
+     )
 
      ## Fit FCI
-     print(system.time(
+     showSys.time(
        fci.fit <- fci(suffStat1, indepTest = indepTest1, alpha = 0.99, p = p.,
                       rules = rep(TRUE, 10), verbose = FALSE)
-     ))
+     )
 
      cat("Adjacency matrix:\n")
      print.table(fciplus.fit@amat, zero.print = ".")

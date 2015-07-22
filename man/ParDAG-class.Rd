@@ -1,9 +1,9 @@
 \name{ParDAG-class}
+\title{Class \code{"ParDAG"} of Parametric Causal Models}
 \Rdversion{1.1}
 \docType{class}
 \alias{ParDAG-class}
 \alias{plot,ParDAG,ANY-method}
-\title{Class \code{"ParDAG"}}
 \description{
   This virtual base class represents a parametric causal model.
 }
@@ -19,9 +19,9 @@
   represents a specific parametric model class.  The base class itself does
   \emph{not} represent such a model class.
 }
-\section{Extends}{
-  All reference classes extend and inherit methods from \code{"\linkS4class{envRefClass}"}.
-}
+%% \section{Extends}{
+%%   All reference classes extend and inherit methods from \code{"\linkS4class{envRefClass}"}.
+%% }
 \section{Constructor}{
   \code{new("ParDAG", nodes, in.edges, params)}
   \describe{

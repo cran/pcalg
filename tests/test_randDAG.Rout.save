@@ -1,0 +1,409 @@
+
+R Under development (unstable) (2015-07-12 r68650) -- "Unsuffered Consequences"
+Copyright (C) 2015 The R Foundation for Statistical Computing
+Platform: x86_64-unknown-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(pcalg)
+> ## setwd("/sfs/u/kalischm/research/packages/unifDAGs/")
+> ## source("aux_general.R")
+> ## source("randDAG.R")
+> 
+> ### Check all methods: ----------------------------------------------
+> 
+> ## MM hack: extract them from the randDAG() function definition
+> body. <- body(randDAG)
+> is.switch <- function(P) !is.symbol(P) && identical(as.symbol("switch"), P[[1]])
+> switchCall <- body.[vapply(body., is.switch, NA)][[1]]
+> stopifnot(identical(as.symbol("switch"), switchCall[[1]]))
+> (rDAGmeths <- names(switchCall)[-c(1:2, length(switchCall))])
+[1] "er"        "regular"   "watts"     "bipartite" "barabasi"  "geometric"
+[7] "power"     "interEr"  
+> rDAGall <- function(n, d, ...)
++     sapply(rDAGmeths, function(meth) randDAG(n,d, method=meth, ...),
++            simplify=FALSE)
+> set.seed(37)
+> rD.10.4 <- rDAGall(10, 4)
+Warning message:
+In .Call("R_igraph_degree_sequence_game", as.numeric(out.deg), in.deg,  :
+  At gengraph_graph_molloy_hash.cpp:332 :Cannot shuffle graph, maybe there is only a single one?
+> ## with a low-level warning
+> rD.10.4 # looks ok
+$er
+A graphNEL graph with directed edges
+Number of Nodes = 10 
+Number of Edges = 21 
+
+$regular
+A graphNEL graph with directed edges
+Number of Nodes = 10 
+Number of Edges = 20 
+
+$watts
+A graphNEL graph with directed edges
+Number of Nodes = 10 
+Number of Edges = 20 
+
+$bipartite
+A graphNEL graph with directed edges
+Number of Nodes = 10 
+Number of Edges = 18 
+
+$barabasi
+A graphNEL graph with directed edges
+Number of Nodes = 10 
+Number of Edges = 19 
+
+$geometric
+A graphNEL graph with directed edges
+Number of Nodes = 10 
+Number of Edges = 18 
+
+$power
+A graphNEL graph with directed edges
+Number of Nodes = 10 
+Number of Edges = 23 
+
+$interEr
+A graphNEL graph with directed edges
+Number of Nodes = 10 
+Number of Edges = 19 
+
+> 
+> require(graph)
+Loading required package: graph
+> stopifnot(vapply(rD.10.4, isDirected, NA))
+> 
+> stopifnot(identical(
++     lapply(rD.10.4, leaves, "out"),
++     list(er = "3", regular = c("1", "5", "6"), watts = c("3", "4", "6"),
++          bipartite = c("1", "2", "5"), barabasi = c("4", "8"),
++          geometric = c("4", "7"), power = c("4", "5", "9"),
++          interEr = c("3", "7"))
++ ))
+> 
+> stopifnot(identical(
++     lapply(rD.10.4, leaves, "in"),
++     list(er = c("1", "4", "7"), regular = c("3", "7", "10"),
++          watts = c("1", "8"), bipartite = c("4", "6"),
++          barabasi = c("6", "7"), geometric = c("5", "10"),
++          power = c("2", "7"), interEr = c("8", "10"))
++ ))
+> 
+> set.seed(47)
+> rD.12.2 <- rDAGall(12, 2)
+> stopifnot(vapply(rD.12.2, isDirected, NA),
++           vapply(rD.12.2, numNodes, 1) == 12,
++           identical(vapply(rD.12.2, numEdges, 1),
++                     setNames(c(9, 12, 12, 11, 11, 11, 13, 8), rDAGmeths))
++           )
+> 
+> ## Use the output here
+> require(Matrix)
+Loading required package: Matrix
+> lapply(rD.10.4, function(g) as(as(g, "Matrix"),"nMatrix"))
+$er
+10 x 10 sparse Matrix of class "ngCMatrix"
+   [[ suppressing 10 column names '1', '2', '3' ... ]]
+                      
+1  . . . . . . . | | .
+2  . . | . . . . . . .
+3  . . . . . . . . . .
+4  . | | . . . . | . |
+5  . | | . . . . | . .
+6  . | . . | . . . . .
+7  . . . . | | . | | .
+8  . | | . . . . . . .
+9  . | | . . . . . . .
+10 . . | . . . . . . .
+
+$regular
+10 x 10 sparse Matrix of class "ngCMatrix"
+   [[ suppressing 10 column names '1', '2', '3' ... ]]
+                      
+1  . . . . . . . . . .
+2  | . . . | . . . . .
+3  | . . | . | . | . .
+4  . . . . . | . . . .
+5  . . . . . . . . . .
+6  . . . . . . . . . .
+7  | . . . | | . | . .
+8  | . . . | . . . . .
+9  . | . | . | . . . .
+10 . | . | | . . . | .
+
+$watts
+10 x 10 sparse Matrix of class "ngCMatrix"
+   [[ suppressing 10 column names '1', '2', '3' ... ]]
+                      
+1  . | . . | | | . | |
+2  . . | | . . | . | .
+3  . . . . . . . . . .
+4  . . . . . . . . . .
+5  . . | . . . . . . .
+6  . . . . . . . . . .
+7  . . | . . . . . . .
+8  . . . | . | . . | .
+9  . . . | | | . . . .
+10 . . . . | . . . | .
+
+$bipartite
+10 x 10 sparse Matrix of class "ngCMatrix"
+   [[ suppressing 10 column names '1', '2', '3' ... ]]
+                      
+1  . . . . . . . . . .
+2  . . . . . . . . . .
+3  . . . . | . . | . .
+4  | | | . . . | . . .
+5  . . . . . . . . . .
+6  . . . . | . . | | |
+7  . . . . | . . | | .
+8  | . . . . . . . . .
+9  | | | . . . . . . .
+10 | . . . . . . . . .
+
+$barabasi
+10 x 10 sparse Matrix of class "ngCMatrix"
+   [[ suppressing 10 column names '1', '2', '3' ... ]]
+                      
+1  . . . | . . . | . .
+2  . . . | . . . | . .
+3  | . . . . . . . | .
+4  . . . . . . . . . .
+5  | | | . . . . | . |
+6  . . . . | . . | . |
+7  . | . . | . . . . .
+8  . . . . . . . . . .
+9  . . . . . . . | . .
+10 | . . . . . . | . .
+
+$geometric
+10 x 10 sparse Matrix of class "ngCMatrix"
+   [[ suppressing 10 column names '1', '2', '3' ... ]]
+                      
+1  . . . | . . . . . .
+2  . . . . . . | . . .
+3  | | . | . . | | . .
+4  . . . . . . . . . .
+5  | . | | . | . | | .
+6  . . . | . . . . | .
+7  . . . . . . . . . .
+8  . . . . . . . . | .
+9  . . . | . . . . . .
+10 . . . . . | . . . .
+
+$power
+10 x 10 sparse Matrix of class "ngCMatrix"
+   [[ suppressing 10 column names '1', '2', '3' ... ]]
+                      
+1  . . . | . . . | . |
+2  . . | | | | . | | |
+3  | . . | . . . | . |
+4  . . . . . . . . . .
+5  . . . . . . . . . .
+6  . . | | | . . . . |
+7  . . . | . . . . . |
+8  . . . | . . . . . .
+9  . . . . . . . . . .
+10 . . . | . . . | . .
+
+$interEr
+10 x 10 sparse Matrix of class "ngCMatrix"
+   [[ suppressing 10 column names '1', '2', '3' ... ]]
+                      
+1  . | . . . | | . . .
+2  . . . . . | | . . .
+3  . . . . . . . . . .
+4  . . | . . . . . . .
+5  . . | . . . . . | .
+6  . . . . . . | . . .
+7  . . . . . . . . . .
+8  . . | | | . . . . .
+9  . . | | . . . . . .
+10 | | . | . | | . . .
+
+> lapply(rD.12.2, function(g) as(as(g, "Matrix"),"nMatrix"))
+$er
+12 x 12 sparse Matrix of class "ngCMatrix"
+   [[ suppressing 12 column names '1', '2', '3' ... ]]
+                          
+1  . . . . . . . . . . | .
+2  . . . . . . . . . | . .
+3  . . . . . . . . . | . .
+4  . . . . . . | . . . . .
+5  | . | | . . . . . . . .
+6  . . . . . . . . . . . .
+7  . . . . . . . . . . . .
+8  . . . . . . . . . . . |
+9  . . . . . . . . . . . .
+10 . . . . . . . . . . . .
+11 . . . . . . . . . . . |
+12 . . . . . . . . . . . .
+
+$regular
+12 x 12 sparse Matrix of class "ngCMatrix"
+   [[ suppressing 12 column names '1', '2', '3' ... ]]
+                          
+1  . . . . . . . . . . . .
+2  . . . . . . . . . . | .
+3  . . . . . . . . | . . |
+4  . . . . . . . . . . . |
+5  . . . . . . . . . . . .
+6  | . . . . . | . . . . .
+7  . . . . | . . . . . . .
+8  . | . . | . . . . . . .
+9  . . . . . . . . . . | .
+10 | . . | . . . . . . . .
+11 . . . . . . . . . . . .
+12 . . . . . . . . . . . .
+
+$watts
+12 x 12 sparse Matrix of class "ngCMatrix"
+   [[ suppressing 12 column names '1', '2', '3' ... ]]
+                          
+1  . . | . . . | . . | . .
+2  . . . . . . . . . | | |
+3  . . . . . | . . . . | .
+4  . . . . . . . . . . . .
+5  . . . . . . . . . . | .
+6  . . . . . . . . . . . .
+7  . . . . . . . . . . . .
+8  . . . . . . . . . | . .
+9  . . . . . . . . . . . .
+10 . . . | . . . . . . . .
+11 . . . | . . . . . . . .
+12 . . . . . . . . . . . .
+
+$bipartite
+12 x 12 sparse Matrix of class "ngCMatrix"
+   [[ suppressing 12 column names '1', '2', '3' ... ]]
+                          
+1  . . . . . . . . . . . .
+2  . . . . | | . . . . . .
+3  . . . . . . . . . . . .
+4  . . . . . . . . . . . .
+5  . . . . . . . . . . . .
+6  . . . . . . . . . . . .
+7  | . . . | | . . . | . .
+8  | . . . . | . . . . . .
+9  . . . . | . . . . . . .
+10 . . . . . . . . . . . .
+11 | . . . | . . . . . . .
+12 . . . . . . . . . . . .
+
+$barabasi
+12 x 12 sparse Matrix of class "ngCMatrix"
+   [[ suppressing 12 column names '1', '2', '3' ... ]]
+                          
+1  . . . . . . . . . . . .
+2  . . . . | . . . . . . |
+3  . . . . . . . . . . . .
+4  . . . . . . . . . . . .
+5  . . . . . . . . . . . .
+6  . . . . . . . . . . . .
+7  . . . . . . . . . | . .
+8  . . . . . | . . . . . .
+9  . . . | . . . . . | . .
+10 . . | . | | . . . . | .
+11 . . . . . . . . . . . .
+12 | . . . . . . . . . . .
+
+$geometric
+12 x 12 sparse Matrix of class "ngCMatrix"
+   [[ suppressing 12 column names '1', '2', '3' ... ]]
+                          
+1  . . . . . . . . . . . .
+2  . . . . . . . . . . . .
+3  . . . . . | . . | . . .
+4  . . . . . . . . . . . .
+5  | . . . . . . . . . . .
+6  . . . . . . . . . . . .
+7  . . . . . | . . . . . .
+8  . . . . . . . . . . . .
+9  . . . . . . . . . . . .
+10 . . | . . . . . | . | |
+11 . . . . . . . . . . . .
+12 . . | . . | . . | . . .
+
+$power
+12 x 12 sparse Matrix of class "ngCMatrix"
+   [[ suppressing 12 column names '1', '2', '3' ... ]]
+                          
+1  . . . . | . . . . . . .
+2  . . . . . | . . . . . .
+3  . . . . . . . . . . . .
+4  . . . . . | . . . . . .
+5  . . . . . . . . . . . .
+6  . . | . | . . . . . | .
+7  . . . . . | . . . . . .
+8  . . | . . . . . . . . .
+9  . . . . . | . . . . . .
+10 . . . . . | . . . . | .
+11 . . . . | . . . . . . .
+12 . . . . . | . . . . . .
+
+$interEr
+12 x 12 sparse Matrix of class "ngCMatrix"
+   [[ suppressing 12 column names '1', '2', '3' ... ]]
+                          
+1  . . . . . . . . . . . .
+2  . . . . . | | | . . . .
+3  . . . . . . . . . . . .
+4  . . . . . . . . . . . .
+5  . . . . . . . . . . . .
+6  . . . . . . . . . . . .
+7  . . . . . . . . . . . .
+8  . . . . . . . . . . . .
+9  . . . . . . . . . . . |
+10 . . | . | . | . . . . .
+11 . . . . . . . | . . . .
+12 . . . . . . . . . . . .
+
+> 
+> ##---------------------------------------------------------------------------
+> 
+> ## check weights
+> set.seed(123)
+> n <- 100
+> g <- randDAG(n=n,d=3, wFUN=list(runif,min=0,max=1))
+> g
+A graphNEL graph with directed edges
+Number of Nodes = 100 
+Number of Edges = 137 
+> m <- wgtMatrix(g)
+> stopifnot(sum(m != 0) == 137)
+> v <- as.numeric(m)
+> v <- v[v!=0]
+> ## dput(as.vector(summary(v, digits=7)))
+> stopifnot(all.equal(as.vector(summary(v, digits=7)),
++                     c(0.008103577, 0.2589966, 0.5287397,
++                       0.5232445, 0.8159941, 0.9915566)))
+> ct <- cut(x=v, breaks=seq(0,1,by=0.1))
+> stopifnot(all.equal(chisq.test(as.numeric(table(ct)), p = rep(0.1,10))$p.value,
++                     0.3101796548))
+> 
+> ## check generation of negative weights (fixed Bug)
+> set.seed(123)
+> tmp1 <- randDAG(3,2,wFUN = list(runif, min = 2, max = 2))
+> all( unlist(tmp1@edgeData@data) == 2 )
+[1] TRUE
+> set.seed(123)
+> tmp2 <- randDAG(3,2,wFUN = list(runif, min = -2, max = -2))
+> all( unlist(tmp2@edgeData@data) == -2 )
+[1] TRUE
+> 
+> 
+> proc.time()
+   user  system elapsed 
+  1.885   0.410   2.628 

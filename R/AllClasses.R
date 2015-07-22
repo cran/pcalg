@@ -2,7 +2,7 @@
 ### Part 1 : S4 classes used by pc and r/fci
 ##################################################
 
-## $Id: AllClasses.R 313 2015-07-07 16:16:55Z mmaechler $
+## $Id: AllClasses.R 342 2015-07-22 14:26:29Z mmaechler $
 
 setClass("gAlgo",
          representation(call = "call",
@@ -43,15 +43,11 @@ setMethod("summary", "pcAlgo",
             cat("Max. order of algorithm: ",object@max.ord,
                 "\nNumber of edgetests from m = 0 up to m =",object@max.ord,
                 ": ",object@n.edgetests)
-            tmp <- object@graph@edgeL
-            nbrs <- rep(0,length(tmp))
-            for (i in seq_along(tmp)) {
-              nbrs[i] <- length(tmp[[i]]$edges)
-            }
+            nbrs <- vapply(object@graph@edgeL, function(x) length(x$edges), 1L)
             cat("\n\nGraphical properties of skeleton:\n")
             cat("=================================\n")
-            cat("Max. number of neighbours: ",max(nbrs),
-                "at node(s)",which(nbrs==max(nbrs)),
+            cat("Max. number of neighbours: ", max(nbrs),
+                "at node(s)", which(nbrs==max(nbrs)),
                 "\nAvg. number of neighbours: ",mean(nbrs),"\n")
           })
 
@@ -68,16 +64,15 @@ setMethod("summary", "fciAlgo",
                 "\nNumber of edgetests from m = 0 up to m =",object@max.ordPDSEP,
                 ": ",object@n.edgetestsPDSEP)
 
-            myfun <- function(x) if(is.null(x)) NA else length(x)
+            myLength <- function(x) if(is.null(x)) NA_integer_ else length(x)
             cat("\n\nSize distribution of SEPSET:")
-            myTab <- table(sapply(object@sepset,function(x) sapply(x,myfun)),
-                           useNA="always")
+            myTab <- table(sapply(object@sepset,
+                                  function(x) vapply(x, myLength, 1L)),
+                           useNA = "always")
             print(myTab)
 
             cat("\nSize distribution of PDSEP:")
-            print(table(sapply(object@allPdsep, length)))
-
-
+            print(table(vapply(object@allPdsep, length, 1L)))
           })
 
 
@@ -88,7 +83,6 @@ setMethod("show", "pcAlgo",
             amat2 <- amat + 2*t(amat)
             ude <- sum(amat2 == 3)/2
             de <- sum(amat2 == 1)
-            nEdges <- ude + de
             cat("Number of undirected edges: ", ude, "\n")
             cat("Number of directed edges:   ", de, "\n")
             cat("Total number of edges:      ", de + ude, "\n")
@@ -96,16 +90,18 @@ setMethod("show", "pcAlgo",
 	  })
 
 
-setMethod("show", "fciAlgo",
-	  function(object) {
-	    cat("Object of class 'fciAlgo', from Call:", deparse(object@call),
-                "\nAdjacency Matrix G:",
-                "G[i,j] = 1/2/3 if edge mark of edge i-j at j is circle/head/tail.",
-                "", sep="\n")
-	    print(object@amat)
-	    invisible(object)
-	  })
+print.fciAlgo <- function(x, zero.print = ".", ...) {
+    cat("Object of class 'fciAlgo', from Call:", deparse(x@call),
+        "\nAdjacency Matrix G:",
+        "G[i,j] = 1/2/3 if edge mark of edge i-j at j is circle/head/tail.",
+        "", sep="\n")
+    print.table(x@amat, zero.print=zero.print, ...)
+    invisible(x)
+}
 
+setMethod("show", "fciAlgo", function(object) print.fciAlgo(object))
+
+## -> ../man/pcAlgo-class.Rd
 setMethod("plot", signature(x = "pcAlgo"),
           function(x, y, main = NULL, zvalue.lwd = FALSE,
                    lwd.max = 7, labels = NULL, ...)
@@ -114,28 +110,29 @@ setMethod("plot", signature(x = "pcAlgo"),
 
           if(is.null(main))
               main <- deparse(x@call)
-          attrs <- list()
-          nodeAttrs <- list()
+          attrs <- nodeAttrs <- list()
+          p <- numNodes(G <- x@graph)
           if (!is.null(labels)) {
               attrs$node <- list(shape = "ellipse", fixedsize = FALSE)
-              names(labels) <- nodes(x@graph)
+              names(labels) <- nodes(G)
               nodeAttrs$label <- labels
           }
 
-          if (zvalue.lwd && numEdges(x@graph)!=0) {
-              lwd.Matrix <- x@zMin
-              lwd.Matrix <- ceiling(lwd.max*lwd.Matrix/max(lwd.Matrix))
-	      z <- Rgraphviz::agopen(x@graph, name = "lwdGraph",
+          if (zvalue.lwd && numEdges(G) != 0) {
+	      lwd.mat <-
+		  if(is.matrix(Z <- x@zMin) && all(dim(Z) == p)) Z
+		  else ## from newer pc(): 'zMin' is deprecated there, but pMax corresponds:
+		      qnorm(x@pMax/2, lower.tail=FALSE)
+	      lwd.mat <- lwd.max * lwd.mat/max(lwd.mat)
+	      z <- Rgraphviz::agopen(G, name = "lwdGraph",
 				     nodeAttrs = nodeAttrs, attrs = attrs)
-              eLength <- length(z@AgEdge)
-              for (i in 1:eLength) {
-                  x <- as.numeric(z@AgEdge[[i]]@head)
-                  y <- as.numeric(z@AgEdge[[i]]@tail)
-                  z@AgEdge[[i]]@lwd <- lwd.Matrix[x,y]
-              }
+	      for (i in seq_along(z@AgEdge)) {
+		  z@AgEdge[[i]]@lwd <- lwd.mat[as.integer(z@AgEdge[[i]]@head),
+					       as.integer(z@AgEdge[[i]]@tail)]
+	      }
               Rgraphviz::plot(z, main = main, ...)
           } else {
-              Rgraphviz::plot(x@graph, nodeAttrs = nodeAttrs, main = main,
+              Rgraphviz::plot(G, nodeAttrs = nodeAttrs, main = main,
                               attrs = attrs, ...)
           }
       })
@@ -175,9 +172,10 @@ setMethod("plot", signature(x = "fciAlgo"),
           names(ah.list) <- names(at.list) <- list.names
 	  edgeRenderInfo(g) <- list(arrowhead= ah.list,
 				    arrowtail= at.list)
-	  ## Rgraphviz::plot(g, main = main, ...)
+          ## XXX Sep/Oct 2010  --- still current -- FIXME ??
           ## XXX undid change by MM, since edge marks didn't work anymore
-          ## "known bug in Rgraphviz, but not something they may fix soon"
+          ## XXX "known bug in Rgraphviz, but not something they may fix soon"
+	  ## Rgraphviz::plot(g, main = main, ...)
           Rgraphviz::renderGraph(Rgraphviz::layoutGraph(g))
       })
 
@@ -248,20 +246,21 @@ setRefClass("ParDAG",
 
 #' Coercion to a graphNEL instance
 setAs("ParDAG", "graphNEL",
-    def = function(from) {
-      result <- new("graphNEL",
-          nodes = from$.nodes,
-          edgeL = from$.in.edges,
-          edgemode = "directed")
-      return(reverseEdgeDirections(result))
-    })
+      function(from) {
+          reverseEdgeDirections(
+              new("graphNEL",
+                  nodes = from$.nodes,
+                  edgeL = from$.in.edges,
+                  edgemode = "directed"))
+      })
 
 #' Coercion to a (logical) matrix
 setAs("ParDAG", "matrix",
-    def = function(from) {
-      p <- from$node.count()
-      sapply(1:p, function(i) 1:p %in% from$.in.edges[[i]])
-    })
+      function(from) {
+          i.p <- seq_len(p <- from$node.count())
+          in.edge <- from$.in.edges
+	  vapply(i.p, function(i) i.p %in% in.edge[[i]], logical(p))
+      })
 
 #' Plot method (needs Rgraphviz to work!!)
 setMethod("plot", "ParDAG",
@@ -343,7 +342,7 @@ setRefClass("Score",
 
         #' Checks whether a vertex is valid
         validate.vertex = function(vertex) {
-          # stopifnot(is.whole(vertex)) ## Take this again when is.whole is implemented in 'sfsmisc'
+          stopifnot(is.whole(vertex))
           stopifnot(abs(vertex - round(vertex)) < sqrt(.Machine$double.eps))
           stopifnot(1 <= vertex && vertex <= pp.dat$vertex.count)
         },
@@ -399,12 +398,15 @@ setRefClass("Score",
         #' Calculates the global MLE
         global.mle = function(dag, ...) {
           ## Calculate score in R
-          if (c.fcn == "none")
-            lapply(1:pp.dat$vertex.count,
-                function(i) local.mle(i, dag$.in.edges[[i]], ...))
+          if (c.fcn == "none") {
+              in.edge <- dag$.in.edges
+              lapply(1:pp.dat$vertex.count,
+                     function(i) local.mle(i, in.edge[[i]], ...))
+          }
           ## Calculate score with the C++ library
           else
-            .Call("globalMLE", c.fcn, pp.dat, dag$.in.edges, c.fcn.options(...), PACKAGE = "pcalg")
+            .Call("globalMLE", c.fcn, pp.dat, dag$.in.edges, c.fcn.options(...),
+                  PACKAGE = "pcalg")
         }
         ),
 
@@ -675,7 +677,7 @@ setRefClass("EssGraph",
 
         #' Yields the total number of edges in the graph
         edge.count = function() {
-          sum(sapply(.in.edges, length))
+          sum(vapply(.in.edges, length, 1L))
         },
 
         #' Getter and setter functions for score object
@@ -845,11 +847,11 @@ setAs("EssGraph", "graph", .ess2graph)
 ## ----  via "graphNEL" for larger p :
 ##' Coercion to a (logical) matrix
 setAs("EssGraph", "matrix",
-    def = function(from) {
-      ip <- seq_len(p <- from$node.count())
-      vapply(ip, function(i) ip %in% from$.in.edges[[i]],
-             logical(p))
-    })
+      function(from) {
+          ip <- seq_len(p <- from$node.count())
+          in.edge <- from$.in.edges
+          vapply(ip, function(i) ip %in% in.edge[[i]], logical(p))
+      })
 
 #' Plot method (needs Rgraphviz to work!!)
 ## TODO maybe adapt method to make sure that undirected edges are not plotted as
@@ -949,31 +951,36 @@ setRefClass("GaussParDAG",
         #'          with rows corresponding to different samples if n > 1
         simulate = function(n, target = integer(0), int.level = numeric(0)) {
           ## Error terms, intercepts, and intervention levels
-          if (n == 1)
+          if (n == 1) {
             Y <- rnorm(node.count(), mean = intercept(), sd = sqrt(err.var()))
-          else
+          } else {
             Y <- matrix(rnorm(n*node.count(), mean = intercept(), sd = sqrt(err.var())), ncol = n)
+          }
           if (length(target) > 0) {
-            if (length(int.level) %nin% c(length(target), n*length(target)))
+            if (length(int.level) %nin% c(length(target), n*length(target))) {
               stop("int.level must either be a vector of the same length as target, or a matrix of dimension n x length(target)")
-            if (is.matrix(int.level))
+            }
+            if (is.matrix(int.level)) {
               int.level <- t(int.level)
-            if (n == 1)
+            }
+            if (n == 1) {
               Y[target] <- int.level
-            else
+            } else {
               Y[target, ] <- int.level
+            }
           }
 
           ## Modified weight matrix (w.r.t. intervention target)
-          D <- - weight.mat(target)
+          D <- - t(weight.mat(target))
           diag(D) <- 1.
 
           ## Calculate results: simulation samples
           result <- solve(D, Y)
-          if (n == 1)
+          if (n == 1) {
             result
-          else
+          } else {
             t(result)
+          }
         }
         )
     )

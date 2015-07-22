@@ -5,7 +5,7 @@ useDynLib(pcalg)
 importFrom("stats", cor, cor.test, cov, cov2cor,
            fisher.test, pchisq, pnorm, qnorm,
            rbinom, rcauchy, rnorm, rt, runif,
-           sd, symnum, uniroot)
+           sd, setNames, symnum, uniroot)
 
 importFrom("utils", combn, str)
 
@@ -31,8 +31,8 @@ importFrom("robustbase",
 	   )
 
 importFrom("graph",
-		reverseEdgeDirections,
-		edgeRenderInfo, "edgeRenderInfo<-")
+           reverseEdgeDirections,
+           edgeRenderInfo, "edgeRenderInfo<-")
 importClassesFrom("graph", graph, graphAM, graphNEL)
 importMethodsFrom("graph",
 		  ## addEdge,
@@ -59,7 +59,7 @@ importFrom("Rcpp", evalCpp) # Needed for any package relying on Rcpp headers...
 
 importFrom("bdsmatrix", gchol) ## for jointIda ("MCD")
 
-importFrom("sfsmisc", digitsBase)
+importFrom("sfsmisc", digitsBase, is.whole)
 
 importFrom("fastICA", fastICA)
 importFrom("clue", solve_LSAP)
@@ -174,3 +174,6 @@ exportClasses("pcAlgo",
               "EssGraph")
 
 exportMethods("summary", "show", "plot")
+
+S3method(print, fciAlgo)
+

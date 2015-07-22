@@ -3,7 +3,7 @@
 \alias{gAlgo-class}
 \title{Class \code{"gAlgo"}}
 \description{
-  "gAlgo" is a \code{"VIRTUAL"} class, the common basis of classes
+  \code{"gAlgo"} is a \code{"VIRTUAL"} class, the common basis of classes
   \code{"\linkS4class{pcAlgo}"} and \code{"\linkS4class{fciAlgo}"}.
 
   We describe the common slots here; for more see the help pages of the
@@ -17,14 +17,14 @@
       the conditioning set used in the conditional independence tests of
       the (first part of the algorithm), in function \code{\link{skeleton}}.}
     \item{\code{n.edgetests}:}{the number of conditional independence
-      tests performed by the (first part of the) algorithm.} 
+      tests performed by the (first part of the) algorithm.}
     \item{\code{sepset}:}{a \code{\link{list}}, the conditioning sets
       that led to edge deletions.  The set that led to the removal of
-      the edge \code{i-j} is saved in either \code{sepset[[i]][[j]]} or
+      the edge \code{i -- j} is saved in either \code{sepset[[i]][[j]]} or
       in \code{sepset[[j]][[i]]}.}
     \item{\code{pMax}:}{a numeric square \code{\link{matrix}}, where the
-      (i,j)th entry contains the maximum p-value of all conditional
-      independence tests for edge i-j.} 
+      \eqn{(i,j)}th entry contains the maximal p-value of all conditional
+      independence tests for edge \eqn{i -- j}.}
   }
 }
 %% \section{Methods}{

@@ -2,22 +2,21 @@
 
 * TODO NAMESPACE and "internal" functions:
 ** DONE Look at ./NAMESPACE  and replace *ALL*  the  Imports() by ImportsFrom(.)
-** TODO What do we export / what not?  <--> file:man/pcalg-internal.Rd
-    Currently, there is  ./man/pcalg-internal.Rd  with man \alias{}es
-    and only few functions in "Usage".
-    The concept of such "internal" functions really *predates* the use
-    of NAMESPACEs and is now obsolete.
+** TODO What do we export / what not?  <--> [[man/pcalg-internal.Rd]]
+ The concept of such "internal" functions really *predates* the use
+ of NAMESPACEs and is now obsolete.
+*** DONE Many of these should be *removed* for the .Rd  page *and* from NAMESPACE.
+*** TODO The others will be kept, but "well" documented, i.e., in a different .Rd file :
+	rfci.vStruc  renamed; TODO (MM)
+	allDags      mentioned in other help pages !!
+	amat2dag()   in [[../tests/test_amat2dag.R]]
+*** Goal: Get rid of [[man/pcalg-internal.Rd]] entirely.
 
-   Many of these should be *removed* for the *.Rdany of these should be *removed* for the *.Rd page *and* from NAMESPACE.
-   The others (few?) would be kept, but then also "well" documented, i.e.,
-   on a different *.Rd file.
-*** Goal: Get rid of ./man/pcalg-internal.Rd   entirely.
-     
 * TODO Remarks on specific functions and issues:
 ** TODO skeleton(): keep back compatibility  update= c("stable","original")  <<---MM
 *** DONE in code
-*** TODO but MM's tests show NOT QUITE back compatibility 
-** TODO pag2mag() return adj.matrix instead of *object* -> named pag2magAM()
+*** TODO but MM's tests show NOT QUITE back compatibility
+** DONE pag2mag() return adj.matrix instead of *object* -> named pag2magAM()
    whereas dag2pag() does return more than just an adj.matrix. Change BEFORE release
 ** TODO pc(), probably fci() etc: loses variable labels and works with "1", "2",...???
    --> file:/u/maechler/R/MM/Pkg-ex/pcalg/Borsboom_mail.R is an example
@@ -36,14 +35,14 @@
 ** DONE myCItest() in Vignette vignettes/pcalgDoc.Rnw
    instead of lm() twice, use lm.fit *once* (*multivariate* regression).
    This will probably be much faster.
-** ida():  argument  'all.dags' is never used, i.e., never tested.
+** TODO ida():  argument  'all.dags' is never used, i.e., never tested.
 ** DONE dsepTest(): gibt 0 / 1  zurück; wieso nicht  FALSE/TRUE wie dsep()?  A:"P-value"
-** TODO I've introduced 'max.chordal = 10' to 'backdoor()' 
+** TODO I've introduced 'max.chordal = 10' to 'backdoor()'
   which was hidden in the code previously. Have you ever tried larger/smaller?
 ** DONE gSquareBin(), gSquareDis():
   - returns a P-value but not the test statistic.  Should *really* return
     an object of (standard S3 class) "htest" (which contains P-value, test
-    statistic, ...).  
+    statistic, ...).
     But they have been documented to do what they do, and so we keep them.
 
 ** TODO pc(*, verbose=TRUE) for a "large" example with 18 vars: *much* output;
@@ -52,23 +51,20 @@
    than TRUE now
 
 
+* TODO Package 'ggm' has topOrder() for topological ordering. Should allow to use it,
+   e.g., optionally in unifDAG(.), or also rmvDAG() to fixup a non-top.ordered input.
+** TODO MM: ggm::topOrder() can be made faster
 * Parallelize option
 * Allow 'tiers' (as in Tetrad), and 'background knowledge' (about orientations etc).
 
-* ?? Where is all the robustness gone that pcAlgo() had?
- Maybe  pcAlgo() should not be deprecated because it allows robust
- correlation methods?  ---> indepTest argument: Qn ? --> Martin
+* TODO Robustness examples that pcAlgo() had explicitly:  add _examples_ using robust cov()
+*  / correlation methods?  ---> indepTest argument: Qn ? --> Martin
 --------------------------------------------------------------------------
-* Style:  am[which(am != 0)]  is faster than am[am != 0]  
-  for a sparse am of dim 50 x 50  ==> Using the more ugly notation is ok!
+* DONE find.unsh.triple(): remove arg 'p'
+* TODO MK[2013-12-17]: allDags(): noch keine Hilfeseite -> moechte bald eine grosse Aenderung der Funktion machen (inkl. Parameter)
+* TODO MK[2013-12-17]: Letztest Bsp in fci(): p-1 statt p im Argument, weil eine (latente) Var gelöscht wurde
 
-* find.unsh.triple: remove arg 'p'
-
-* allDags() bekommt noch keine Hilfeseite -> moechte bald eine grosse Aenderung der Funktion machen (inkl. Parameter)
-
-* Letztest Bsp in fci(): p-1 statt p im Argument, weil eine (latente) Var gelöscht wurde
-
-* Make a fast dsep function for testing (using a lot of precomputation; e.g. ancestors, parents that are not married, so that finding moral graph becomes trivial; we then only need to check separation; could also tsort all nodes and precompute one moral graph for every element in the tsorted node sequence (~p graphs); then, the test boils down to a mere separation test
+* TODO MK[2013-12-17]: Make a fast dsep function for testing (using a lot of precomputation; e.g. ancestors, parents that are not married, so that finding moral graph becomes trivial; we then only need to check separation; could also tsort all nodes and precompute one moral graph for every element in the tsorted node sequence (~p graphs); then, the test boils down to a mere separation test
 
 * DONE Boost C++ library needed for Alain's GIES
 ** DONE does *need* a correct ./configure, somewhat analogous to Martin's Rmpfr.
@@ -132,5 +128,28 @@
 
 
 
-* Change convention: If something strange happens with a test, KEEP edge
-* Make up some clever way to deal with NAs in the continuous case (phps also in other cases) and prepare test functions for users
+* TODO MK[2014-07-08]: Change convention: If something strange happens with a test, KEEP edge
+* TODO MK[2014-07-08]: Make up some clever way to deal with NAs in the continuous case (phps also in other cases) and prepare test functions for users
+
+----------------
+
+* Internal Programming - documentation & style guide(s)  -- (Martin):
+
+** am[which(am != 0)]  is faster than am[am != 0]
+   for a *sparse* am of dim 50 x 50  ==> Using the more ugly notation is ok!
+   --- But this will most probably change in R >=  3.3.0
+** Adjacency Matrices:
+*** We should use *integer* {internal} ==>  A[..,] <- 1 is *wrong*, should be A[..] <- 1L, etc
+*** Document the different kinds of 'amat' (adjacency matrices) that we use.
+   symmetric ? / lower- or upper-triangular ?
+   E.g. [[man/backdoor.Rd]] has  "Coding of adjacency matrix" (0,1,2,3)
+*** Our code should make sure that ad-matrices are *integer* and hence use 1L, 0L, etc !
+
+** Graph Node Labels  <==>  rownames(A):  Still a mess, sometimes using as.numeric(rownames(.)),
+   e.g. in my.SpecialDag() in [[R/pcalg.R]]
+*** In these cases graph labels are lost and replaced by "1", "2", .. this is typically entirely wrong.
+
+** Help pages:
+*** For function \arguments{.}, in \item{<name>}{<description>}, use *lower* case descr.
+    as in all practically all "base R" help pages.
+

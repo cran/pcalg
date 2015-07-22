@@ -20,7 +20,7 @@ randomDAG(n, prob, lB = 0.1, uB = 1, V = as.character(1:n))
   An object of class \code{"graphNEL"}, see
   \code{\link[graph]{graph-class}} from package \pkg{graph}, with \code{n}
   named ("1" to "n") nodes and directed edges.  The graph is
-  topologically ordered. 
+  topologically ordered.
   Each edge has a weight between \code{lB} and \code{uB}.
 }
 \details{
@@ -33,7 +33,7 @@ randomDAG(n, prob, lB = 0.1, uB = 1, V = as.character(1:n))
   and so on.
 }
 \seealso{\code{\link{randDAG}} for a more elaborate version of this
-  function; \code{\link{rmvDAG}} for generating Data according to a
+  function; \code{\link{rmvDAG}} for generating data according to a
   DAG; \code{\link{compareGraphs}} for comparing the skeleton of a DAG
   with some other undirected graph (in terms of TPR, FPR and TDR).
 }
@@ -41,11 +41,10 @@ randomDAG(n, prob, lB = 0.1, uB = 1, V = as.character(1:n))
   Markus Kalisch (\email{kalisch@stat.math.ethz.ch}) and Martin Maechler
 }
 \examples{
-if (require(Rgraphviz)) {
 set.seed(101)
 myDAG <- randomDAG(n = 20, prob= 0.2, lB = 0.1, uB = 1)
+## require(Rgraphviz)
 plot(myDAG)
-}
 }
 \keyword{graphs}
 \keyword{datagen}

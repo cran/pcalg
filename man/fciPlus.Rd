@@ -6,7 +6,7 @@
   the FCI+ (Fast Causal Inference) Algorithm.
 }
 \usage{
-fciPlus(suffStat, indepTest, alpha, labels, p)
+fciPlus(suffStat, indepTest, alpha, labels, p, verbose=TRUE)
 }
 \arguments{
   \item{suffStat}{sufficient statistics: A named \code{\link{list}}
@@ -29,6 +29,8 @@ fciPlus(suffStat, indepTest, alpha, labels, p)
   \item{p}{(optional) number of variables (or nodes).  May be specified
     if \code{labels} are not, in which case \code{labels} is set to
     \code{1:p}.}% FIXME: can get *both* from  suffStat$C  in the typical case
+  \item{verbose}{logical indicating if progress of the algorithm should
+    be printed.  The default is true, which used to be hard coded previously.}
 }
 \details{
   A variation of FCI (Fast Causal Inference).  For details, please see

@@ -1,5 +1,5 @@
 \name{pcAlgo-class}
-\title{Class "pcAlgo"}
+\title{Class "pcAlgo" of PC Algorithm Results}
 \docType{class}
 \alias{pcAlgo-class}
 \alias{plot,pcAlgo,ANY-method}
@@ -9,7 +9,27 @@
   \code{\link{skeleton}} and \code{\link{pc}} to represent the
   (skeleton) of an estimated CPDAG.
   Objects of this class have methods for the functions plot, show and
-  summary.}
+  summary.
+}
+\usage{% usage ..for methods with "surprising arguments":
+\S4method{plot}{pcAlgo,ANY}(x, y, main = NULL,
+     zvalue.lwd = FALSE, lwd.max = 7, labels = NULL, \dots)
+
+\S4method{show}{pcAlgo}(object)
+}
+\arguments{
+  \item{x, object}{a \code{"pcAlgo"} object.}
+  \item{y}{(generic \code{plot()} argument; unused).}
+  \item{main}{main title for the plot (with an automatic default).}
+  \item{zvalue.lwd}{\code{\link{logical}} indicating if the line width
+    (\code{lwd}) of the edges should be made proportional to the entries
+    of matrix \code{zMin} (originally) or derived from matrix \code{pMax}.}
+  \item{lwd.max}{maximal \code{lwd} to be used, if \code{zvalue.lwd} is true.}
+  \item{labels}{if non-\code{NULL}, these are used to define node attributes
+    \code{nodeAttrs} and \code{attrs}, passed to \code{\link[Rgraphviz]{agopen}()}
+    from package \pkg{Rgraphviz}.}
+  \item{\dots}{optional further arguments (passed from and to methods).}
+}
 \section{Creation of objects}{
   Objects are typically created as result from
   \code{\link{skeleton}()} or \code{\link{pc}()}, but could be

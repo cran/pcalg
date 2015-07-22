@@ -1,12 +1,15 @@
-#' Tests the causal inference algorithms for interventional data:
-#' GIES, GES, DP
-#' 
-#' @author Alain Hauser
-#' $Id: test_gies.R 266 2014-06-30 14:16:49Z alhauser $
+####' Tests the causal inference algorithms for interventional data:
+####' GIES, GES, DP
+####'
+####' @author Alain Hauser
+####' $Id: test_gies.R 331 2015-07-15 16:15:37Z mmaechler $
 
 cat("Testing the causal inference algorithms for interventional data:\n")
 
 library(pcalg)
+
+source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
+##--> showProc.time(), assertError(), relErrV(), ...
 
 load("test_bicscore.rda") # in directory tests/ i.e., typically *not* installed
 str(gauss.data)
@@ -32,9 +35,9 @@ for (nf in names(fcns)) {
         set.seed(i)
         perm <- sample(perm)
       }
-      score <- new("GaussL0penIntScore", 
-                   targets = gauss.targets, 
-                   target.index = gauss.target.index[perm], 
+      score <- new("GaussL0penIntScore",
+                   targets = gauss.targets,
+                   target.index = gauss.target.index[perm],
                    data = gauss.data[perm, ],
                    use.cpp = cpp)
       est.graph <- fcns[[nf]](p, gauss.targets, score, verbose = DBG)
@@ -44,7 +47,7 @@ for (nf in names(fcns)) {
                               gauss.parents[[i]], tolerance = tol)))
           stop("Parents are not estimated correctly.")
       }
-      print(proc.time())
+      showProc.time()
     }
   }
   cat("[Ok]\n")
@@ -62,12 +65,12 @@ for (cpp in c(FALSE, TRUE)) {
       set.seed(i)
       perm <- sample(perm)
     }
-    score <- new("GaussL0penIntScore", 
-        targets = gauss.targets, 
-        target.index = gauss.target.index[perm], 
+    score <- new("GaussL0penIntScore",
+        targets = gauss.targets,
+        target.index = gauss.target.index[perm],
         data = gauss.data[perm, ],
         use.cpp = cpp)
-    
+
     ## Stepwise execution
     essgraph <- new("EssGraph", nodes = as.character(1:p), score = score)
     cont <- TRUE
@@ -83,9 +86,8 @@ for (cpp in c(FALSE, TRUE)) {
               gauss.parents[[i]], tolerance = tol)))
         stop("Parents are not estimated correctly.")
     }
-    print(proc.time())
+    showProc.time()
   }
 }
-
 
 cat(if(doExtras) "\n", "Done.\n")
