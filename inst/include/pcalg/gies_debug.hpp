@@ -2,13 +2,13 @@
  * Debugging functions for GIES
  *
  * @author Alain Hauser
- * $Id: gies_debug.hpp 248 2014-03-03 11:27:22Z alhauser $
+ * $Id: gies_debug.hpp 249 2014-03-03 12:09:18Z alhauser $
  */
 
 #ifndef GIES_DEBUG_HPP_
 #define GIES_DEBUG_HPP_
 
-#include <iostream>
+#include <ostream>
 #include <Rcpp.h>
 
 // Define default debug level

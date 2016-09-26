@@ -9,7 +9,8 @@ rfci(suffStat, indepTest, alpha, labels, p,
      skel.method = c("stable", "original", "stable.fast"),
      fixedGaps = NULL, fixedEdges = NULL, NAdelete = TRUE,
      m.max = Inf, rules = rep(TRUE, 10),
-     conservative = FALSE, maj.rule = FALSE, verbose = FALSE)
+     conservative = FALSE, maj.rule = FALSE, 
+     numCores = 1, verbose = FALSE)
 }
 
 \arguments{
@@ -58,6 +59,8 @@ rfci(suffStat, indepTest, alpha, labels, p,
   \item{maj.rule}{Logical indicating if the unshielded triples should be
     checked for ambiguity after the skeleton has been found using a
     majority rule idea, which is less strict than the conservative.}
+  \item{numCores}{Specifies the number of cores to be used for parallel
+    estimation of \code{\link{skeleton}}.}
   \item{verbose}{If true, more detailed output is provided.}
 }
 \value{An object of \code{\link{class}} \code{fciAlgo} (see
@@ -136,7 +139,7 @@ rfci(suffStat, indepTest, alpha, labels, p,
   ambiguous triple is not oriented as a v-structure. Furthermore, no further
   orientation rule that needs to know whether a-b-c is a v-structure or
   not is applied. Instead of using the conservative version, which is
-  quite strict towards the v-structures, Colombo and Maathuis (2013)
+  quite strict towards the v-structures, Colombo and Maathuis (2014)
   introduced a less strict version for the v-structures called majority
   rule. This adaptation can be called using \code{maj.rule = TRUE}. In
   this case, the triple a-b-c is marked as 'ambiguous' if and only if b
@@ -144,24 +147,25 @@ rfci(suffStat, indepTest, alpha, labels, p,
   was found. If b is in less than 50 percent of the separating sets it
   is set as a v-structure, and if in more than 50 percent it is set as a
   non v-structure (for more details see Colombo and Maathuis,
-  2013).
+  2014).
 
   The implementation uses the stabilized skeleton
   \code{\link{skeleton}}, which produces an initial order-independent
   skeleton. The final skeleton and edge orientations can still be
-  order-dependent, see Colombo and Maathuis (2013).
+  order-dependent, see Colombo and Maathuis (2014).
 }
 
 \references{
-  D. Colombo and M.H. Maathuis (2013).
-  Order-independent constraint-based causal structure learning. arXiv
-  preprint arXiv:1211.3295v2.
+  D. Colombo and M.H. Maathuis (2014).Order-independent constraint-based
+  causal structure learning. \emph{Journal of Machine Learning Research}
+  \bold{15} 3741-3782. 
 
   D. Colombo, M. H. Maathuis, M. Kalisch, T. S. Richardson (2012).
   Learning high-dimensional directed acyclic graphs with latent and
   selection variables. \emph{Ann. Statist.} \bold{40}, 294-321.
 }
-\seealso{\code{\link{fci}} for estimating a PAG using the FCI algorithm;
+\seealso{\code{\link{fci}} and \code{\link{fciPlus}} for estimating a
+  PAG using the FCI algorithm; 
   \code{\link{skeleton}} for estimating an initial skeleton
   using the RFCI algorithm; \code{\link{pc}} for estimating a CPDAG using
   the PC algorithm; \code{\link{gaussCItest}},

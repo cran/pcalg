@@ -87,7 +87,7 @@ pdsep(skel, suffStat, indepTest, p, sepset, alpha, pMax, m.max = Inf,
   To make the code more efficient, we only perform tests that were not
   performed in the estimation of the initial skeleton.
 
-  Note that the Possible-D-SEP sets are computed once in the beginning. They are  not updated after edge deletions, in order to make sure that the output of the algorithm does not depend on the ordering of the variables (see also Colombo and Maathuis (2013)).
+  Note that the Possible-D-SEP sets are computed once in the beginning. They are  not updated after edge deletions, in order to make sure that the output of the algorithm does not depend on the ordering of the variables (see also Colombo and Maathuis (2014)).
 }
 \references{
   P. Spirtes, C. Glymour and R. Scheines (2000).
@@ -98,8 +98,9 @@ pdsep(skel, suffStat, indepTest, p, sepset, alpha, pMax, m.max = Inf,
   selection variables.
   \emph{Annals of Statistics} \bold{40}, 294--321.
 
-  D. Colombo and M.H. Maathuis (2013).
-  Order-independent constraint-based causal structure learning. arXiv:1211.3295v2.
+  D. Colombo and M.H. Maathuis (2014).Order-independent constraint-based
+  causal structure learning. \emph{Journal of Machine Learning Research}
+  \bold{15} 3741-3782. 
 }
 \seealso{\code{\link{qreach}} to find Possible-D-SEP(x,G);
   \code{\link{fci}}.

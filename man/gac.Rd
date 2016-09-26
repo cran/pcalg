@@ -12,14 +12,16 @@
 gac(amat, x, y, z, type = "pag")
 }
 \arguments{
-  \item{amat}{adjacency matrix (see Details for coding) of the given
-    graph specified in \code{type}.}
+  \item{amat}{adjacency matrix of type \link{amat.cpdag} or \link{amat.pag}}
   \item{x,y,z}{(integer) positions of variables in \code{x},
     \code{y} or \code{z} in the adjacency matrix. \code{x}, \code{y} and
   \code{z} can be vectors representing several nodes.}
   \item{type}{string specifying the type of graph of the adjacency matrix
-    \code{amat}.  It can be a DAG (type="dag"), a CPDAG (type="cpdag"), a
-    MAG (type="mag"), or a PAG (type="pag").}
+    \code{amat}.  It can be a DAG (type="dag"), a CPDAG (type="cpdag");
+    then the type of the adjacency matrix is assumed to be
+    \link{amat.cpdag}. It can also be a MAG (type="mag"), or a PAG
+    (type="pag"); then the type of the adjacency matrix is assumed to be
+  \link{amat.pag}.}
 }
 \details{
   This work is a generalization of the work of Shpitser et al. (2012)
@@ -29,7 +31,7 @@ gac(amat, x, y, z, type = "pag")
   Generalized Backdoor Criterion (GBC) of Maathuis and Colombo (2013):
   While GBC is sufficient but not necessary, GAC is both sufficient and
   necessary for DAGs, CPDAGs, MAGs and PAGs. For more details see
-  Perkovic et al. (2015). 
+  Perkovic et al. (2015).
 
   The motivation to find a set \code{z} that satisfies the GAC with
   respect to \code{(x,y)} is the following:
@@ -37,23 +39,23 @@ gac(amat, x, y, z, type = "pag")
   \emph{A set of variables \code{z} satisfies the GAC relative to
     \code{(x,y)} in the given graph, if and only if
     the causal effect of \code{x} on \code{y} is identifiable by
-    covariate adjustment and is given
-    by} \deqn{%
-    P(Y|do(X = x)) = \sum_Z P(Y|X,Z) \cdot P(Z).}{%
-    P(Y|do(X = x)) =  sum_Z P(Y|X,Z) * P(Z).}
-  (for any joint distribution "compatible" with the graph; the formula
+    covariate adjustment and is given by}
+  \deqn{%
+    P(Y|do(X = x)) = \sum_Z P(Y|X,Z) \cdot P(Z),}{%
+    P(Y|do(X = x)) =  sum_Z P(Y|X,Z) * P(Z),}
+  (for any joint distribution \dQuote{compatible} with the graph; the formula
     is for discrete variables with straightforward modifications for
-    continuous variables)
+    continuous variables).
   This result allows to write post-intervention densities (the one
   written using Pearl's do-calculus) using only observational densities
   estimated from the data.
 
   For \code{z} to satisfy the GAC relative to \code{(x,y)} and the graph, the
-  following three conditions must hold: 
+  following three conditions must hold:
   \describe{
     \item{(0)}{ The graph is adjustment amenable relative to \code{(x,y)}.}
     \item{(1)}{ The intersection of \code{z} and the forbidden set
-  (explained in Perkovic et al. (2015)) is empty.}
+      (explained in Perkovic et al. (2015)) is empty.}
     \item{(2)}{ All proper definite status non-causal paths in the graph from
       \code{x} to \code{y} are blocked by \code{z}.}
   }
@@ -63,27 +65,22 @@ gac(amat, x, y, z, type = "pag")
   total causal effect might be identifiable via some technique other
   than covariate adjustment.
 
-  Coding of adjacency matrix:
-  If \code{type = dag} or \code{type = cpdag}: coding 0/1 for no edge
-  or tail / arrowhead; e.g. \code{amat[a,b] = 0} and \code{amat[b,a] =
-    1} implies a -> b.
-  Else: coding 0,1,2,3 for no edge, circle, arrowhead, tail; e.g.,
-  \code{amat[a,b] = 2} and \code{amat[b,a] = 3} implies a -> b.
+  For the coding of the adjacency matrix see \link{amatType}.
 }
 \value{
   A \code{\link{list}} with three components:
-  \describe{
-    \item{gac}{logical; TRUE if \code{z} satisfies the GAC relative to
-      \code{(x,y)} in the graph represented by \code{amat} and \code{type}}
-    \item{res}{logical vector of length three indicating if each of the three
-      conditions (0), (1) and (2) are true}
-    \item{f}{node positions of nodes in the forbidden set (see Perkovic
-  et al. (2015))}
-  }
+  \item{gac}{logical; TRUE if \code{z} satisfies the GAC relative to
+    \code{(x,y)} in the graph represented by \code{amat} and \code{type}}
+  \item{res}{logical vector of length three indicating if each of the three
+    conditions (0), (1) and (2) are true}
+  \item{f}{node positions of nodes in the forbidden set (see Perkovic
+    et al. (2015))}
 }
 \references{
   E. Perkovic, J. Textor, M. Kalisch and M.H. Maathuis (2015). A
-  Complete Generalized Adjustment Criterion. In \emph{Proceedings of UAI 2015.}
+  Complete Generalized Adjustment Criterion. In \emph{Proceedings of UAI
+    2015.}
+  \url{http://arxiv.org/abs/1507.01524}.
 
   I. Shpitser, T. VanderWeele and J.M. Robins (2012). On the validity of
   covariate adjustment for estimating causal effects. In
@@ -92,7 +89,7 @@ gac(amat, x, y, z, type = "pag")
   B. van der Zander, M. Liskiewicz and J. Textor (2014). Constructing
   separators and adjustment sets in ancestral graphs. In
   \emph{Proceedings of UAI 2014.}
-  
+
   M.H. Maathuis and D. Colombo (2013). A generalized backdoor
   criterion. \emph{Annals of Statistics} 43 1060-1088.
 }
@@ -108,19 +105,19 @@ gac(amat, x, y, z, type = "pag")
 ## Example 4.1
 ##############################
 mFig1 <- matrix(c(0,1,1,0,0,0, 1,0,1,1,1,0, 0,0,0,0,0,1,
-0,1,1,0,1,1, 0,1,0,1,0,1, 0,0,0,0,0,0), 6,6)
+                  0,1,1,0,1,1, 0,1,0,1,0,1, 0,0,0,0,0,0), 6,6)
 type <- "cpdag"
 x <- 3; y <- 6
-## Z satisfies GAC
-z <- c(2,4); gac(mFig1,x,y,z,type) 
-z <- c(4,5); gac(mFig1,x,y,z,type)
-z <- c(4,2,1); gac(mFig1,x,y,z,type)
-z <- c(4,5,1); gac(mFig1,x,y,z,type)
-z <- c(4,2,5); gac(mFig1,x,y,z,type)
-z <- c(4,2,5,1); gac(mFig1,x,y,z,type)
-## Z does not satisfy GAC
-z <- 2; gac(mFig1,x,y,z,type)
-z <- NULL; gac(mFig1,x,y,z,type)
+## Z satisfies GAC :
+gac(mFig1, x,y, z=c(2,4),    type)
+gac(mFig1, x,y, z=c(4,5),    type)
+gac(mFig1, x,y, z=c(4,2,1),  type)
+gac(mFig1, x,y, z=c(4,5,1),  type)
+gac(mFig1, x,y, z=c(4,2,5),  type)
+gac(mFig1, x,y, z=c(4,2,5,1),type)
+## Z does not satisfy GAC :
+gac(mFig1,x,y, z=2,    type)
+gac(mFig1,x,y, z=NULL, type)
 
 ##############################
 ## Example 4.2
@@ -131,30 +128,30 @@ mFig3c <- matrix(c(0,3,0,0, 2,0,3,3, 0,2,0,3, 0,2,2,0), 4,4)
 type <- "pag"
 x <- 2; y <- 4
 ## Z does not satisfy GAC
-z<-NULL; gac(mFig3a,x,y,z,type) ## not amenable rel. to (X,Y)
-z<-NULL; gac(mFig3b,x,y,z,type) ## not amenable rel. to (X,Y)
+gac(mFig3a,x,y, z=NULL, type) ## not amenable rel. to (X,Y)
+gac(mFig3b,x,y, z=NULL, type) ## not amenable rel. to (X,Y)
 ## Z satisfies GAC
-z<-NULL; gac(mFig3c,x,y,z,type) ## amenable rel. to (X,Y)
+gac(mFig3c,x,y, z=NULL, type) ## amenable rel. to (X,Y)
 
 ##############################
 ## Example 4.3
 ##############################
 mFig4a <- matrix(c(0,0,1,0,0,0, 0,0,1,0,0,0, 2,2,0,3,3,2,
-0,0,2,0,2,2, 0,0,2,1,0,2, 0,0,1,3,3,0), 6,6)
+                   0,0,2,0,2,2, 0,0,2,1,0,2, 0,0,1,3,3,0), 6,6)
 mFig4b <- matrix(c(0,0,1,0,0,0, 0,0,1,0,0,0, 2,2,0,0,3,2,
-0,0,0,0,2,2, 0,0,2,3,0,2, 0,0,2,3,2,0), 6,6)
+                   0,0,0,0,2,2, 0,0,2,3,0,2, 0,0,2,3,2,0), 6,6)
 type <- "pag"
 x <- 3; y <- 4
 ## both PAGs are amenable rel. to (X,Y)
 ## Z satisfies GAC in Fig. 4a
-z<-6; gac(mFig4a,x,y,z,type)
-z<-c(1,6); gac(mFig4a,x,y,z,type)
-z<-c(2,6); gac(mFig4a,x,y,z,type)
-z<-c(1,2,6); gac(mFig4a,x,y,z,type)
+gac(mFig4a,x,y, z=6, type)
+gac(mFig4a,x,y, z=c(1,6), type)
+gac(mFig4a,x,y, z=c(2,6), type)
+gac(mFig4a,x,y, z=c(1,2,6), type)
 ## no Z satisfies GAC in Fig. 4b
-z<-NULL; gac(mFig4b,x,y,z,type)
-z<-6; gac(mFig4b,x,y,z,type)
-z<-c(5,6); gac(mFig4b,x,y,z,type)
+gac(mFig4b,x,y, z=NULL, type)
+gac(mFig4b,x,y, z=6, type)
+gac(mFig4b,x,y, z=c(5,6), type)
 
 ##############################
 ## Example 4.4
@@ -163,21 +160,21 @@ mFig5a <- matrix(c(0,1,0,0,0, 1,0,1,0,0, 0,0,0,0,1, 0,0,1,0,0, 0,0,0,0,0), 5,5)
 type <- "cpdag"
 x <- c(1,5); y <- 4
 ## Z satisfies GAC
-z <- c(2,3);gac(mFig5a,x,y,z,type)
+gac(mFig5a,x,y, z=c(2,3), type)
 ## Z does not satisfy GAC
-z <- 2;gac(mFig5a,x,y,z,type)
+gac(mFig5a,x,y, z=2, type)
 
 mFig5b <- matrix(c(0,1,0,0,0,0,0, 2,0,2,3,0,3,0, 0,1,0,0,0,0,0,
 0,2,0,0,3,0,0, 0,0,0,2,0,2,3, 0,2,0,0,2,0,0, 0,0,0,0,2,0,0), 7,7)
 type <- "pag"
 x<-c(2,7); y<-6
 ## Z satisfies GAC
-z<-c(4,5); gac(mFig5b,x,y,z,type)
-z<-c(4,5,1); gac(mFig5b,x,y,z,type)
-z<-c(4,5,3); gac(mFig5b,x,y,z,type)
-z<-c(1,3,4,5); gac(mFig5b,x,y,z,type)
+gac(mFig5b,x,y, z=c(4,5), type)
+gac(mFig5b,x,y, z=c(4,5,1), type)
+gac(mFig5b,x,y, z=c(4,5,3), type)
+gac(mFig5b,x,y, z=c(1,3,4,5), type)
 ## Z does not satisfy GAC
-z<-NULL; gac(mFig5b,x,y,z,type)
+gac(mFig5b,x,y, z=NULL, type)
 }
 \keyword{multivariate}
 \keyword{models}

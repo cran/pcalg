@@ -11,13 +11,15 @@
   scoring criterion in exponential runtime.
 }
 \usage{
-simy(p, targets, score, verbose = FALSE, ...)
+simy(score, labels = score$getNodes(), targets = score$getTargets(),
+    verbose = FALSE, ...)
 }
 \arguments{
-  \item{p}{Number of variables.}
+   \item{score}{An instance of a class derived from \code{\linkS4class{Score}}.}
+  \item{labels}{Node labels; by default, they are determined from the scoring
+    object.}
   \item{targets}{A list of intervention targets (cf. details).  A list of
     vectors, each vector listing the vertices of one intervention target.}
-  \item{score}{An instance of a class derived from \code{\linkS4class{Score}}.}
   \item{verbose}{if \code{TRUE}, detailed output is provided.}
   \item{\dots}{Additional arguments for debugging purposes and fine tuning.}
 }
@@ -83,7 +85,7 @@ data(gmInt)
 score <- new("GaussL0penIntScore", gmInt$x, gmInt$targets, gmInt$target.index)
 
 ## Estimate the essential graph
-simy.fit <- simy(ncol(gmInt$x), gmInt$targets, score)
+simy.fit <- simy(score) 
 eDAG <- simy.fit$essgraph
 as(eDAG, "graph")
 

@@ -11,9 +11,9 @@ plotSG(graphObj, y, dist, amat = NA, directed = TRUE, main = )
 }
 \arguments{
   \item{graphObj}{An \R object of class \code{\link[graph:graph-class]{graph}}.}
-  \item{y}{Starting node.}
+  \item{y}{(integer) position of the starting node in the adjacency matrix.}
   \item{dist}{Distance of nodes included in subgraph from starting node \code{y}.}
-  \item{amat}{Adjacency matrix of skeleton graph (optional).}
+  \item{amat}{Precomputed adjacency matrix of type \link{amat.cpdag} (optional)}
   \item{directed}{\code{\link{logical}} indicating if the subgraph
     should be directed.}
   \item{main}{Title to be used, with a sensible default; see \code{\link{title}}.}

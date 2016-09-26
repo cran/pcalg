@@ -6,15 +6,18 @@
 \alias{show,fciAlgo-method}
 \alias{summary,fciAlgo-method}
 \alias{print.fciAlgo}
-\description{This class of objects is returned by the function
-  \code{\link{fci}} to represent the estimated PAG.
+\description{This class of objects is returned by functions
+  \code{\link{fci}()}, \code{\link{rfci}()}, \code{\link{fciPlus}}, and
+  \code{\link{dag2pag}} and represent the estimated PAG (and sometimes
+  properties of the algorithm).
   Objects of this class have methods for the functions
   \code{\link{plot}}, \code{\link{show}} and \code{\link{summary}}.
 }
-\section{Creation of objects}{
-  Objects can be created by calls of the form \code{new("fciAlgo",
-    ...)}, but are typically the result of \code{\link{fci}(..)}.
-}
+%% Not interesting:
+%% \section{Creation of objects}{
+%%   Objects can be created by calls of the form \code{new("fciAlgo",
+%%     ...)}, but are typically the result of \code{\link{fci}(..)}.
+%% }
 \section{Slots}{
   The slots \code{call}, \code{n}, \code{max.ord}, \code{n.edgetests},
   \code{sepset}, and \code{pMax} are inherited from class
@@ -22,12 +25,8 @@
 
   In addition, \code{"fciAlgo"} has slots
   \describe{
-    \item{\code{amat}:}{a \code{\link{matrix}}: The
-      the estimated graph, represented by its adjacency matrix.
-      The edge marks are encoded
-      by numbers: 0 = no edge, 1 = circle, 2 = arrowhead, 3 =
-      tail. If \code{amat[i,j] = 1} and \code{amat[j,i] = 2},
-      this represents the edge \code{i <-o j}.}
+    \item{\code{amat}:}{adjacency matrix; for the coding of the
+  adjacency matrix see \link{amatType}}
     \item{\code{allPdsep}}{a \code{\link{list}}: the ith entry of
       this list contains Possible D-SEP of node number \code{i}.}
     \item{\code{n.edgetestsPDSEP}}{the number of new conditional
@@ -44,16 +43,19 @@
 }
 \usage{% usage ..for methods with "surprising arguments":
 \S4method{show}{fciAlgo}(object)
-\S3method{print}{fciAlgo}(x, zero.print = ".", \dots)
+\S3method{print}{fciAlgo}(x, amat = FALSE, zero.print = ".", \dots)
 
+\S4method{summary}{fciAlgo}(object, amat = TRUE, zero.print = ".", \dots)
 \S4method{plot}{fciAlgo,ANY}(x, y, main = NULL, \dots)
 }
 \arguments{
   \item{x, object}{a \code{"fciAlgo"} object.}
+  \item{amat}{\code{\link{logical}} indicating if the adjacency matrix
+    should be shown (printed) as well.}
   \item{zero.print}{string for printing \code{0} (\sQuote{zero}) entries
     in the adjacency matrix.}
   \item{y}{(generic \code{plot()} argument; unused).}
-  \item{main}{main title, not yet supported.}
+  \item{main}{main title, not yet supported.}% <-> Rgraphviz support
   \item{\dots}{optional further arguments (passed from and to methods).}
 }
 \section{Methods}{
@@ -68,12 +70,16 @@
 \author{Markus Kalisch and Martin Maechler}
 
 \seealso{
-  \code{\link{fci}}, \code{\linkS4class{pcAlgo}}
+  \code{\link{fci}}, \code{\link{fciPlus}}, etc (see above);
+  \code{\linkS4class{pcAlgo}}
 }
 
 \examples{
 ## look at slots of the class
 showClass("fciAlgo")
+
+## Also look at the extensive examples in ?fci , ?fciPlus, etc !
+
 \dontrun{
 ## Suppose, fciObj is an object of class fciAlgo
 ## access slots by using the @ symbol
@@ -81,11 +87,10 @@ fciObj@amat   ## adjacency matrix
 fciObj@sepset ## separation sets
 
 ## use show, summary and plot method
+fciObj ## same as  show(fciObj)
 show(fciObj)
 summary(fciObj)
 plot(fciObj)
-}
-
-## Also look at the extensive examples in  ?fci !
+}%dont
 }
 \keyword{classes}

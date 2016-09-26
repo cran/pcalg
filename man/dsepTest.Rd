@@ -10,9 +10,10 @@
 dsepTest(x, y, S=NULL, suffStat)
 }
 \arguments{
-  \item{x,y}{integer position of variable x and y in the adjacency matrix.}
-  \item{S}{integer positions of conditioning variables in the adjacency matrix,
-    possibly empty.}
+  \item{x,y}{(integer) position of variable \eqn{X} and \eqn{Y},
+    respectively, in the adjacency matrix.}
+  \item{S}{(integer) positions of zero or more conditioning variables in the
+    adjacency matrix.}
   \item{suffStat}{a \code{\link{list}} with two elements,
     \describe{
       \item{\code{"g"}}{Containing the Directed Acyclic Graph (object of

@@ -3,6 +3,26 @@
 \name{NEWS}
 \title{pcalg News}
 \encoding{UTF-8}
+
+\section{CHANGES IN VERSION 2.3-0 (2015-..-.., svn ...)}{
+  \itemize{
+    \item \code{print()} and \code{summary()} methods for \code{pc()},
+    \code{fci()}, etc.
+
+    \item new \code{as(*, "amat")} methods to get the adjacency matrix
+    of a model, including a \code{print()} method for "amat"s.
+
+    \code{?amatType} documents the different kinds of adjacency matrices
+    in \pkg{pcalg}.
+
+    \item New functions ...... % FIXME -- only if *not* mentioned below
+
+    \item Deprecated \code{LINGAM()} in favor of new \code{lingam()}.
+    \item Deprecated \code{allDags()} in favor of \code{pdag2allDags()}.
+    %% more deprecated ?
+  }
+}
+
 \section{CHANGES IN VERSION 2.2-4 (2015-07-22, svn r344)}{
   \itemize{
     \item Bug fix in \code{simulate(<gies>)}.

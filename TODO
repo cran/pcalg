@@ -1,27 +1,37 @@
 ##-*- mode: org -*-  Emacs org: use  [Tab]  ``all the time''
+Priority:
+Higher-order bullet point "inherits" max. priority of all
+lower-order bullet points.
+1 (top): Do before substantial writing starts
+2: Do before submission
+3: Do if there is enough time
+4 = DONE
 
-* TODO NAMESPACE and "internal" functions:
+* TODO (2) NAMESPACE and "internal" functions:
 ** DONE Look at ./NAMESPACE  and replace *ALL*  the  Imports() by ImportsFrom(.)
-** TODO What do we export / what not?  <--> [[man/pcalg-internal.Rd]]
+** TODO (2) What do we export / what not?  <--> [[man/pcalg-internal.Rd]]
  The concept of such "internal" functions really *predates* the use
  of NAMESPACEs and is now obsolete.
 *** DONE Many of these should be *removed* for the .Rd  page *and* from NAMESPACE.
-*** TODO The others will be kept, but "well" documented, i.e., in a different .Rd file :
-	rfci.vStruc  renamed; TODO (MM)
-	allDags      mentioned in other help pages !!
-	amat2dag()   in [[../tests/test_amat2dag.R]]
-*** Goal: Get rid of [[man/pcalg-internal.Rd]] entirely.
+*** TODO (2) The others will be kept, but "well" documented, i.e., in a different .Rd file :
+**** TODO (2,MK) rfci.vStruc  renamed; TODO (MM)
+**** DONE allDags      mentioned in other help pages !!
+**** TODO (2,MK) amat2dag()   in [[../tests/test_amat2dag.R]]
+*** TODO (3) Get rid of [[man/pcalg-internal.Rd]] entirely.
 
-* TODO Remarks on specific functions and issues:
-** TODO skeleton(): keep back compatibility  update= c("stable","original")  <<---MM
+* TODO (2)Remarks on specific functions and issues:
+** TODO (2) skeleton(): keep back compatibility  update= c("stable","original")  <<---MM
 *** DONE in code
-*** TODO but MM's tests show NOT QUITE back compatibility
+*** TODO (2, MM), evt (3)  but MM's tests show NOT QUITE back compatibility
 ** DONE pag2mag() return adj.matrix instead of *object* -> named pag2magAM()
    whereas dag2pag() does return more than just an adj.matrix. Change BEFORE release
-** TODO pc(), probably fci() etc: loses variable labels and works with "1", "2",...???
+** TODO (2,MM) pc(), probably fci() etc: loses variable labels and works with "1", "2",...???
    --> file:/u/maechler/R/MM/Pkg-ex/pcalg/Borsboom_mail.R is an example
    where he explicitly calls an other package just to get sensible labeled plots.
-** TODO fci() et al : sparse matrices [Matrix] ?
+** TODO (2,MK) Graph Node Labels  <==>  rownames(A):  Still a mess, sometimes using as.numeric(rownames(.)),
+   e.g. in my.SpecialDag() in [[R/pcalg.R]]
+
+** TODO (3) fci() et al : sparse matrices [Matrix] ?
   - returns the adjacency matrix "@ amat" (among other things),
     a simple matrix with entries in {0,1,2,3}.
     It would be nice to allow *sparse* matrices here,
@@ -30,14 +40,14 @@
     This makes sense mostly if it's realistic to have quite sparse
     and relatively large sets of variables.
 
-** TODO gAlgo-class: consider using setMethod(., "gAlgo")
+** TODO (3) gAlgo-class: consider using setMethod(., "gAlgo")
    instead of all methods (plot, summary) for both pcAlgo and fciAlgo
 ** DONE myCItest() in Vignette vignettes/pcalgDoc.Rnw
    instead of lm() twice, use lm.fit *once* (*multivariate* regression).
    This will probably be much faster.
-** TODO ida():  argument  'all.dags' is never used, i.e., never tested.
+** TODO (2,MK) ida():  argument  'all.dags' is never used, i.e., never tested.
 ** DONE dsepTest(): gibt 0 / 1  zurück; wieso nicht  FALSE/TRUE wie dsep()?  A:"P-value"
-** TODO I've introduced 'max.chordal = 10' to 'backdoor()'
+** TODO (3) I've introduced 'max.chordal = 10' to 'backdoor()'
   which was hidden in the code previously. Have you ever tried larger/smaller?
 ** DONE gSquareBin(), gSquareDis():
   - returns a P-value but not the test statistic.  Should *really* return
@@ -45,27 +55,23 @@
     statistic, ...).
     But they have been documented to do what they do, and so we keep them.
 
-** TODO pc(*, verbose=TRUE) for a "large" example with 18 vars: *much* output;
+** TODO (2,MK) pc(*, verbose=TRUE) for a "large" example with 18 vars: *much* output;
    and the 10 rules at the very end.
    Better: verbose in { 0,1,2 (, 3) } and verbose=1 should give much less
    than TRUE now
-
-
-* TODO Package 'ggm' has topOrder() for topological ordering. Should allow to use it,
-   e.g., optionally in unifDAG(.), or also rmvDAG() to fixup a non-top.ordered input.
-** TODO MM: ggm::topOrder() can be made faster
-* Parallelize option
-* Allow 'tiers' (as in Tetrad), and 'background knowledge' (about orientations etc).
-
-* TODO Robustness examples that pcAlgo() had explicitly:  add _examples_ using robust cov()
-*  / correlation methods?  ---> indepTest argument: Qn ? --> Martin
+* TODO (1, MM) Package 'ggm' has topOrder() for topological ordering. Should allow to use it,
+   e.g., optionally ('topOrder=FALSE') in unifDAG(.) and randDAG() to fixup a non-top.ordered input.
+** TODO (3) MM: ggm::topOrder() can be made faster
+* DONE (1, MM): as(<fitted-object>, "amat") gives a "amat"-object with 'type' and print() method.
+    see also 'Adjacency Matrices' in the "Internal Programming" part below.
+* TODO (3) Parallelize option
+* TODO (3) Allow 'tiers' (as in Tetrad), and 'background knowledge' (about orientations etc).
+* TODO (2,MM) Robustness examples that pcAlgo() had explicitly:  add _examples_ using robust mcor()
+        2 of  pc(), fci(), rfci(), fciPlus()
 --------------------------------------------------------------------------
 * DONE find.unsh.triple(): remove arg 'p'
-* TODO MK[2013-12-17]: allDags(): noch keine Hilfeseite -> moechte bald eine grosse Aenderung der Funktion machen (inkl. Parameter)
-* TODO MK[2013-12-17]: Letztest Bsp in fci(): p-1 statt p im Argument, weil eine (latente) Var gelöscht wurde
-
-* TODO MK[2013-12-17]: Make a fast dsep function for testing (using a lot of precomputation; e.g. ancestors, parents that are not married, so that finding moral graph becomes trivial; we then only need to check separation; could also tsort all nodes and precompute one moral graph for every element in the tsorted node sequence (~p graphs); then, the test boils down to a mere separation test
-
+* DONE MK[2013-12-17]: added and documented function pdag2allDags; deprecated function allDags
+* TODO (2) MK[2013-12-17]: Letztest Bsp in fci(): p-1 statt p im Argument, weil eine (latente) Var gelöscht wurde
 * DONE Boost C++ library needed for Alain's GIES
 ** DONE does *need* a correct ./configure, somewhat analogous to Martin's Rmpfr.
 
@@ -127,29 +133,25 @@
 
 
 
-
-* TODO MK[2014-07-08]: Change convention: If something strange happens with a test, KEEP edge
-* TODO MK[2014-07-08]: Make up some clever way to deal with NAs in the continuous case (phps also in other cases) and prepare test functions for users
-
-----------------
-
-* Internal Programming - documentation & style guide(s)  -- (Martin):
-
-** am[which(am != 0)]  is faster than am[am != 0]
+* TODO (3) MK[2014-07-08]: Change convention: If something strange happens with a test, KEEP edge
+* TODO (3) MK[2014-07-08]: Make up some clever way to deal with NAs in the continuous case (phps also in other cases) and prepare test functions for users
+* TODO (2,MM) Write a "doc" on Internal Programming - conventions and style guide
+** (2) am[which(am != 0)]  is faster than am[am != 0]
    for a *sparse* am of dim 50 x 50  ==> Using the more ugly notation is ok!
    --- But this will most probably change in R >=  3.3.0
-** Adjacency Matrices:
-*** We should use *integer* {internal} ==>  A[..,] <- 1 is *wrong*, should be A[..] <- 1L, etc
-*** Document the different kinds of 'amat' (adjacency matrices) that we use.
-   symmetric ? / lower- or upper-triangular ?
-   E.g. [[man/backdoor.Rd]] has  "Coding of adjacency matrix" (0,1,2,3)
-*** Our code should make sure that ad-matrices are *integer* and hence use 1L, 0L, etc !
-
-** Graph Node Labels  <==>  rownames(A):  Still a mess, sometimes using as.numeric(rownames(.)),
+** (3) Adjacency Matrices:
+*** TODO (3) We should use *integer* {internal} ==>  A[..,] <- 1 is *wrong*, should be A[..] <- 1L, etc
+*** TODO (3) Our code should make sure that ad-matrices are *integer* and hence use 1L, 0L, etc !
+*** DONE Document the different kinds of 'amat' (adjacency matrices) that we use:
+    file:man/amatType.Rd  (symmetric ? / lower- or upper-triangular ?)
+   E.f. file:man/backdoor.Rd has  "Coding of adjacency matrix" (0,1,2,3)
+** TODO (2,MK) Graph Node Labels  <==>  rownames(A):  Still a mess, sometimes using as.numeric(rownames(.)),
    e.g. in my.SpecialDag() in [[R/pcalg.R]]
 *** In these cases graph labels are lost and replaced by "1", "2", .. this is typically entirely wrong.
 
-** Help pages:
+** TODO (2,MK) Help pages:
 *** For function \arguments{.}, in \item{<name>}{<description>}, use *lower* case descr.
     as in all practically all "base R" help pages.
 
+
+* TODO (2,MK) Add test for lingam() (exits only for LINGAM() )

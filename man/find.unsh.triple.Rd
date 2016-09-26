@@ -10,9 +10,9 @@
 find.unsh.triple(g, check=TRUE)
 }
 \arguments{
-  \item{g}{adjacency matrix (\eqn{p \times p}{p * p}) of (the skeleton
-    of) the graph.  \code{g} must be symmetric, with 0/1 entries for
-    presence of edges.}
+  \item{g}{adjacency matrix of type \link{amat.cpdag} representing the
+    skeleton; since a skeleton consists only of undirected edges, 
+    \code{g} must be symmetric.}
   \item{check}{logical indicating that the symmetry of \code{g} should
     be checked.}
 }

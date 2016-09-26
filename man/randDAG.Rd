@@ -14,9 +14,11 @@ randDAG(n, d, method ="er", par1=NULL, par2=NULL,
         DAG = TRUE, weighted = TRUE, wFUN = list(runif, min=0.1, max=1))
 }
 \arguments{
-  \item{n}{integer larger than \code{2}, indicating the number of nodes in the DAG.}
+  \item{n}{integer, at least \code{2}, indicating the number of nodes in
+    the DAG.} 
   \item{d}{a positive number, corresponding to the expected number of
-    neighbours per node, more precisely the expected sum of the in- and out-degree.}
+    neighbours per node, more precisely the expected sum of the in- and
+    out-degree.} 
   \item{method}{a string, specifying the method used for generating the
     random graph.  See details below.}
   \item{par1, par2}{optional additional arguments, dependent on the
@@ -40,35 +42,41 @@ randDAG(n, d, method ="er", par1=NULL, par2=NULL,
   \code{par1} and \code{par2}, with \code{method}, a string,
   taking one of the following values:
   \describe{
-    \item{\code{regular}:}{Graph where every node has exactly \code{d} incident edges.}
+    \item{\code{regular}:}{Graph where every node has exactly \code{d}
+      incident edges. \code{par1} and \code{par2} are not used.}
 
     \item{\code{watts}:}{Watts-Strogatz graph that interpolates between
       the regular (\code{par1->0}) and Erdoes-Renyi graph
       (\code{par1->1}).  The parameter \code{par1} is per default
-      \code{0.5} and has to be in \code{(0,1)}.}
+      \code{0.5} and has to be in \code{(0,1)}. \code{par2} is not used.}
 
-    \item{\code{er}:}{Erdoes-Renyi graph where every edge is present independently.}
+    \item{\code{er}:}{Erdoes-Renyi graph where every edge is present
+    independently. \code{par1} and \code{par2} are not used.}
 
-    \item{\code{power}:}{A graph with power-law degree distribution with expectation \code{d}.}
+    \item{\code{power}:}{A graph with power-law degree distribution with
+    expectation \code{d}.\code{par1} and \code{par2} are not used.} 
 
     \item{\code{bipartite}:}{Bipartite graph with at least \code{par1*n}
       nodes in group 1 and at most \code{(1-par1)*n} nodes in group 2.
       The argument \code{par1} has to be in \code{[0,1]} and is per
-      default \code{0.5}.}
+      default \code{0.5}. \code{par2} is not used.}
 
     \item{\code{barabasi}:}{A graph with power-law degree distribution
       and preferential attachement according to parameter \code{par1}.  It
-      must hold that \code{par1 >= 1} and the default is \code{par1=1}.}
+      must hold that \code{par1 >= 1} and the default is
+      \code{par1=1}. \code{par2} is not used.}
 
     \item{\code{geometric}:}{A geometric random graph in dimension
       \code{par1}, where  \code{par1} can take values from
       \code{{2,3,4,5}} and is per default \code{2}.  If \code{par2="geo"}
       and \code{weighted=TRUE}, then the weights are computed according to
-      the Euclidean distance.}
+      the Euclidean distance. There are currently no other option for
+      \code{par2} implemented.}
 
     \item{\code{interEr}:}{A graph with \code{par1} islands of
       Erdoes-Renyi graphs, every pair of those connected by a certain
-      number of edges proportional to \code{par2}.  It is required that
+      number of edges proportional to \code{par2} (fraction of
+      inter-connectivity).  It is required that
       \eqn{n/s} be integer and \code{par2} in \eqn{(0,1)}.  Defaults are
       \code{par1=2} and \code{par2=0.25}, respectively.}
   }

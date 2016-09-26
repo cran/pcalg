@@ -35,8 +35,8 @@ causalEffect(g, y, x)
     \code{y} is assumed to be of the form \code{x->y}.}
   \item{verbose}{If TRUE, details on the regressions are printed.}
   \item{all.dags}{All DAGs in the equivalence class of the
-    CPDAG can be precomputed by \code{\link{allDags}()} and passed via
-    this argument.  In that case, \code{\link{allDags}(..)} is not called
+    CPDAG can be precomputed by \code{\link{pdag2allDags}()} and passed via
+    this argument.  In that case, \code{\link{pdag2allDags}(..)} is not called
     internally.
     This option is only relevant when using \code{method="global"}.}
   \item{g}{Graph in which the causal effect is sought.}
@@ -82,7 +82,7 @@ causalEffect(g, y, x)
 
   If \code{method="global"}, the method as described above is carried
   out, where all DAGs in the equivalene class of the estimated CPDAG
-  \code{graphEst} are computed using the function \code{\link{allDags}}.
+  \code{graphEst} are computed using the function \code{\link{pdag2allDags}}.
   This method is suitable for small graphs (say, up to 10 nodes).
 
   If \code{method="local"}, we do not determine all DAGs in the
@@ -140,8 +140,10 @@ causalEffect(g, y, x)
 }
 \author{Markus Kalisch (\email{kalisch@stat.math.ethz.ch})}
 \seealso{
-  \code{\link{idaFast}} for estimating the multiset of possible total
-  causal effects for several target variables simultaneously.
+  \code{\link{jointIda}} for estimating the multiset of possible total
+  \emph{joint} effects; \code{\link{idaFast}} for estimating the multiset of
+  possible total causal effects for several target variables
+  simultaneously. 
 
   \code{\link{pc}} for estimating a CPDAG.
 }

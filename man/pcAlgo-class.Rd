@@ -1,10 +1,11 @@
 \name{pcAlgo-class}
-\title{Class "pcAlgo" of PC Algorithm Results}
+\title{Class "pcAlgo" of PC Algorithm Results, incl. Skeleton}
 \docType{class}
 \alias{pcAlgo-class}
 \alias{plot,pcAlgo,ANY-method}
 \alias{show,pcAlgo-method}
 \alias{summary,pcAlgo-method}
+\alias{print.pcAlgo}
 \description{This class of objects is returned by the functions
   \code{\link{skeleton}} and \code{\link{pc}} to represent the
   (skeleton) of an estimated CPDAG.
@@ -14,7 +15,9 @@
 \usage{% usage ..for methods with "surprising arguments":
 \S4method{plot}{pcAlgo,ANY}(x, y, main = NULL,
      zvalue.lwd = FALSE, lwd.max = 7, labels = NULL, \dots)
+\S3method{print}{pcAlgo}(x, amat = FALSE, zero.print = ".", \dots)
 
+\S4method{summary}{pcAlgo}(object, amat = TRUE, zero.print = ".", \dots)
 \S4method{show}{pcAlgo}(object)
 }
 \arguments{
@@ -28,6 +31,10 @@
   \item{labels}{if non-\code{NULL}, these are used to define node attributes
     \code{nodeAttrs} and \code{attrs}, passed to \code{\link[Rgraphviz]{agopen}()}
     from package \pkg{Rgraphviz}.}
+  \item{amat}{\code{\link{logical}} indicating if the adjacency matrix
+    should be shown (printed) as well.}
+  \item{zero.print}{string for printing \code{0} (\sQuote{zero}) entries
+    in the adjacency matrix.}
   \item{\dots}{optional further arguments (passed from and to methods).}
 }
 \section{Creation of objects}{

@@ -4,6 +4,7 @@
 
 # rm -rf autom4te.cache
 # rm -f config.log config.status
+rm -f pcalg-Ex.R
 rm -f src/*.o src/*.so src/symbols.rds
 find . -name \*~ | xargs rm -f
 

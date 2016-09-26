@@ -11,7 +11,7 @@ importFrom("utils", combn, str)
 
 importFrom("graphics", par, plot.default, plot, title)
 
-## try to import all we need, but not more
+importMethodsFrom("methods", coerce, show)
 importFrom("methods",
            setClass, setClassUnion, setMethod, setOldClass, setValidity,
            getClass, getClassDef, callGeneric, as, is, extends,
@@ -132,15 +132,18 @@ export(trueCov,
        gds,
        simy,
        mat2targets,
-       # targets2mat,
+       targets2mat,
        dag2essgraph,
        ## --- end{Alain}
        fciPlus,
-       LINGAM,
+       lingam, LINGAM,
        randDAG,
        unifDAG,
        unifDAG.approx,
-       gac)
+       gac,
+       ## no longer: use as(*,"amat")
+       ##  displayAmat,
+       pdag2allDags)
 
 ## These are "internal" i.e., in man/pcalg-internal.Rd
 ## _FIXME ?_                     ---------------------
@@ -173,7 +176,12 @@ exportClasses("pcAlgo",
               "GaussL0penObsScore",
               "EssGraph")
 
-exportMethods("summary", "show", "plot")
+exportMethods(# needed? "coerce",# <- defined via setAs(., ..) used via  as(A, "class_B")
+              "summary", "show", "plot")
 
 S3method(print, fciAlgo)
+S3method(print, pcAlgo)
+S3method(print, amat)
+## FIXME: TODO
+# S3method(print, LINGAM)
 

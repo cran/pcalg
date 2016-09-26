@@ -10,7 +10,7 @@
   ancestor of x or y in G.
 
   See p.136 of Sprirtes et al (2000) or Definition 4.1 of Maathuis and
-  Colombo (2013). 
+  Colombo (2015). 
 }
 \usage{
   dreach(x, y, amat, verbose = FALSE)
@@ -20,10 +20,7 @@
     node in the adjacency matrix.} 
   \item{y}{Second argument of D-SEP, given as the column number of the
     node in the adjacency matrix (\code{y} must be different from \code{x}).} 
-  \item{amat}{Adjacency matrix (coding 0,1,2,3 for no edge, circle,
-  arrowhead, tail; e.g., \code{amat[a,b] = 2} and \code{amat[b,a] = 3}
-  implies a -> b) 
-  }
+  \item{amat}{Adjacency matrix of type \link{amat.pag}.}
   \item{verbose}{Logical specifying details should be on output}
 }
 \value{
@@ -33,7 +30,8 @@
   P. Spirtes, C. Glymour and R. Scheines (2000)
   \emph{Causation, Prediction, and Search}, 2nd edition, The MIT Press.
 
-  M.H. Maathuis and D. Colombo (2013). A generalized backdoor criterion. arXiv:1307.5636.
+  M.H. Maathuis and D. Colombo (2015). A generalized back-door
+  criterion. \emph{Annals of Statistics} \bold{43} 1060-1088.
 }
 \author{Diego Colombo and Markus Kalisch (\email{kalisch@stat.math.ethz.ch})}
 \seealso{\code{\link{backdoor}} uses this function;

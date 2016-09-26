@@ -14,7 +14,7 @@ fci(suffStat, indepTest, alpha, labels, p,
     NAdelete = TRUE, m.max = Inf, pdsep.max = Inf,
     rules = rep(TRUE, 10), doPdsep = TRUE, biCC = FALSE,
     conservative = FALSE, maj.rule = FALSE,
-    verbose = FALSE)
+    numCores = 1, verbose = FALSE)
 }
 
 \arguments{
@@ -89,6 +89,8 @@ fci(suffStat, indepTest, alpha, labels, p,
     be checked for ambiguity the second time when v-structures are
     determined using a majority rule idea, which is less strict than the
     standard conservative.  For more information, see details.}
+  \item{numCores}{Specifies the number of cores to be used for parallel
+    estimation of \code{\link{skeleton}}.}
   \item{verbose}{If true, more detailed output is provided.}
 }
 \value{An object of \code{\link{class}} \code{fciAlgo} (see
@@ -148,7 +150,7 @@ fci(suffStat, indepTest, alpha, labels, p,
   tests of x and y given all possible subsets of Possible-D-SEP(x) and
   of Possible-D-SEP(y). The edge is removed if a conditional
   independence is found. This produces a fully order-independent final
-  skeleton as explained in Colombo and Maathuis (2013). Subsequently,
+  skeleton as explained in Colombo and Maathuis (2014). Subsequently,
   the v-structures are newly determined on the final skeleton (using
   information in sepset). Finally, as many as possible undetermined edge
   marks (o) are determined using (a subset of) the 10 orientation rules
@@ -192,7 +194,7 @@ fci(suffStat, indepTest, alpha, labels, p,
   triple is not oriented as a v-structure. Furthermore, no further
   orientation rule that needs to know whether a-b-c is a v-structure or
   not is applied. Instead of using the conservative version, which is
-  quite strict towards the v-structures, Colombo and Maathuis (2013)
+  quite strict towards the v-structures, Colombo and Maathuis (2014)
   introduced a less strict version for the v-structures called majority
   rule. This adaptation can be called using \code{maj.rule = TRUE}. In
   this case, the triple a-b-c is marked as \sQuote{ambiguous} if and only if b
@@ -200,17 +202,17 @@ fci(suffStat, indepTest, alpha, labels, p,
   was found. If b is in less than 50 percent of the separating sets it
   is set as a v-structure, and if in more than 50 percent it is set as a
   non v-structure (for more details see Colombo and Maathuis,
-  2013). Colombo and Maathuis (2013) showed that with both these
+  2014). Colombo and Maathuis (2014) showed that with both these
   modifications, the final skeleton and the decisions about the
   v-structures of the FCI algorithm are fully order-independent.
 
   Note that the order-dependence issues on the 10 orientation rules are
-  still present, see Colombo and Maathuis (2013) for more details.
+  still present, see Colombo and Maathuis (2014) for more details.
 }
 \references{
-  D. Colombo and M.H. Maathuis (2013). Order-independent
-  constraint-based causal structure learning. arXiv preprint
-  arXiv:1211.3295v2.
+  D. Colombo and M.H. Maathuis (2014). Order-independent
+  constraint-based causal structure learning. Journal of Machine
+  Learning Research 15 3741-3782. 
 
   D. Colombo, M. H. Maathuis, M. Kalisch, T. S. Richardson
   (2012). Learning high-dimensional directed acyclic graphs with latent
@@ -241,7 +243,8 @@ fci(suffStat, indepTest, alpha, labels, p,
   causal discovery in the presence of latent confounders and selection bias.
    \emph{Artificial Intelligence} \bold{172} 1873-1896.
 }
-\seealso{\code{\link{skeleton}} for estimating a skeleton
+\seealso{\code{\link{fciPlus}} for a more efficient variation of FCI;
+  \code{\link{skeleton}} for estimating a skeleton 
   using the PC algorithm; \code{\link{pc}} for estimating a CPDAG using
   the PC algorithm; \code{\link{pdsep}} for computing
   Possible-D-SEP for each node and testing and adapting the graph

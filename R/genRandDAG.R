@@ -446,87 +446,100 @@ if (FALSE) {
     setwd("/u/kalischm/research/packages/pcalg/pkg/R")
     source("genRandDAG.R")
 
-    ## Exact
-    load("/u/kalischm/research/packages/unifDAGs/tables100.RData")
+    ## Exact --------------------------------
     resExact <- generate.tables(100)
-    ## identical(resExact[[1]], A) ## TRUE
-    ## identical(resExact[[2]], B) ## TRUE
-    ## identical(resExact[[3]], a) ## TRUE
+    ##          ---------------
+    ## check :
+    c1.file <- "/u/kalischm/research/packages/unifDAGs/tables100.RData"
+    if(file.exists(c1.file)) {
+        load(c1.file)
+        stopifnot(identical(resExact[[1]], A),
+                  identical(resExact[[2]], B),
+                  identical(resExact[[3]], a))
+    }
 
-    ## Approx
-    load("/u/kalischm/research/packages/unifDAGs/tables_approx100_20.RData")
-    resApprox <- approxK(N.inf=100, accuracy=20)
-    ## identical(resApprox[[1]], Ak) ## TRUE
-    ## identical(resApprox[[2]], Bsk) ## TRUE
+    ## Approx --------------------------------
+    resApprox <- approxK(N.inf=100, accuracy=20, A = resExact[["A"]], a = resExact[["a"]])
+    ##           -------
+    ## check :
+    c2.file <- "/u/kalischm/research/packages/unifDAGs/tables_approx100_20.RData"
+    if(file.exists(c2.file)) {
+        load(c2.file)
+        stopifnot(identical(resApprox[[1]], Ak),
+                  identical(resApprox[[2]], Bsk))
+    }
+    ##---- The "precomputed data base" we use ------------------------------
 
-    .unifDagPreComp <- list(A = resExact[[1]], B = resExact[[2]],
-                           a = resExact[[3]],
-                           Ak = resApprox[[1]], Bsk = resApprox[[2]])
+    .unifDagPreComp <- c(resExact, resApprox)
+    ##^^^^^^^^^^^^^
     save(.unifDagPreComp,
          file = "/u/kalischm/research/packages/pcalg/pkg/sysdata.rda")
 }
 
 ## calculate numbers a_{n, k}, b_{n, k} and a_n up to N ##################
 ## can be done offline ###################################
-generate.tables <- function(N, dir=getwd(), verbose=TRUE) {
-
-  A <- as.bigz(matrix(0, N, N))  # a_{n, k}
-  B <- as.bigz(matrix(0, N, N))  # b_{n, k}
-  a <- as.bigz(rep(0, N))       # a_n
+generate.tables <- function(N, verbose=TRUE)
+{
+  z0 <- as.bigz(0)
+  A <- matrix(z0, N, N) # a_{n, k}
+  B <- matrix(z0, N, N) # b_{n, k}
+  a <- rep(z0, N)       # a_n
 
   A[1, 1] <- B[1, 1] <- a[1] <- 1
   for(nn in 2:N) {
-    if(verbose) cat("\n N: ", nn, " K: ")
-    for(k in 1:(nn-1)) {
+    if(verbose) cat(sprintf(" N=%4d / K :", nn))
+    for(k in seq_len(nn-1L)) {
       if(verbose) cat(" ", k)
-      sum <- as.bigz(0)
-      for(s in 1:(nn-k)) {
-        sum <- sum + (2^k-1)^as.bigz(s) * 2^as.bigz(k*(nn-k-s)) * A[nn-k, s]
-      }
-      B[nn, k] <-  sum
-      A[nn, k] <- chooseZ(nn, k)*B[nn, k]
+      s <- seq_len(nn-k)
+      sum.s <- sum((2^k-1)^as.bigz(s) * 2^as.bigz(k*(nn-k-s)) * A[nn-k, s])
+      B[nn, k] <- sum.s
+      A[nn, k] <- chooseZ(nn, k) * B[nn, k]
     }
+    if(verbose) cat("\n")
     A[nn, nn] <- B[nn, nn] <- 1
     a[nn] <- sum(A[nn, 1:nn])
   }
+
   ## save(A, B, a, file=paste0(dir, "/tables", N, ".RData"))
   ## cat("\nTables saved in: ", paste0(dir, "/tables", N, ".RData"))
-  list(A, B, a)
+  list(A=A, B=B, a=a)
 }
 
-## construct A_k and B_{s|k} ###############################
-approx.Ak <- function(N.inf=100, accuracy=20) {
-  Ak <- as.bigz(rep(0, N.inf))  # A_k=lim_{n->oo}(A_{n, k}/a_n)
+### Construct A_k and B_{s|k} ===================================================
 
-  acc <- 10^as.bigz(accuracy)
-  for(k in 1:N.inf) {
-    Ak[k] <- as.bigz(.unifDagPreComp$A[N.inf, k] * acc / .unifDagPreComp$a[N.inf])
-  }
-  Ak[Ak!=0]
+## using  *rational*  arithmetic ("bigq")  "internally" :
+
+
+approx.Ak <- function(N.inf=100, accuracy=20, A, a) {
+  ## Compute  A_k := lim_{n->oo} A_{n, k} / a_n  replacing oo ('Inf') by 'N.inf'
+
+  ## round( 10^acc * A_N / a_N ) :
+  Ak <- as.bigz(10^as.bigz(accuracy) * as.vector(A[N.inf,]) / as.vector(a[N.inf]))
+  ## typically reducing from 100 to only 10 non-0 ones :
+  Ak[Ak != 0]
 }
-
 
 approx.Bsk <- function(Ak) {
   n.k <- length(Ak)
-
-  Bsk <- as.bigq(matrix(0, n.k, n.k))
+  Bsk <- matrix(as.bigz(0), n.k, n.k)
   for(kk in 1:n.k) {
-    for(ss in 1:n.k) {
-      Bsk[ss, kk] <- as.bigq((1-1/(2^kk))^ss) * as.bigq(Ak[ss])
-    }
+    ss <- 1:n.k
+    ## bug in 'gmp' package: this does nothing !!
+    ## Bsk[, kk] <- as.bigz(as.bigq((1-1/(2^kk))^ss) * as.bigq(Ak))
+    ##
+    ## workaround:
+    Bskk <- as.bigz(as.bigq((1-1/(2^kk))^ss) * as.bigq(Ak))
+    for(s in ss) Bsk[s,kk] <- Bskk[s]
   }
-  as.bigz(Bsk)
+  Bsk
 }
 
 
-## need table exact
-approxK <- function(N.inf=100, accuracy=20, dir=getwd()) {
-  Ak <- approx.Ak(N.inf, accuracy)
-  Bsk <- approx.Bsk(Ak)
-
-  ## save(Ak, Bsk, file=paste0(dir, "/tables_approx", N.inf, "_", accuracy, ".RData"))
-  ## cat("\nApprox-Tables saved in: ", paste0(dir, "/tables_approx", N.inf, "_", accuracy, ".RData"))
-  list(Ak, Bsk)
+## Need  (A, a) from the exact tables
+approxK <- function(N.inf=100, accuracy=20, A, a) {
+  Ak <- approx.Ak(N.inf, accuracy, A=A, a=a)
+  list(Ak = Ak,
+       Bsk= approx.Bsk(Ak))
 }
 
 

@@ -19,10 +19,10 @@ zStat         (x, y, S, C, n)
 gaussCItest   (x, y, S, suffStat)
 }
 \arguments{
-  \item{x,y,S}{It is tested, whether \code{x} and \code{y} are conditionally
-    independent given the subset \code{S} of the remaining nodes.
-    \code{x, y, S} all are integers, corresponding to variable or node
-    numbers.}
+  \item{x,y,S}{(integer) position of variable \eqn{X}, \eqn{Y} and set
+  of variables \eqn{S}, respectively, in the adjacency matrix. It is
+  tested, whether \code{X} and \code{Y} are conditionally 
+    independent given the subset \code{S} of the remaining nodes.}
   \item{C}{Correlation matrix of nodes}
   \item{n}{Integer specifying the number of observations
     (\dQuote{samples}) used to estimate the correlation matrix \code{C}.}

@@ -14,7 +14,15 @@ while(!my.stop) {
   }
 }
 
-resTrue <- rbind(c(1,2,4),c(1,2,5),c(1,3,4),c(1,3,5),c(1,4,5),c(2,3,4),c(2,3,5),c(2,4,5),c(3,4,5))
+resTrue <- rbind(c(1,2,4),
+                 c(1,2,5),
+                 c(1,3,4),
+                 c(1,3,5),
+                 c(1,4,5),
+                 c(2,3,4),
+                 c(2,3,5),
+                 c(2,4,5),
+                 c(3,4,5))
 
 if(any(resTrue!=res)) {
   stop("Test of getNextSet: Theoretical values not reproduced!")

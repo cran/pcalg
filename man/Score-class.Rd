@@ -13,6 +13,8 @@
   deriving an own class from this virtual base class, i.e., implementing an own
   score function.
   \describe{
+    \item{\code{.nodes}:}{Node labels.  They are passed to causal inference
+      methods by default to label the nodes of the resulting graph.}
     \item{\code{decomp}:}{Indicates whether the represented score is
       decomposable (cf. details).  At the moment, only decomposable scores are 
       supported by the implementation of the causal inference algorithms; 
@@ -33,6 +35,7 @@ new("Score",
   data = matrix(1, 1, 1), 
   targets = list(integer(0)),
   target.index = rep(as.integer(1), nrow(data)), 
+  nodes = colnames(data),
   ...)
 }
   \describe{
@@ -45,6 +48,7 @@ new("Score",
       specifies the index of the intervention
       target in \code{targets} under which the \eqn{i}-th row of \code{data}
       was measured.}
+    \item{\code{nodes}}{Node labels}
     \item{\code{...}}{Additional parameters used by derived (and non-virtual)
       classes.}
   }
@@ -62,14 +66,19 @@ new("Score",
       this list contains a vector of parents.}
     \item{\code{global.score(dag, ...)}}{Calculates the global score of a DAG,
       represented as object of a class derived from \code{ParDAG}.}
-    \item{\code{local.mle(vertex, parents, ...)}}{Calculates the local MLE of 
-      a vertex and its parents.  The result is a vector of parameters whose 
+    \item{\code{local.fit(vertex, parents, ...)}}{Calculates a local model fit
+      of a vertex and its parents, e.g. by MLE. 
+      The result is a vector of parameters whose 
       meaning depends on the model class; it matches the convention used in the
-      corresponding causal model (cf. \code{.pardag.class}).}
-    \item{\code{global.mle(dag, ...)}}{Calculates the global MLE of a DAG,
+      corresponding causal model (cf. \code{.pardag.class}).
+      % TODO: adjust this!!
+      }
+    \item{\code{global.fit(dag, ...)}}{Calculates the global MLE of a DAG,
       represented by an object of the class specified by \code{.pardag.class}.
       The result is a list of vectors, one per vertex, each in the same format
-      as the result vector of \code{local.mle}.}
+      as the result vector of \code{local.mle}.
+      % TODO: adjust this!!
+      }
   }
 }
 \details{

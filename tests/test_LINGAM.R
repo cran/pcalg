@@ -29,7 +29,8 @@ X <- cbind(A = eps1 + 0.9*eps2,
 
 estDAG <- LINGAM(X, verbose = TRUE)
 
-stopifnot(as.integer(estDAG$ Adj) == trueDAG,
+stopifnot(identical(estDAG, LINGAM(X)),
+          as.integer(estDAG$ Adj) == trueDAG,
           all.equal (estDAG$ B, cbind(0, c(0.878188262685122, 0))))
 
 if(doExtras) {
@@ -152,7 +153,7 @@ estB.3 <- rbind(
     c(., ., ., ., 0.774490692, -0.886143314, ., .),
     c(., ., ., ., ., ., 0.900617843, .))
 
-eDAG3 <- LINGAM(X, verbose = TRUE)
+eDAG3 <- LINGAM(X, verbose = 2)
 
 stopifnot(trDAG3 == eDAG3$Adj,
           with(eDAG3, all(t(B != 0) == Adj)),

@@ -59,18 +59,22 @@ fciPlus(suffStat, indepTest, alpha, labels, p, verbose=TRUE)
 ## Example without latent variables
 ##################################################
 
+## generate a random DAG ( p = 7 )
 set.seed(42)
 p <- 7
-## generate and draw random DAG :
 myDAG <- randomDAG(p, prob = 0.4)
 
-## find skeleton and PAG using the FCI algorithm
+## find PAG using the FCI+ algorithm on "Oracle"
 suffStat <- list(C = cov2cor(trueCov(myDAG)), n = 10^9)
-res <- fciPlus(suffStat, indepTest=gaussCItest,
-           alpha = 0.9999, p=p)
+m.fci <- fciPlus(suffStat, indepTest=gaussCItest,
+                 alpha = 0.9999, p=p)
+summary(m.fci)
+
+## require("Rgraphviz")
+sfsmisc::mult.fig(2, main="True DAG  //  fciPlus(.) \"oracle\" estimate")
+plot(myDAG)
+plot(m.fci)
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
 \keyword{multivariate}
 \keyword{models}
 \keyword{graphs}

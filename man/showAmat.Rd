@@ -2,6 +2,8 @@
 \alias{showAmat}
 \title{Show Adjacency Matrix of pcAlgo object}
 \description{
+  \bold{This function is deprecated - Use \code{as(*, "amat")} instead !}
+
   Show the  adjacency matrix of a \code{"pcAlgo"} object; this is
   intended to be an alternative if the \pkg{Rgraphviz} package does not work.
 }

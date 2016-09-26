@@ -16,11 +16,9 @@
   qreach(x, amat, verbose = FALSE)
 }
 \arguments{
-  \item{x}{Integer: column position of node in adjacency matrix, of
+  \item{x}{(integer) position of vertex \eqn{x} in the adjacency matrix of
   which Possible-D-SEP set is to be computed.}
-  \item{amat}{Adjacency matrix (coding 0,1,2,3 for no edge, circle,
-    arrowhead, tail; e.g., \code{amat[a,b] = 2} and \code{amat[b,a] = 3}
-    implies a -> b) 
+  \item{amat}{Adjacency matrix of type \link{amat.pag}.
   }
   \item{verbose}{Logical, asking for details on output}
 }

@@ -1,7 +1,7 @@
 
-R Under development (unstable) (2015-07-12 r68650) -- "Unsuffered Consequences"
-Copyright (C) 2015 The R Foundation for Statistical Computing
-Platform: x86_64-unknown-linux-gnu (64-bit)
+R version 3.3.1 Patched (2016-07-22 r70961) -- "Bug in Your Hair"
+Copyright (C) 2016 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
@@ -81,8 +81,10 @@ Number of Nodes = 10
 Number of Edges = 19 
 
 > 
-> require(graph)
-Loading required package: graph
+> ok <- suppressPackageStartupMessages(
++     require("graph"))
+> stopifnot(ok)
+> 
 > stopifnot(vapply(rD.10.4, isDirected, NA))
 > 
 > stopifnot(identical(
@@ -394,16 +396,12 @@ Number of Edges = 137
 +                     0.3101796548))
 > 
 > ## check generation of negative weights (fixed Bug)
-> set.seed(123)
-> tmp1 <- randDAG(3,2,wFUN = list(runif, min = 2, max = 2))
-> all( unlist(tmp1@edgeData@data) == 2 )
-[1] TRUE
-> set.seed(123)
-> tmp2 <- randDAG(3,2,wFUN = list(runif, min = -2, max = -2))
-> all( unlist(tmp2@edgeData@data) == -2 )
-[1] TRUE
+> set.seed(123) ; tmp1 <- randDAG(3,2, wFUN = list(runif, min =  2, max =  2))
+> set.seed(123) ; tmp2 <- randDAG(3,2, wFUN = list(runif, min = -2, max = -2))
+> stopifnot(unlist(tmp1@edgeData@data) ==  2,
++ 	  unlist(tmp2@edgeData@data) == -2 )
 > 
 > 
 > proc.time()
    user  system elapsed 
-  1.885   0.410   2.628 
+  1.022   0.135   1.149 

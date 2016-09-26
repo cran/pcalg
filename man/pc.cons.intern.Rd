@@ -61,7 +61,7 @@ pc.cons.intern(sk, suffStat, indepTest, alpha, version.unf = c(NA, NA),
   (Ramsey et al., 2006): If B is in some but not all separating sets,
   the triple is marked as ambiguous.  Otherwise it is treated as in the
   standard PC algorithm.  If \code{maj.rule=TRUE}, the majority rule is
-  applied (Colombo and Maathuis, 2013): The triple is marked as
+  applied (Colombo and Maathuis, 2014): The triple is marked as
   \sQuote{ambiguous} if B is in exactly 50 percent of the separating sets.  If
   it is in less than 50 percent it is marked as a v-structure, and if it
   is in more than 50 percent it is marked as a non v-structure.
@@ -84,8 +84,9 @@ pc.cons.intern(sk, suffStat, indepTest, alpha, version.unf = c(NA, NA),
   \item{sk}{The updated skeleton-object (separating sets might have been updated).}
 }
 \references{
-  D. Colombo and M.H. Maathuis (2013). Order-independent
-  constraint-based causal structure learning. arXiv:1211.3295v1.
+  D. Colombo and M.H. Maathuis (2014).Order-independent constraint-based
+  causal structure learning. \emph{Journal of Machine Learning Research}
+  \bold{15} 3741-3782.
 
   J. Ramsey, J. Zhang and P. Spirtes (2006).
   Adjacency-faithfulness and conservative causal inference. In

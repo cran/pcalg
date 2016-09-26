@@ -127,7 +127,7 @@ udag2pdagSpecial(gInput, verbose, n.max=100)
       example, two v-structures a -> b <- c and b -> c <- d then yield a
       -> b <-> c <-d.  This option can be used to get an
       order-independent version of the PC algorithm (see Colombo and
-      Maathuis (2013)).
+      Maathuis (2014)).
 
       We denote bi-directed edges, for example between two variables i
       and j, in the adjacency matrix M of the graph as M[i,j]=2 and
@@ -153,12 +153,10 @@ udag2pdagSpecial(gInput, verbose, n.max=100)
 	\item{xtbl}{Logical indicating whether the final graph with
 	  v-structures is extendable}
 	\item{amat0}{Adjacency matrix of original graph with
-	  v-structures (coding 0/1 for no edge or tail / arrowhead;
-	  e.g. \code{amat[a,b] = 0} and \code{amat[b,a] = 1} implies a -> b) .}
+	  v-structures (type \link{amat.cpdag}) .}
 	\item{amat1}{Adjacency matrix of final graph with v-structures
 	  after changing the ordering in which the v-structures are
-	  considered (coding 0/1 for no edge or tail / arrowhead;
-	  e.g. \code{amat[a,b] = 0} and \code{amat[b,a] = 1} implies a -> b) .}
+	  considered (type \link{amat.cpdag}) .}
 	\item{status}{Integer code with values \describe{
 	    \item{0:}{Original try is extendable;}
 	    \item{1:}{Reorienting double edge visits helps;}
@@ -183,9 +181,9 @@ udag2pdagSpecial(gInput, verbose, n.max=100)
 
   J. Pearl (2000), \emph{Causality}, Cambridge University Press.
 
-  D. Colombo and M.H. Maathuis (2013).
-  Order-independent constraint-based causal structure learning.
-  arXiv:1211.3295v2.
+  D. Colombo and M.H. Maathuis (2014).Order-independent constraint-based
+  causal structure learning. \emph{Journal of Machine Learning Research}
+  \bold{15} 3741-3782. 
 }
 \author{Markus Kalisch (\email{kalisch@stat.math.ethz.ch})}
 \seealso{\code{\link{pc}}, \code{\link{pdag2dag}},

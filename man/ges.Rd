@@ -11,18 +11,29 @@
   algorithm of Chickering (2002).
 }
 \usage{
-ges(p, score, fixedGaps = NULL,
+ges(score, labels = score$getNodes(),
+    fixedGaps = NULL, adaptive = c("none", "vstructures", "triples"), 
+    phase = c("forward", "backward", "turning"), iterate = length(phase) > 1,
     turning = TRUE, maxDegree = integer(0), verbose = FALSE, ...)
 }
 \arguments{
-  \item{p}{Number of variables.}
   \item{score}{An instance of a class derived from \code{\linkS4class{Score}}
     which only accounts for observational data.}
+  \item{labels}{Node labels; by default, they are determined from the scoring
+    object.}
   \item{fixedGaps}{logical \emph{symmetric} matrix of dimension p*p.  If entry
     \code{[i, j]} is \code{TRUE}, the result is guaranteed to have no edge
     between nodes \eqn{i} and \eqn{j}.}
-  \item{turning}{Logical indicating whether the function should try to augment
-    the score by turning edges (cf. details).}
+  \item{adaptive}{indicating whether constraints should be adapted to
+    newly detected v-structures or unshielded triples (cf. details).}
+  \item{phase}{Character vector listing the phases that should be used; possible
+    values: \code{forward}, \code{backward}, and \code{turning} (cf. details).}
+  \item{iterate}{Logical indicating whether the phases listed in the argument
+    \code{phase} should be iterated more than once (\code{iterate = TRUE}) or
+    not.}
+  \item{turning}{Setting \code{turning = TRUE} is equivalent to setting
+    \code{phases = c("forward", "backward")} and \code{iterate = FALSE}; the
+    use of the argument \code{turning} is deprecated.}
   \item{maxDegree}{Parameter used to limit the vertex degree of the estimated
     graph.  Valid arguments:
     \enumerate{
@@ -36,7 +47,7 @@ ges(p, score, fixedGaps = NULL,
         for the vertex degrees.
     }
     }
-  \item{verbose}{if \code{TRUE}, detailed output is provided.}
+  \item{verbose}{If \code{TRUE}, detailed output is provided.}
   \item{\dots}{Additional arguments for debugging purposes and fine tuning.}
 }
 \details{
@@ -86,10 +97,12 @@ ges(p, score, fixedGaps = NULL,
     until the score cannot be augmented any more.}
   }
   GES cycles through these three phases until no augmentation of the score is
-  possible any more.  Note that the turning phase (activated with
-  \code{turning = TRUE}, the default behaviour) was not part of the original
-  implementation of Chickering (2002), but was introduced by Hauser and
-  Bühlmann (2012) and shown to improve the overall estimation performance.
+  possible any more if \code{iterate = TRUE}.  Note that the turning phase 
+  was not part of the original implementation of Chickering (2002), but was 
+  introduced by Hauser and Bühlmann (2012) and shown to improve the overall 
+  estimation performance.  The original algorithm of Chickering (2002) is 
+  reproduced with \code{phase = c("forward", "backward")} and 
+  \code{iterate = FALSE}.
 
   GES has the same purpose as the PC algorithm (see \code{\link{pc}}).  While
   the PC algorithm is based on conditional independence tests (requiring the
@@ -98,6 +111,37 @@ ges(p, score, fixedGaps = NULL,
   choice of a score function) and does not depend on conditional independence
   tests.  Since GES always operates in the space of essential graphs, it
   returns a valid essential graph (or CPDAG) in any case.
+  
+  Using the argument \code{fixedGaps}, one can make sure that certain edges
+  will \emph{not} be present in the resulting essential graph: if the entry
+  \code{[i, j]} of the matrix passed to \code{fixedGaps} is \code{TRUE}, there
+  will be no edge between nodes \eqn{i} and \eqn{j}.  Using this argument 
+  can speed up the execution of GIES and allows the user to account for
+  previous knowledge or other constraints.  The argument \code{adaptive} can be
+  used to relax the constraints encoded by \code{fixedGaps} according to a 
+  modification of GES called ARGES (adaptively restricted greedy 
+  equivalence search) which has been presented in Nandy, Hauser and Maathuis
+  (2015):
+  \itemize{
+    \item When \code{adaptive = "vstructures"} and the algorithm introduces a 
+    new v-structure \eqn{a \longrightarrow b \longleftarrow c}{a → b ← c} in the 
+    forward phase, then the edge \eqn{a - c} is removed from the list of fixed 
+    gaps, meaning that the insertion of an edge between \eqn{a} and \eqn{c} 
+    becomes possible even if it was forbidden by the initial matrix passed to 
+    \code{fixedGaps}.
+    
+    \item When \code{adaptive = "triples"} and the algorithm introduces a new
+    unshielded triple in the forward phase (i.e., a subgraph of three nodes
+    \eqn{a}, \eqn{b} and \eqn{c} where \eqn{a} and \eqn{b} as well as \eqn{b}
+    and \eqn{c} are adjacent, but \eqn{a} and \eqn{c} are not), then the edge
+    \eqn{a - c} is removed from the list of fixed gaps.
+  }
+  With one of the adaptive modifications, the successive application of a 
+  skeleton estimation method and GES restricted to an estimated skeleton still
+  gives a \emph{consistent} estimator of the DAG, which is not the case without
+  the adaptive modification.
+  % TODO: Adjust this last paragraph and write a note about the difference 
+  % between ARGES and ARGES-skeleton.
 }
 \value{
   \code{ges} returns a list with the following two components:
@@ -114,6 +158,9 @@ ges(p, score, fixedGaps = NULL,
   interventional Markov equivalence classes of directed acyclic graphs.
   \emph{Journal of Machine Learning Research} \bold{13}, 2409--2464.
 
+  P. Nandy, A. Hauser and M. Maathuis (2015).  Understanding consistency in 
+  hybrid causal structure learning.  \emph{arXiv preprint} 1507.02608
+  
   P. Spirtes, C.N. Glymour, and R. Scheines (2000).  \emph{Causation,
   Prediction, and Search}, MIT Press, Cambridge (MA).
 }
@@ -131,7 +178,7 @@ data(gmG)
 score <- new("GaussL0penObsScore", gmG8$x)
 
 ## Estimate the essential graph
-ges.fit <- ges(ncol(gmG8$x), score)
+ges.fit <- ges(score)
 
 ## Plot the estimated essential graph and the true DAG
 if (require(Rgraphviz)) {

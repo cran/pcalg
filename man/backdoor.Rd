@@ -1,25 +1,28 @@
 \name{backdoor}
 \alias{backdoor}
-\title{Find Set Satisfying the Generalized Backdoor Criterion}
+\title{Find Set Satisfying the Generalized Backdoor Criterion (GBC)}
 \description{
   This function first checks if the total causal effect of
   one variable (\code{x}) onto another variable (\code{y}) is
-  identifiable via the generalized backdoor criterion, and if this is
+  identifiable via the GBC, and if this is
   the case it explicitly gives a set of variables that satisfies the
-  generalized backdoor criterion with respect to \code{x} and \code{y}
+  GBC with respect to \code{x} and \code{y}
   in the given graph.
 }
 \usage{
 backdoor(amat, x, y, type = "pag", max.chordal = 10, verbose=FALSE)
 }
 \arguments{
-  \item{amat}{adjacency matrix (see Details for coding) of the given
-    graph specified in \code{type}.}
-  \item{x,y}{(integer) position of variable \code{x} or \code{y} in the
-    adjacency matrix.}
+  \item{amat}{adjacency matrix of type \code{\link{amat.cpdag}} or
+    \code{\link{amat.pag}}.}
+  \item{x,y}{(integer) position of variable \eqn{X} and \eqn{Y},
+    respectively, in the adjacency matrix.}
   \item{type}{string specifying the type of graph of the adjacency matrix
-    \code{amat}.  It can be a DAG (type="dag"), a CPDAG (type="cpdag"), a
-    MAG (type="mag"), or a PAG (type="pag").}
+    \code{amat}.  It can be a DAG (type="dag"), a CPDAG (type="cpdag");
+    then the type of the adjacency matrix is assumed to be
+    \link{amat.cpdag}.  It can also be a MAG (type="mag"), or a PAG
+    (type="pag"); then the type of the adjacency matrix is assumed to be
+  \link{amat.pag}.}
   \item{max.chordal}{only if \code{type = "mag"}, is used in
     \code{\link{pag2magAM}} to determine paths too large to be checked
     for chordality.}
@@ -32,14 +35,14 @@ backdoor(amat, x, y, type = "pag", max.chordal = 10, verbose=FALSE)
   interventions and single outcome variable to more general types of
   graphs (CPDAGs, MAGs, and PAGs) that describe Markov equivalence
   classes of DAGs with and without latent variables but without
-  selection variables. For more details see Maathuis and Colombo (2013).
+  selection variables. For more details see Maathuis and Colombo (2015).
 
-  The motivation to find a set W that satisfies the generalized backdoor
-  criterion with respect to \code{x} and \code{y}
+  The motivation to find a set W that satisfies the GBC with respect to
+  \code{x} and \code{y}
   in the given graph relies on the result of the generalized backdoor adjustment:
 
-  \emph{If a set of variables W satisfies the generalized backdoor
-    criterion relative to \code{x} and \code{y} in the given graph, then
+  \emph{If a set of variables W satisfies the GBC relative to \code{x}
+    and \code{y} in the given graph, then
     the causal effect of \code{x} on \code{y} is identifiable and is given
     by} \deqn{%
     P(Y|do(X = x)) = \sum_W P(Y|X,W) \cdot P(W).}{%
@@ -58,41 +61,36 @@ backdoor(amat, x, y, type = "pag", max.chordal = 10, verbose=FALSE)
   (\code{type="mag"}), or a PAG P (\code{type="pag"}) (with both M and P
   not allowing selection variables), this function first checks if the
   total causal effect of \code{x} on \code{y} is identifiable via the
-  generalized backdoor criterion (see Maathuis and Colombo, 2013). If
+  GBC (see Maathuis and Colombo, 2015). If
   the effect is not identifiable in this way, the output is
-  NA. Otherwise, an explicit set W that satisfies the generalized
-  backdoor criterion with respect to \code{x} and \code{y} in the given
-  graph is found.
+  NA. Otherwise, an explicit set W that satisfies the GBC with respect
+  to \code{x} and \code{y} in the given graph is found.
 
   At this moment this function is not able to work with an RFCI-PAG.
 
   It is important to note that there can be pair of nodes \code{x} and
-  \code{y} for which there is no set W that satisfies the generalized
-  backdoor criterion, but the total causal effect might be identifiable
-  via some other technique.
+  \code{y} for which there is no set W that satisfies the GBC, but the
+  total causal effect might be identifiable via some other technique.
 
-  Coding of adjacency matrix:
-  If \code{type = dag} or \code{type = cpdag}: coding 0/1 for no edge
-  or tail / arrowhead; e.g. \code{amat[a,b] = 0} and \code{amat[b,a] =
-    1} implies a -> b.
-  Else: coding 0,1,2,3 for no edge, circle, arrowhead, tail; e.g.,
-  \code{amat[a,b] = 2} and \code{amat[b,a] = 3} implies a -> b.
+  For the coding of the adjacency matrix see \link{amatType}.
 }
 \value{
   Either NA if the total causal effect is not identifiable via the
-  generalized backdoor criterion, or a set if the effect is identifiable
-  via the generalized backdoor criterion. Note that if the set W is
+  GBC, or a set if the effect is identifiable
+  via the GBC. Note that if the set W is
   equal to the empty set, the output is NULL.
 }
 \references{
-  M.H. Maathuis and D. Colombo (2013). A generalized backdoor
+  M.H. Maathuis and D. Colombo (2015). A generalized backdoor
   criterion. Annals of Statistics 43 1060-1088.
 
   J. Pearl (1993). Comment: Graphical models, causality and intervention.
   \emph{Statistical Science} \bold{8}, 266--269.
 }
 \author{Diego Colombo and Markus Kalisch (\email{kalisch@stat.math.ethz.ch})}
-\seealso{\code{\link{pc}} for estimating a CPDAG, \code{\link{dag2pag}}
+\seealso{\code{\link{gac}} for the Generalized Adjustment Criterion
+  (GAC), which is a generalization of GBC; \code{\link{pc}} for
+  estimating a CPDAG, \code{\link{dag2pag}}
   and \code{\link{fci}} for estimating a PAG, and
   \code{\link{pag2magAM}} for estimating a MAG.
 }
@@ -109,7 +107,7 @@ myDAG <- randomDAG(p, prob = 0.2) ## true DAG
 true.amat <- (amat <- as(myDAG, "matrix")) != 0 # TRUE/FALSE <==> 1/0
 print.table(1*true.amat, zero.=".") # "visualization"
 
-## Compute the effect using the generalized backdoor criterion
+## Compute set satisfying the GBC:
 backdoor(true.amat, 5, 7, type="dag")
 \dontshow{stopifnot(backdoor(true.amat, 5, 7, type="dag") == 3)}
 #####################################################################
@@ -117,9 +115,8 @@ backdoor(true.amat, 5, 7, type="dag")
 #####################################################################
 ##################################################
 ## Example not identifiable
-## Maathuis and Colombo (2013), Fig. 3, p.14
+## Maathuis and Colombo (2015), Fig. 3a, p.1072
 ##################################################
-
 ## create the graph
 p <- 5
 . <- 0
@@ -149,7 +146,7 @@ backdoor(true.amat, 3, 5, type="cpdag")
 
 ##################################################
 ## Example identifiable
-## Maathuis and Colombo (2013), Fig. 4, p.15
+## Maathuis and Colombo (2015), Fig. 3b, p.1072
 ##################################################
 
 ## create the graph
@@ -169,9 +166,9 @@ g <- new("graphNEL", nodes=V, edgeL=edL, edgemode="directed")
 ## estimate the true CPDAG
 myCPDAG <- dag2cpdag(g)
 ## Extract the adjacency matrix of the true CPDAG
-true.amat <- as(myCPDAG, "matrix") != 0 # 1/0
+true.amat <- as(myCPDAG, "matrix") != 0
 
-## The effect is identifiable and
+## The effect is identifiable and the set satisfying GBC is:
 backdoor(true.amat, 6, 3, type="cpdag")
 \dontshow{stopifnot(backdoor(true.amat, 6, 3, type="cpdag") == 1:2)}
 
@@ -180,7 +177,7 @@ backdoor(true.amat, 6, 3, type="cpdag")
 ##################################################################
 ##################################################
 ## Example identifiable
-## Maathuis and Colombo (2013), Fig. 7, p.17
+## Maathuis and Colombo (2015), Fig. 5a, p.1075
 ##################################################
 
 ## create the graph
@@ -209,10 +206,11 @@ suffStat <- list(C=true.corr, n=10^9)
 indepTest <- gaussCItest
 
 ## estimate the true PAG
-true.pag <- dag2pag(suffStat, indepTest, g, L, alpha = 0.9999)
+true.pag <- dag2pag(suffStat, indepTest, g, L, alpha = 0.9999)@amat
 
-## The effect is identifiable  and the backdoor is  {1,2}:
-stopifnot(backdoor(true.amat, 6, 3, type="cpdag") == 1:2)
+## The effect is identifiable  and the backdoor set is:
+backdoor(true.pag, 3, 5, type="pag")
+\dontshow{stopifnot(backdoor(true.pag, 3, 5, type="pag") == 1:2)}
 }
 \keyword{multivariate}
 \keyword{models}

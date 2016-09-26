@@ -2,14 +2,18 @@
  * Main file of the Greedy Interventional Equivalence Search library for R
  *
  * @author Alain Hauser
- * $Id: gies.cpp 266 2014-06-30 14:16:49Z alhauser $
+ * $Id: gies.cpp 393 2016-08-20 09:43:47Z alhauser $
  */
 
 #include <vector>
 #include <string>
 #include <algorithm>
-#include <boost/lambda/lambda.hpp>
+// #include <boost/lambda/lambda.hpp>
 #include <boost/graph/adjacency_list.hpp>
+// Experimental support for OpenMP; aim: parallelize more and more functions...
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 // Define BGL class for undirected graph
 typedef boost::adjacency_list<boost::setS, boost::vecS, boost::undirectedS> UndirectedGraph;
@@ -20,49 +24,8 @@ typedef boost::adjacency_list<boost::setS, boost::vecS, boost::undirectedS> Undi
 #define DEFINE_GLOBAL_DEBUG_STREAM
 #include "pcalg/gies_debug.hpp"
 
-using namespace boost::lambda;
+// using namespace boost::lambda;
 
-
-/**
- * Reads in a graph from a list of in-edges passed as a SEXP to
- * an EssentialGraph object
- */
-EssentialGraph castGraph(SEXP argInEdges)
-{
-	int i;
-	Rcpp::List listInEdges(argInEdges);
-	EssentialGraph result(listInEdges.size());
-
-	for (i = 0; i < listInEdges.size(); ++i) {
-		Rcpp::IntegerVector vecParents((SEXP)(listInEdges[i]));
-		// Adapt indices to C++ convention
-		for (Rcpp::IntegerVector::iterator vi = vecParents.begin(); vi != vecParents.end(); ++vi)
-			result.addEdge(*vi - 1, i);
-	}
-
-	return result;
-}
-
-/**
- * Wrap a graph structure to an R list of in-edges
- */
-Rcpp::List wrapGraph(EssentialGraph graph)
-{
-	Rcpp::List result;
-	Rcpp::IntegerVector vecEdges;
-	std::set<uint> edges;
-	std::set<uint>::iterator si;
-
-	for (uint i = 0; i < graph.getVertexCount(); ++i) {
-		edges = graph.getInEdges(i);
-		vecEdges = Rcpp::IntegerVector();
-		for (si = edges.begin(); si != edges.end(); ++si)
-			vecEdges.push_back(*si + 1);
-		result.push_back(vecEdges);
-	}
-
-	return result;
-}
 
 /**
  * Yields the local score of a vertex given its parents.
@@ -134,6 +97,7 @@ RcppExport SEXP globalScore(
 
 	// Calculate local score
 	double result = score->global(castGraph(argInEdges));
+	// TODO: check why this leads to a segfault!!!!
 	delete score;
 	return Rcpp::wrap(result);
 
@@ -206,7 +170,7 @@ RcppExport SEXP globalMLE(
 	TargetFamily targets = castTargets(data["targets"]);
 	Score* score = createScore(Rcpp::as<std::string>(argScore), &targets, data);
 
-	// Calculate local score
+	// Calculate global score
 	std::vector<std::vector<double> > result = score->globalMLE(castGraph(argInEdges));
 	delete score;
 	return Rcpp::wrap(result);
@@ -247,27 +211,28 @@ RcppExport SEXP causalInference(
 	uint p = graph.getVertexCount();
 
 	// Cast list of targets
-	dout.level(1) << "Casting list of targets...\n";
+	dout.level(1) << "Casting options...\n";
+	dout.level(2) << "  Casting list of targets...\n";
 	Rcpp::List data(argPreprocData);
 	TargetFamily targets = castTargets(data["targets"]);
 
 	// Cast algorithm string
-	dout.level(1) << "Casting algorithm and options...\n";
+	dout.level(2) << "  Casting algorithm and options...\n";
 	std::string algName = Rcpp::as<std::string>(argAlgorithm);
 
-	// TODO: cast score type, allow for C++ scoring objects
-	// Up to now, only R functions are allowed for scoring...
-	dout.level(1) << "Casting score...\n";
+	// Cast score
+	dout.level(2) << "  Casting score...\n";
 	Score* score = createScore(Rcpp::as<std::string>(argScore), &targets, data);
 
 	graph.setScore(score);
 	graph.setTargets(&targets);
 
 	std::vector<int> steps;
-	uint i, j;
+	std::vector<std::string> stepNames;
+	std::stringstream ss;
 
 	// Cast option for limits in vertex degree
-	dout.level(1) << "Casting maximum vertex degree...\n";
+	dout.level(2) << "  Casting maximum vertex degree...\n";
 	Rcpp::NumericVector maxDegree((SEXP)(options["maxDegree"]));
 	if (maxDegree.size() > 0) {
 		if (maxDegree.size() == 1) {
@@ -286,6 +251,21 @@ RcppExport SEXP causalInference(
 		}
 	}
 	
+	// Cast option for required phases
+	dout.level(2) << "  Casting phases...\n";
+	std::vector< std::string > optPhases = Rcpp::as< std::vector<std::string> >(options["phase"]);
+	std::vector< step_dir > phases(optPhases.size(), SD_FORWARD);
+	for (uint i = 0; i < optPhases.size(); ++i) {
+		if (optPhases[i] == "backward") {
+			phases[i] = SD_BACKWARD;
+		}
+		else if (optPhases[i] == "turning") {
+			phases[i] = SD_TURNING;
+		}
+	}
+	dout.level(2) << "  Casting iterative...\n";
+	bool doIterate = Rcpp::as<bool>(options["iterate"]);
+
 	// Cast option for vertices which are not allowed to have parents
 	// TODO: activate function in R, and check for conversion from R to C indexing convention
 	std::vector<uint> childrenOnly = Rcpp::as< std::vector<uint> >(options["childrenOnly"]);
@@ -294,21 +274,34 @@ RcppExport SEXP causalInference(
 	int stepLimit;
 
 	// Cast option for fixed gaps: logical matrix, assumed to be symmetric by now
+	dout.level(2) << "  Casting fixed gaps...\n";
 	if (!Rf_isNull(options["fixedGaps"])) {
 		Rcpp::LogicalMatrix gapsMatrix((SEXP)(options["fixedGaps"]));
 		uint n_gaps = 0;
-		for (i = 0; i < p; ++i)
-			for (j = i + 1; j < p; ++j)
+		for (int i = 0; i < p; ++i)
+			for (int j = i + 1; j < p; ++j)
 				if (gapsMatrix(i, j))
 					n_gaps++;
 		// Invert gaps if more than half of the possible edges are fixed gaps
 		bool gapsInverted = 4*n_gaps > p*(p - 1);
 		EssentialGraph fixedGaps(p);
-		for (i = 0; i < p; ++i)
-			for (j = i + 1; j < p; ++j)
+		for (int i = 0; i < p; ++i)
+			for (int j = i + 1; j < p; ++j)
 				if (gapsMatrix(i, j) ^ gapsInverted)
 					fixedGaps.addEdge(i, j, true);
 		graph.setFixedGaps(fixedGaps, gapsInverted);
+	}
+
+	// Cast option for adaptive handling of fixed gaps (cf. "ARGES")
+	dout.level(2) << "  Casting adaptive flag...\n";
+	ForwardAdaptiveFlag adaptive(NONE);
+	std::string optAdaptive = options["adaptive"];
+	dout.level(2) << "Option 'adaptive': " << optAdaptive << std::endl;
+	if (optAdaptive == "vstructures") {
+		adaptive = VSTRUCTURES;
+	}
+	if (optAdaptive == "triples") {
+		adaptive = TRIPLES;
 	}
 
 	// Perform inference algorithm:
@@ -320,24 +313,24 @@ RcppExport SEXP causalInference(
 		if (Rcpp::as<bool>(options["caching"]))
 			graph.enableCaching();
 
-		// Perform a greedy search, with or without turning phase
-		// TODO: evtl. zusätzlichen Parameter einfügen, der wiederholtes Suchen
-		// auch ohne Drehphase erlaubt...
-		if (Rcpp::as<bool>(options["turning"])) {
-			bool cont;
-			do {
-				cont = false;
-				for (steps.push_back(0); graph.greedyForward(); steps.back()++);
-				for (steps.push_back(0); graph.greedyBackward(); steps.back()++)
+		// Perform a greedy search with the requested phases, either iteratively or only once
+		bool cont;
+		int phaseCount(1);
+		do {
+			cont = false;
+			for (int i = 0; i < phases.size(); ++i) {
+				for (steps.push_back(0);
+						graph.greedyStepDir(phases[i], adaptive);
+						steps.back()++) {
 					cont = true;
-				for (steps.push_back(0); graph.greedyTurn(); steps.back()++)
-					cont = true;
-			} while (cont);
-		}
-		else {
-			for (steps.push_back(0); graph.greedyForward(); steps.back()++);
-			for (steps.push_back(0); graph.greedyBackward(); steps.back()++);
-		}
+				}
+				ss.str(std::string());
+				ss << optPhases[i] << phaseCount;
+				stepNames.push_back(ss.str());
+			}
+			cont &= doIterate;
+			phaseCount++;
+		} while (cont);
 	}
 
 	// Single phase or step of GIES
@@ -354,12 +347,18 @@ RcppExport SEXP causalInference(
 			graph.enableCaching();
 
 		steps.push_back(0);
-		if (algName == "GIES-F")
-			for (; steps.back() < stepLimit && graph.greedyForward(); steps.back()++);
-		else if (algName == "GIES-B")
+		if (algName == "GIES-F") {
+			for (; steps.back() < stepLimit && graph.greedyForward(adaptive); steps.back()++);
+			stepNames.push_back("forward1");
+		}
+		else if (algName == "GIES-B") {
 			for (; steps.back() < stepLimit && graph.greedyBackward(); steps.back()++);
-		else if (algName == "GIES-T")
+			stepNames.push_back("backward1");
+		}
+		else if (algName == "GIES-T") {
 			for (; steps.back() < stepLimit && graph.greedyTurn(); steps.back()++);
+			stepNames.push_back("turning1");
+		}
 	}
 
 	// Single one or several steps of GIES into either direction
@@ -371,46 +370,65 @@ RcppExport SEXP causalInference(
 		if (stepLimit == 0)
 			stepLimit = graph.getVertexCount()*graph.getVertexCount();
 
-		// TODO: evtl. steps so ändern, dass man daraus ablesen kann, in welcher
-		// Reihenfolge die einzelnen Phasen ausgeführt wurden
 		// Steps: 3 entries, storing number of forward, backward, and turning steps
-		steps.resize(3, 0);
-		step_dir dir = SD_NONE;
+		step_dir dir(SD_NONE), lastDir(SD_NONE);
+		std::vector<int> stepCount(4);
 		do {
 			dir = graph.greedyStep();
-			if (dir != SD_NONE)
-				steps[dir - 1]++;
-		} while (steps[0] + steps[1] + steps[2] < stepLimit && dir != SD_NONE);
+			if (dir != SD_NONE) {
+				if (dir != lastDir) {
+					steps.push_back(1);
+					stepCount[0]++;
+					ss.str(std::string());
+					switch(dir) {
+					case SD_FORWARD:
+						ss << "forward";
+						break;
+
+					case SD_BACKWARD:
+						ss << "backward";
+						break;
+
+					case SD_TURNING:
+						ss << "turning";
+						break;
+					}
+					ss << stepCount[dir]++;
+					stepNames.push_back(ss.str());
+				} // IF dir
+				else {
+					steps.back()++;
+				}
+			} // IF dir
+		} while (stepCount[0] < stepLimit && dir != SD_NONE);
 	}
 
-	// GDS
+	// GDS; yields a DAG, not an equivalence class!
 	else if (algName == "GDS") {
-		// TODO: evtl. caching für GDS implementieren...
-		// Perform a greedy search, with or without turning phase
-		if (Rcpp::as<bool>(options["turning"])) {
-			bool cont;
-			do {
-				cont = false;
-				for (steps.push_back(0); graph.greedyDAGForward(); steps.back()++);
-				for (steps.push_back(0); graph.greedyDAGBackward(); steps.back()++)
+		// Perform a greedy search with the requested phases, either iteratively or only once
+		bool cont;
+		int phaseCount(1);
+		do {
+			cont = false;
+			for (int i = 0; i < phases.size(); ++i) {
+				for (steps.push_back(0);
+						graph.greedyDAGStepDir(phases[i]);
+						steps.back()++) {
 					cont = true;
-				for (steps.push_back(0); graph.greedyDAGTurn(); steps.back()++)
-					cont = true;
-			} while (cont);
-		}
-		else {
-			for (steps.push_back(0); graph.greedyDAGForward(); steps.back()++);
-			for (steps.push_back(0); graph.greedyDAGBackward(); steps.back()++);
-		}
-
-		// Construct equivalence class
-		graph.replaceUnprotected();
+				}
+				ss.str(std::string());
+				ss << optPhases[i] << phaseCount;
+				stepNames.push_back(ss.str());
+			}
+			cont &= doIterate;
+			phaseCount++;
+		} while (cont);
 	}
 
-	// DP
+	// DP; yields a DAG, not an equivalence class!
 	else if (algName == "SiMy") {
 		graph.siMySearch();
-		graph.replaceUnprotected();
+		// graph.replaceUnprotected();
 	}
 
 	// Other algorithm: throw an error
@@ -418,11 +436,14 @@ RcppExport SEXP causalInference(
 
 	// Return new list of in-edges and steps
 	delete score;
+	Rcpp::IntegerVector namedSteps(steps.begin(), steps.end());
+	namedSteps.names() = stepNames;
+
 	// TODO "interrupt" zurückgeben, falls Ausführung unterbrochen wurde. Problem:
 	// check_interrupt() scheint nur einmal true zurückzugeben...
 	return Rcpp::List::create(
 			Rcpp::Named("in.edges") = wrapGraph(graph),
-			Rcpp::Named("steps") = steps);
+			Rcpp::Named("steps") = namedSteps);
 
 	END_RCPP
 }
@@ -460,6 +481,7 @@ RcppExport SEXP dagToEssentialGraph(SEXP argGraph, SEXP argTargets)
 	END_RCPP
 }
 
+
 RcppExport SEXP optimalTarget(SEXP argGraph, SEXP argMaxSize)
 {
 	// Initialize automatic exception handling; manual one does not work any more...
@@ -474,7 +496,8 @@ RcppExport SEXP optimalTarget(SEXP argGraph, SEXP argMaxSize)
 
 	// Adapt numbering convention...
 	std::vector<uint> result(target.begin(), target.end());
-	std::for_each(result.begin(), result.end(), _1++);
+	for (std::vector<uint>::iterator vi = result.begin(); vi != result.end(); ++vi)
+		(*vi)--;
 	return Rcpp::wrap(result);
 
 	END_RCPP
@@ -509,7 +532,6 @@ RcppExport SEXP condIndTestGauss(
 	END_RCPP
 }
 
-
 /**
  * Perform undirected version of PC algorithm, i.e., estimate skeleton of DAG
  * given data
@@ -531,8 +553,6 @@ RcppExport SEXP estimateSkeleton(
 	Rcpp::List options(argOptions);
 	dout.setLevel(Rcpp::as<int>(options["verbose"]));
 
-	int i, j;
-
 	dout.level(1) << "Casting arguments...\n";
 
 	// Cast sufficient statistic and significance level
@@ -553,14 +573,22 @@ RcppExport SEXP estimateSkeleton(
 	// Invalid independence test name: throw error
 	else throw std::runtime_error(indepTestName + ": Invalid independence test name");
 
+	// Initialize OpenMP
+	#ifdef _OPENMP
+		int threads = Rcpp::as<int>(options["numCores"]);
+		if (threads < 0)
+			threads = omp_get_num_procs();
+		omp_set_num_threads(threads);
+	#endif
+
 	// Create list of lists for separation sets
 	Rcpp::LogicalMatrix adjMatrix(argAdjMatrix);
 	int p = adjMatrix.nrow();
 	SepSets sepSet(p, std::vector<arma::ivec>(p, arma::ivec(1)));
-	for (i = 0; i < p; ++i)
-		for (j = 0; j < p; ++j)
+	for (int i = 0; i < p; ++i)
+		for (int j = 0; j < p; ++j)
 			sepSet[i][j].fill(-1);
-	// TODO to save space, only create a triangular list only
+	// TODO to save space, create a triangular list only
 
 	// Cast graph and fixed edges
 	dout.level(2) << "Casting graph and fixed edges...\n";
@@ -570,20 +598,29 @@ RcppExport SEXP estimateSkeleton(
 	pMax.fill(-1.);
 	std::vector<uint> emptySet;
 	std::vector<int> edgeTests(1);
-	for (i = 0; i < p; i++)
-		for (j = i + 1; j < p; j++) {
+	for (int i = 0; i < p; i++) {
+		#pragma omp parallel for
+		for (int j = i + 1; j < p; j++) {
+			if (adjMatrix(i, j) && !fixedMatrix(i, j)) {
+				pMax(i, j) = indepTest->test(i, j, emptySet);
+				if (pMax(i, j) >= alpha)
+					sepSet[j][i].set_size(0);
+				dout.level(1) << "  x = " << i << ", y = " << j << ", S = () : pval = "
+						<< pMax(i, j) << std::endl;
+			}
+		}
+	}
+	for (int i = 0; i < p; i++) {
+		for (int j = i + 1; j < p; j++) {
 			if (fixedMatrix(i, j))
 				graph.addFixedEdge(i, j);
 			else if (adjMatrix(i, j)) {
-				pMax(i, j) = indepTest->test(i, j, emptySet);
 				edgeTests[0]++;
-				dout.level(1) << "  x = " << i << ", y = " << j << ", S = () : pval = " << pMax(i, j) << std::endl;
 				if (pMax(i, j) < alpha)
 					graph.addEdge(i, j);
-				else
-					sepSet[j][i].set_size(0);
 			}
 		}
+	}
 
 	// Estimate skeleton
 	graph.setIndepTest(indepTest);

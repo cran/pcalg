@@ -1,7 +1,7 @@
 ## GIES algorithm
 ##
-## Author: Alain Hauser <alhauser@ethz.ch>
-## $Id: gies.R 339 2015-07-22 11:25:06Z mmaechler $
+## Author: Alain Hauser <alain.hauser@bfh.ch>
+## $Id: gies.R 393 2016-08-20 09:43:47Z alhauser $
 ###############################################################################
 
 ##################################################
@@ -99,6 +99,7 @@ r.gauss.pardag <- function(p,
 #' @param   target.value    value of intervention targets
 rmvnorm.ivent <- function(n, object, target = integer(0), target.value = numeric(0))
 {
+
   p <- object$node.count()
   ## Error checking
   stopifnot(length(target) == 0 || (1 <= min(target) && max(target) <= p))
@@ -125,55 +126,328 @@ rmvnorm.ivent <- function(n, object, target = integer(0), target.value = numeric
 ##################################################
 ## Structure learning algorithms
 ##################################################
-caus.inf <- function(algorithm, p, targets, score, ...)
-{
-  essgraph <- new("EssGraph", nodes = as.character(1:p), targets = targets, score = score)
-  if (essgraph$caus.inf(algorithm, ...))
-    list(essgraph = essgraph, repr = essgraph$repr())
-}
 
-gies <- function(p, targets, score, fixedGaps = NULL,
-                 turning = TRUE, maxDegree = integer(0), verbose = FALSE, ...)
-    caus.inf("GIES", p, targets, score, fixedGaps = fixedGaps,
-             turning = turning, maxDegree = maxDegree, verbose = verbose, ...)
-
-ges <- function(p, score, fixedGaps = NULL,
-                turning = TRUE, maxDegree = integer(0), verbose = FALSE, ...)
-    caus.inf("GIES", p, list(integer(0)), score, fixedGaps = fixedGaps,
-             turning = turning, maxDegree = maxDegree, verbose = verbose, ...)
-
-## TODO: make sure that the "representative" in the result is actually the last
-## visited DAG instead of a random representative; adapt documentation accordingly
-gds <- function(p, targets, score, verbose = FALSE, ...)
-    caus.inf("GDS", p, targets, score, verbose = verbose, ...)
-
-simy <- function(p, targets, score, verbose = FALSE, ...)
-    caus.inf("SiMy", p, targets, score, verbose = verbose, ...)
-
-#' Create a list of targets and a vector of target indices out of a
-#' matrix indicating interventions
+##' Wrapper function for all causal inference algorithms.  It's not recommended
+##' to use it directly; adapted wrapper functions for the single algorithms are
+##' provided
 #'
-#' @param 	A		a n x p boolean matrix; A[i, j] is TRUE iff vertex j is intervened
-#' 							in data point i
-#' @return 	list with two entries, "targets" and "target.index".
-#' 					targets is a list of unique intervention targets
-#' 					target.index is a vector of size n; the intervention target of data point
-#' 					i is given by targets[[target.index[i]]].
-mat2targets <- function(A)
+##' @param algorithm 	name of the causal inference algorithm to be used
+##' @param score 	scoring object to be used
+##' @param labels 	node labels
+##' @param targets 	unique list of targets. Normally determined from the scoring object
+##' @param ... 		additional parameters passed to the algorithm chosen
+caus.inf <- function(
+    algorithm = c("GIES", "GDS", "SiMy"),
+    score, 
+    labels = score$getNodes(), 
+    targets = score$getTargets(), 
+    ...)
 {
-  targets.raw <- as.list(apply(A, 1, which))
-  targets <- unique(targets.raw)
-  list(targets = targets, target.index = match(targets.raw, targets))
+  algorithm <- match.arg(algorithm)
+  
+  # Catching error occurring when a user called one of the causal 
+  # inference algorithms using the old calling conventions: try to
+  # rearrange passed arguments, print a warning
+  #
+  # NOTE: old calling conventions were
+  # (algorithm, p, targets, score) for caus.inf
+  # (p, targets, score) for all functions allowing interventional data
+  # (p, score) for GES
+  if (is.numeric(score)) {
+    # This happens when the old calling convention is used with all 
+    # mandatory arguments unnamed
+    p <- score
+    if (is.list(labels) && is(targets, "Score")) {
+      score <- targets
+      targets <- labels
+      labels <- as.character(1:p)
+      warning(paste("You are using a DEPRECATED calling convention for",
+              "gies(), gds() or simy(); please refer to the documentation",
+              "of these functions to adapt to the new calling conventions."))
+    } else if (is(labels, "Score")) {
+      score <- labels
+      labels <- as.character(1:p)
+      warning(paste("You are using a DEPRECATED calling convention for",
+              "ges(); please refer to the documentation",
+              "to adapt to the new calling convention."))
+    }
+  } else if (is.numeric(labels) && length(labels) == 1) {
+    # This happens when the old calling convention is used with only the
+    # 'score' argument named
+    labels <- as.character(1:labels)
+    warning(paste("You are using a DEPRECATED calling convention for",
+            "gies(), ges(), gds() or simy(); please refer to the documentation",
+            "of these functions to adapt to the new calling conventions."))
+  }
+  
+  if (!is(score, "Score")) {
+    stop("'score' must be of a class inherited from the class 'Score'.")
+  }
+  if (!is.character(labels)) {
+    stop("'labels' must be a character vector.")
+  }
+  if (!is.list(targets) || !all(sapply(targets, is.numeric))) {
+    stop("'targets' must be a list of integer vectors.")
+  }
+  
+  essgraph <- new("EssGraph", nodes = labels, targets = targets, score = score)
+  if (essgraph$caus.inf(algorithm, ...)) {
+    if (algorithm == "GIES") {
+      ## GIES yields an essential graph; calculate a representative thereof
+      list(essgraph = essgraph, repr = essgraph$repr())
+    } else {
+      ## GDS and SiMy yield a DAG; calculate the corresponding essential graph,
+      ## although calculations may come from a model class where Markov equivalence
+      ## does not hold!
+      list(essgraph = dag2essgraph(essgraph$repr(), targets = targets),
+           repr = essgraph$repr())
+    }
+  } else stop("invalid 'algorithm' or \"EssGraph\" object")
 }
 
+##' Greedy Interventional Equivalence Search - GIES --> ../man/gies.Rd
+##'
+##' @param score	scoring object to be used
+##' @param labels	node labels
+##' @param targets	unique list of targets. Normally determined from the scoring object
+##' @param fixedGaps	logical matrix indicating forbidden edges
+##' @param adaptive sets the behaviour for adaptiveness in the forward phase (cf. "ARGES")
+##' @param phase  lists the phases that should be executed
+##' @param iterate  indicates whether the phases should be iterated. iterated = FALSE
+##'   means that the required phases are run just once
+##' @param turning	indicates whether the turning step should be included (DEPRECATED).
+##' @param maxDegree	maximum vertex degree allowed
+##' @param verbose	indicates whether debug output should be printed
+##' @param ...		additional parameters (currently none)
+gies <- function(
+    score, 
+    labels = score$getNodes(), 
+    targets = score$getTargets(),
+    fixedGaps = NULL, 
+    adaptive = c("none", "vstructures", "triples"), 
+    phase = c("forward", "backward", "turning"),
+    iterate = length(phase) > 1,
+    turning = TRUE, 
+    maxDegree = integer(0),
+    verbose = FALSE, 
+    ...)
+{
+  # Catch calling convention of previous package versions:
+  # ges(p, targets, score, fixedGaps = NULL, ...)
+  # If this calling convention is used, issue a warning, but adjust the 
+  # arguments
+  if (is.numeric(score) && is.list(labels) && inherits(targets, "Score")) {
+    score <- targets
+    targets <- labels
+    labels <- as.character(1:length(score$getNodes()))
+    warning(paste("You are using a deprecated calling convention for gies()",
+            "which will be disabled in future versions of the package;",
+            "cf. ?gies.", sep = " "))
+  }
+  # If the old calling convention was used with named arguments, "p = ..."
+  # would assign a numerical value to "phase" (expanding arguments...)
+  if (is.numeric(phase)) {
+    phase <- c("forward", "backward", "turning")
+    warning(paste("You are using a deprecated calling convention for gies()",
+            "which will be disabled in future versions of the package;",
+            "cf. ?gies.", sep = " "))
+  }
+  
+  # Issue warning if argument 'turning' was used
+  # TODO: do not check whether 'turning' is false, but whether 'turning'
+  # was provided as an argument.
+  if (!turning) {
+    phase <- c("forward", "backward")
+    iterate <- FALSE
+    warning(paste("The argument 'turning' is deprecated; please use 'phase' instead",
+                "(cf. ?gies)", sep = " "))
+  }
+  
+  # Error checks
+  if (!inherits(score, "Score")) {
+    stop("Argument 'score' must be an instance of a class inherited from 'Score'.")
+  }
+  phase <- match.arg(phase, several.ok = TRUE)
+  # TODO extend...
+  
+  caus.inf(
+      "GIES", 
+      score = score, 
+      labels = labels, 
+      targets = targets,
+      fixedGaps = fixedGaps, 
+      adaptive = adaptive, 
+      phase = phase,
+      iterate = iterate,
+      maxDegree = maxDegree, 
+      verbose = verbose, 
+      ...)
+}
+
+##' Greedy Equivalence Search - GES --> ../man/ges.Rd
+##'
+##' @param score 	scoring object to be used
+##' @param labels 	node labels
+##' @param fixedGaps 	logical matrix indicating forbidden edges
+##' @param adaptive sets the behaviour for adaptiveness in the forward phase (cf. "ARGES")
+##' @param phase  lists the phases that should be executed
+##' @param iterate  indicates whether the phases should be iterated. iterated = FALSE
+##'   means that the required phases are run just once
+##' @param turning	indicates whether the turning step should be included (DEPRECATED).
+##' @param maxDegree 	maximum vertex degree allowed
+##' @param verbose 	indicates whether debug output should be printed
+##' @param ... 		additional parameters (currently none)
+##' @param targets 	unique list of targets. Normally determined from the scoring object
+ges <- function(
+    score, 
+    labels = score$getNodes(),
+    fixedGaps = NULL, 
+    adaptive = c("none", "vstructures", "triples"), 
+    phase = c("forward", "backward", "turning"),
+    iterate = length(phase) > 1,
+    turning = TRUE, 
+    maxDegree = integer(0),
+    verbose = FALSE, 
+    ...)
+{
+  # Catch calling convention of previous package versions:
+  # ges(p, score, fixedGaps = NULL, ...)
+  # If this calling convention is used, issue a warning, but adjust the 
+  # arguments
+  if (is.numeric(score) && inherits(labels, "Score")) {
+    score <- labels
+    labels <- as.character(1:length(score$getNodes()))
+    warning(paste("You are using a deprecated calling convention for ges()",
+            "which will be disabled in future versions of the package;",
+            "please refer to the help page of ges().", sep = " "))
+  }
+  # If the old calling convention was used with named arguments, "p = ..."
+  # would assign a numerical value to "phase" (expanding arguments...)
+  if (is.numeric(phase)) {
+    phase <- c("forward", "backward", "turning")
+    warning(paste("You are using a deprecated calling convention for ges()",
+            "which will be disabled in future versions of the package;",
+            "cf. ?ges.", sep = " "))
+  }
+  
+  # Issue warning if argument 'turning' was used
+  # TODO: do not check whether 'turning' is false, but whether 'turning'
+  # was provided as an argument.
+  if (!turning) {
+    phase <- c("forward", "backward")
+    iterate <- FALSE
+    warning(paste("The argument 'turning' is deprecated; please use 'phase' instead",
+            "(cf. ?ges)", sep = " "))
+  }
+  
+  # Error checks
+  if (!inherits(score, "Score")) {
+    stop("Argument 'score' must be an instance of a class inherited from 'Score'.")
+  }
+  phase <- match.arg(phase, several.ok = TRUE)
+  # TODO extend...
+  
+  caus.inf(
+      "GIES", 
+      score = score, 
+      labels = labels, 
+      targets = list(integer(0)),
+      fixedGaps = fixedGaps, 
+      adaptive = adaptive, 
+      phase = phase,
+      iterate = iterate,
+      maxDegree = maxDegree, 
+      verbose = verbose, 
+      ...)
+}
+
+##' Greedy DAG Search - GDS : greedy search in the DAG space --> ../man/gds.Rd
+##'
+##' @param score 	scoring object to be used
+##' @param labels 	node labels
+##' @param targets
+##' @param fixedGaps 	logical matrix indicating forbidden edges
+##' @param phase  lists the phases that should be executed
+##' @param iterate  indicates whether the phases should be iterated. iterated = FALSE
+##'   means that the required phases are run just once
+##' @param turning	indicates whether the turning step should be included (DEPRECATED).
+##' @param maxDegree 	maximum vertex degree allowed
+##' @param verbose 	indicates whether debug output should be printed
+##' @param ... 		additional parameters (currently none)
+gds <- function(
+    score, 
+    labels = score$getNodes(), 
+    targets = score$getTargets(),
+    fixedGaps = NULL, 
+    phase = c("forward", "backward", "turning"),
+    iterate = length(phase) > 1,
+    turning = TRUE, 
+    maxDegree = integer(0), 
+    verbose = FALSE, 
+    ...)
+{
+  # Issue warning if argument 'turning' was used
+  # TODO: do not check whether 'turning' is false, but whether 'turning'
+  # was provided as an argument.
+  if (!turning) {
+    phase <- c("forward", "backward")
+    iterate <- FALSE
+    warning(paste("The argument 'turning' is deprecated; please use 'phase' instead",
+            "(cf. ?ges)", sep = " "))
+  }
+  
+  phase <- match.arg(phase, several.ok = TRUE)
+  
+  caus.inf(
+      "GDS", 
+      score = score, 
+      labels = labels, 
+      targets = targets,
+      fixedGaps = fixedGaps, 
+      phase = phase, 
+      iterate = iterate,
+      maxDegree = maxDegree, 
+      verbose = verbose, 
+      ...)
+}
+
+##' Dynamic programming approach of Silander and Myllimäki - SiMy --> ../man/simy.Rd
+##'
+##' @param score 	scoring object to be used
+##' @param labels 	node labels
+##' @param targets
+##' @param verbose 	indicates whether debug output should be printed
+##' @param ... 		additional parameters (currently none)
+simy <- function(score, labels = score$getNodes(), targets = score$getTargets(),
+                 verbose = FALSE, ...)
+{
+  caus.inf("SiMy", score = score, labels = labels, targets = targets, verbose = verbose, ...)
+}
+
+
+#' Converts a DAG to an (observational or interventional) essential graph
 dag2essgraph <- function(dag, targets = list(integer(0))) {
-  new("EssGraph",
-      nodes = dag$.nodes,
-      in.edges = .Call("dagToEssentialGraph", dag$.in.edges, targets),
-      targets = targets)
+  edgeListDAG <- inEdgeList(dag)
+  edgeListEssGraph <- .Call("dagToEssentialGraph", edgeListDAG, targets)
+  if (is.matrix(dag)) {
+    p <- nrow(dag)
+    result <- sapply(1:p, function(i) 1:p %in% edgeListEssGraph[[i]])
+    rownames(result) <- rownames(dag)
+    colnames(result) <- colnames(dag)
+    result
+  } else if (inherits(dag, "graphNEL")) {
+    nodeNames <- nodes(dag)
+    names(edgeListEssGraph) <- nodeNames
+    result <- new("graphNEL",
+        nodes = nodeNames,
+        edgeL = lapply(edgeListEssGraph, function(v) nodeNames[v]),
+        edgemode = "directed")
+    reverseEdgeDirections(result)
+  } else {
+    new("EssGraph",
+        nodes = dag$.nodes,
+        in.edges = edgeListEssGraph,
+        targets = targets)
+  }
 }
-
-#' Fast version of "gaussCItest", implemented in C++
-gaussCItest.fast <- function(x, y, S, suffStat)
-  .Call("condIndTestGauss", x, y, S, suffStat$n, suffStat$C)
 

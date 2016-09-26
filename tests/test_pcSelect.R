@@ -28,7 +28,7 @@ cMeths <- corMeths[-1]
 C. <- zMin. <- setNames(as.list(cMeths), cMeths)
 Cstats <- function(C) {
     ## numeric symmetric matrix
-    stopifnot(is.matrix(C), is.numeric(C), isSymmetric(C))
+    stopifnot(is.matrix(C), is.numeric(C), isSymmetric(C))# , tol = 3e-14
     cbind(diag = diag(C),
           colSums = colSums(C),
           e.values = eigen(C, only.values=TRUE)$values)

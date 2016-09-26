@@ -15,8 +15,9 @@ manualInst.vignette <- function(fstem, package="pcalg", verbose=FALSE) {
     pkgSrcDir <-
         switch(Sys.getenv("USER"),
 	       "maechler" = file.path("~/R/Pkgs", package),# or "~/R/Pkgs/pcalg-dev"
-               "kalischm" = ".....",    # PATH of pcalg or pcalg-dev
-               stop("Must add your (username, pcalg-source) in file {inst/}doc/mkVignettes.R "))
+         "kalischm" = ".....",    # PATH of pcalg or pcalg-dev
+         "husi" = "~/versionControl/R/pcalg/pkg", # or .../branches/dev
+         stop("Must add your (username, pcalg-source) in file {inst/}doc/mkVignettes.R "))
 
     srcDES <- read.dcf(file.path(pkgSrcDir, "DESCRIPTION"))
     ## now check, if 'Version', 'Date' agree:

@@ -11,19 +11,16 @@ of x on definite status paths.
 possibleDe(amat, x)
 }
 \arguments{
-  \item{amat}{
-    Adjacency matrix of the DAG, CPDAG, MAG or PAG.
-}
-  \item{x}{
-    Node of interest.
-}
-}
+  \item{amat}{adjacency matrix of type \link{amat.pag}}
+  \item{x}{(integer) position of node \eqn{x} (node of interest) in the
+    adjacency matrix.}
+  }
 \details{
 A non-endpoint vertex \code{X} on a path \code{p} in a partial mixed
 graph is said to be of a \emph{definite status} if it is either a collider or a
 definite non-collider on \code{p}. The path \code{p} is said to be of a
 \emph{definite status} if all non-endpoint vertices on the path are of a
-definite status (see e.g. Maathuis and Colombo (2013), Def. 3.4).
+definite status (see e.g. Maathuis and Colombo (2015), Def. 3.4).
 
 A possible descendent of x can be reached moving to adjacent nodes of x
 but never going against an arrowhead. 
@@ -32,13 +29,14 @@ but never going against an arrowhead.
   Vector with possible descendents.
 }
 \references{
-M.H. Maathuis and D. Colombo. A generalized backdoor criterion. (\href{http://arxiv.org/abs/1307.5636}{arXiv:1307.5636v2}) 
+  M.H. Maathuis and D. Colombo (2015). A generalized back-door
+  criterion. \emph{Annals of Statistics} \bold{43} 1060-1088.
 }
 \author{
 Diego Colombo
 }
 \seealso{
-\code{\link{backdoor}}
+\code{\link{backdoor}}, \link{amatType}
 }
 \examples{
 amat <- matrix( c(0,3,0,0,0,0, 2,0,2,0,0,0, 0,3,0,0,0,0, 0,0,0,0,1,0,

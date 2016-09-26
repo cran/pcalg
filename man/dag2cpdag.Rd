@@ -20,6 +20,10 @@ dag2cpdag(g)
   v-structures of the given DAG \code{g}.  Afterwards it simply uses the
   3 orientation rules of the PC algorithm (see references) to orient as
   many of the remaining undirected edges as possible.
+  
+  The function is a simple wrapper function for \code{\link{dag2essgraph}}
+  which is more powerfull since it also allows the calculation of the 
+  Markov equivalence class in the presence of interventional data.
 
   The output of this function is exactly the same as the one using
   \preformatted{pc(suffStat, indepTest, alpha, labels)}
@@ -39,8 +43,9 @@ dag2cpdag(g)
   P. Spirtes, C. Glymour and R. Scheines (2000)
   \emph{Causation, Prediction, and Search}, 2nd edition, The MIT Press.
 }
-\author{Markus Kalisch (\email{kalisch@stat.math.ethz.ch}) and Diego Colombo}
-\seealso{\code{\link{randomDAG}}, \code{\link{pc}}}
+\author{Markus Kalisch (\email{kalisch@stat.math.ethz.ch}) and 
+  Alain Hauser(\email{alain.hauser@bfh.ch})}
+\seealso{\code{\link{dag2essgraph}}, \code{\link{randomDAG}}, \code{\link{pc}}}
 \examples{
 p <- 10  ## number of random variables
 s <- 0.4 ## sparseness of the graph

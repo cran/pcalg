@@ -3,7 +3,7 @@
  * given some data
  *
  * @author Alain Hauser
- * $Id: score.hpp 248 2014-03-03 11:27:22Z alhauser $
+ * $Id: score.hpp 393 2016-08-20 09:43:47Z alhauser $
  */
 
 #ifndef SCORE_HPP_
@@ -147,7 +147,7 @@ public:
  *  					library
  * @param	data		preprocessed data
  */
-Score* createScore(std::string name, TargetFamily* targets, Rcpp::List data);
+Score* createScore(std::string name, TargetFamily* targets, Rcpp::List& data);
 
 /**
  * Macros for ScoreRFunction: constants for finding the different R functions
@@ -181,6 +181,8 @@ protected:
 public:
 	ScoreRFunction(uint vertexCount, TargetFamily* targets) :
 			Score(vertexCount, targets) {}
+
+	virtual ~ScoreRFunction() {}
 
 	virtual uint getTotalDataCount() const { return _totalDataCount;	}
 
@@ -242,7 +244,67 @@ public:
 	ScoreGaussL0PenScatter(uint vertexCount, TargetFamily* targets) :
 		Score(vertexCount, targets),
 		_dataCount(vertexCount),
-		_scatterMatrices(vertexCount) {};
+		_scatterMatrices(vertexCount) {}
+
+	virtual ~ScoreGaussL0PenScatter() {}
+
+	virtual uint getTotalDataCount() const { return _totalDataCount; }
+
+	virtual uint getDataCount(const uint vertex) const { return _dataCount[vertex]; }
+
+	virtual void setData(Rcpp::List& data);
+
+	virtual double local(const uint vertex, const std::set<uint>& parents) const;
+
+	virtual double global(const EssentialGraph& dag) const;
+
+	virtual std::vector<double> localMLE(const uint vertex, const std::set<uint>& parents) const;
+
+	virtual std::vector< std::vector<double> > globalMLE(const EssentialGraph& dag) const;
+};
+
+/**
+ * Scoring class calculating a penalized l0-log-likelihood of Gaussian data,
+ * based on the raw data matrix.
+ *
+ * Special case: BIC score
+ */
+class ScoreGaussL0PenRaw : public Score
+{
+protected:
+	/**
+	 * Numbers of data points.
+	 *
+	 * For each vertex, the number of all data points coming from intervention NOT
+	 * including this vertex are stored (n^{(i)}, 1 \leq i \leq p, in the usual
+	 * notation).
+	 */
+	std::vector<int> _dataCount;
+	uint _totalDataCount;
+
+	/**
+	 * Penalty constant
+	 */
+	double _lambda;
+
+	/**
+	 * Indicates whether an intercept should be calculated.
+	 */
+	bool _allowIntercept;
+
+	/**
+	 * Raw data matrix and list of "non-interventions"
+	 */
+	arma::mat _dataMat;
+	std::vector<arma::uvec> _nonInt;
+
+public:
+	ScoreGaussL0PenRaw(uint vertexCount, TargetFamily* targets) :
+		Score(vertexCount, targets),
+		_dataCount(vertexCount),
+		_nonInt(vertexCount) {}
+
+	virtual ~ScoreGaussL0PenRaw() {}
 
 	virtual uint getTotalDataCount() const { return _totalDataCount; }
 

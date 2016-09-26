@@ -13,13 +13,13 @@ udag2pag(pag, sepset, rules = rep(TRUE, 10), unfVect = NULL,
   verbose = FALSE, orientCollider = TRUE)
 }
 \arguments{
-  \item{pag}{Adjacency matrix of the final skeleton of size p*p (coding
-    0,1,2,3 for no edge, circle, arrowhead, tail; e.g., \code{amat[a,b]
-      = 2} and \code{amat[b,a] = 3} implies a -> b).}
+  \item{pag}{Adjacency matrix of type \link{amat.pag}}
   \item{sepset}{List of length p; each element of the list
     contains another list of length p. The element
     \code{sepset[[x]][[y]]} contains the separation set that made the edge
-    between \code{x} and \code{y} drop out. This object is thought to be
+    between \code{x} and \code{y} drop out. Each separation set is a
+    vector with (integer) positions of variables in the adjacency
+    matrix. This object is thought to be
     obtained from a \code{pcAlgo}-object.}
   \item{rules}{Array of length 10 containing \code{TRUE} or \code{FALSE}
     for each rule. \code{TRUE} in position i means that rule i (Ri) will
@@ -51,16 +51,15 @@ udag2pag(pag, sepset, rules = rep(TRUE, 10), unfVect = NULL,
   matrix and not with the names of the variables.
 
   Note that this function does not resolve possible order-dependence in
-  the application of the orientation rules, see Colombo and Maathuis (2013).
+  the application of the orientation rules, see Colombo and Maathuis (2014).
 }
 \value{
-  Adjacency matrix M with edge marks. The edge marks are
-  coded in the following way: M[i,j]=M[j,i]=0: no edge; M[i,j]=1, M[j,i]
-  != 0: i *-o j; M[i,j]=2, M[j,i]!=0: i*->j; M[i,j]=3, M[j,i]!=0: i*-j.
+  Adjacency matrix of type \link{amat.pag}.
 }
 \references{
-  D. Colombo and M.H. Maathuis (2013). Order-independent constraint-based
-  causal structure learning. arXiv:1211.3295v2
+  D. Colombo and M.H. Maathuis (2014).Order-independent constraint-based
+  causal structure learning. \emph{Journal of Machine Learning Research}
+  \bold{15} 3741-3782. 
 
   D. Colombo, M. H. Maathuis, M. Kalisch, T. S. Richardson
   (2012). Learning high-dimensional directed acyclic graphs with latent

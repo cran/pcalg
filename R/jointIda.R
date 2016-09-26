@@ -34,6 +34,9 @@ extract.parent.sets <- function(x.pos, amat.cpdag, isCPDAG = FALSE) {
 
   ## Function for getting locally valid parent sets
   all.locally.valid.parents.undir <- function(amat,x) { # x must be a scaler
+    ## by the call amat is guaranteed to have integer rownames
+    ## that are meaningful
+    ## See row: rownames(conn.comp.mat) <- all.nodes
     amat.V <- as.integer(rownames(amat))
     pa.dir <- pasets.dir[[x.pos == amat.V[x]]]
     paset <- list(pa.dir)
@@ -73,7 +76,8 @@ extract.parent.sets <- function(x.pos, amat.cpdag, isCPDAG = FALSE) {
       ii.x <- seq_along(x..) # = " 1:length(x..) "
       if(chordal[i] & nvar <= 12) {
         rownames(conn.comp.mat) <- colnames(conn.comp.mat) <- 1:nvar
-        all.extensions <- allDags(conn.comp.mat, conn.comp.mat, NULL)
+        ## all.extensions <- allDags(conn.comp.mat, conn.comp.mat, NULL)
+        all.extensions <- pdag2allDags(conn.comp.mat)$dags
         pa.fun <- function(amat,j) c(all.nodes[which(amat[,m.x.[j]] != 0)],
                                      pasets.dir[[match(x..[j],x.pos)]])
         parent.sets.fun <- function(r) lapply(ii.x, pa.fun,

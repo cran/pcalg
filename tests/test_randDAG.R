@@ -19,7 +19,10 @@ rD.10.4 <- rDAGall(10, 4)
 ## with a low-level warning
 rD.10.4 # looks ok
 
-require(graph)
+ok <- suppressPackageStartupMessages(
+    require("graph"))
+stopifnot(ok)
+
 stopifnot(vapply(rD.10.4, isDirected, NA))
 
 stopifnot(identical(
@@ -71,10 +74,8 @@ stopifnot(all.equal(chisq.test(as.numeric(table(ct)), p = rep(0.1,10))$p.value,
                     0.3101796548))
 
 ## check generation of negative weights (fixed Bug)
-set.seed(123)
-tmp1 <- randDAG(3,2,wFUN = list(runif, min = 2, max = 2))
-all( unlist(tmp1@edgeData@data) == 2 )
-set.seed(123)
-tmp2 <- randDAG(3,2,wFUN = list(runif, min = -2, max = -2))
-all( unlist(tmp2@edgeData@data) == -2 )
+set.seed(123) ; tmp1 <- randDAG(3,2, wFUN = list(runif, min =  2, max =  2))
+set.seed(123) ; tmp2 <- randDAG(3,2, wFUN = list(runif, min = -2, max = -2))
+stopifnot(unlist(tmp1@edgeData@data) ==  2,
+	  unlist(tmp2@edgeData@data) == -2 )
 

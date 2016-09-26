@@ -12,8 +12,10 @@ Convert a DAG to an (interventional or observational) essential graph.
 dag2essgraph(dag, targets = list(integer(0)))
 }
 \arguments{
-  \item{dag}{The DAG whose essential graph has to be calculated, represented as 
-    an instance of a class derived from \code{\linkS4class{Score}}.}
+  \item{dag}{The DAG whose essential graph has to be calculated.  Different
+    representations are possible: \code{dag} can be an adjacency matrix, an 
+    object of \code{\linkS4class{graphNEL}} (package \pkg{graph}), or 
+    an instance of a class derived from \code{\linkS4class{ParDAG}}.}
   
   \item{targets}{List of intervention targets with respect to which the 
     essential graph has to be calculated.  An observational setting is
@@ -35,11 +37,18 @@ dag2essgraph(dag, targets = list(integer(0)))
   2000).
   
   In a purely observational setting (\emph{i.e.}, if \code{targets = 
-  list(integer(0))}), the function yields the same graph as \link{dag2cpdag},
-  although it uses different classes for parameters and return value.
+  list(integer(0))}), the function yields the same graph as 
+  \code{\link{dag2cpdag}}.
 }
 \value{
-  An instance of \code{\linkS4class{EssGraph}} representing the essential graph.
+  Depending on the class of \code{dag}, the essential graph is returned as
+  \itemize{
+    \item{an adjacency matrix, if \code{dag} is an adjacency matrix}
+    \item{an instance of \code{\linkS4class{graphNEL}}, if \code{dag} is an 
+      instance of \code{graphNEL},}
+    \item{an instance of \code{\linkS4class{EssGraph}}, if \code{dag} is
+      an instance of a class derived from \code{\linkS4class{ParDAG}}.}
+  }
 }
 \references{
   A. Hauser and P. Bühlmann (2012).  Characterization and greedy learning of 
@@ -61,10 +70,18 @@ s <- 0.4    # Sparseness of the DAG
 
 ## Generate a random DAG
 set.seed(42)
-dag <- as(randomDAG(p, s), "GaussParDAG")
+require(graph)
+dag <- randomDAG(p, s)
+nodes(dag) <- sprintf("V\%d", 1:p)
 
 ## Calculate observational essential graph
 res.obs <- dag2essgraph(dag)
+
+## Different argument classes
+res2 <- dag2essgraph(as(dag, "GaussParDAG"))
+str(res2)
+res3 <- dag2essgraph(as(dag, "matrix"))
+str(res3)
 
 ## Calculate interventional essential graph for intervention targets
 ## {1} and {3}

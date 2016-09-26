@@ -2,7 +2,7 @@
 \alias{corGraph}
 \title{Computing the correlation graph}
 \description{
-  Computes the correlation graph. This is the graph in which an edge is
+  Computes the correlation graph.  This is the graph in which an edge is
   drawn between node i and node j, if the null hypothesis \dQuote{\emph{Correlation
       between \eqn{X_i} and \eqn{X_j} is zero}} can be rejected at the
   given significance level \eqn{\alpha (alpha)}{alpha}.
@@ -11,16 +11,18 @@
 corGraph(dm, alpha=0.05, Cmethod="pearson")
 }
 \arguments{
-  \item{dm}{Numeric matrix with rows as samples and columns as variables.}
-  \item{alpha}{Significance level for correlation test (numeric)}
-  \item{Cmethod}{A character string indicating which correlation coefficient
-        is to be used for the test.  One of "pearson","kendall", or
-	"spearman", can be abbreviated. (string)}
+  \item{dm}{numeric matrix with rows as samples and columns as variables.}
+  \item{alpha}{significance level for correlation test (numeric)}
+  \item{Cmethod}{a \code{\link{character}} string indicating which
+    correlation coefficient is to be used for the test.  One of
+    \code{"pearson"}, \code{"kendall"}, or \code{"spearman"}, can be
+    abbreviated.}
 }
 \value{
-  Undirected correlation graph (graph object)
+  Undirected correlation graph, a \code{\linkS4class{graph}} object
+  (package \pkg{graph});  \code{\link{getGraph}} for the \dQuote{fitted}
+  graph.
 }
-
 \author{
   Markus Kalisch (\email{kalisch@stat.math.ethz.ch}) and Martin Maechler
 }

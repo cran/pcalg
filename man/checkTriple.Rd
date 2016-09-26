@@ -15,7 +15,8 @@ checkTriple(a, b, c, nbrsA, nbrsC,
 \arguments{
   \item{a, b, c}{(integer) positions in adjacency matrix for nodes
     \eqn{a}, \eqn{b}, and \eqn{c}, respectively.}
-  \item{nbrsA, nbrsC}{neighbors of \eqn{a} and \eqn{c}, respectively.}
+  \item{nbrsA, nbrsC}{(integer) position in adjacency matrix for
+    neighbors of \eqn{a} and \eqn{c}, respectively.} 
   \item{sepsetA}{vector containing \eqn{Sepset(a,c)}.}
   \item{sepsetC}{vector containing \eqn{Sepset(c,a)}.}
   \item{suffStat}{a \code{\link{list}} of sufficient statistics for
@@ -63,9 +64,9 @@ checkTriple(a, b, c, nbrsA, nbrsC,
   \item{sepsetC}{Updated version of \code{sepsetC}}
 }
 \references{
-  D. Colombo and M.H. Maathuis (2013).
-  Order-independent constraint-based causal structure learning,
-  (arXiv:1211.3295v2).
+  D. Colombo and M.H. Maathuis (2014).Order-independent constraint-based
+  causal structure learning. \emph{Journal of Machine Learning Research}
+  \bold{15} 3741-3782. 
 }
 \author{
   Markus Kalisch (\email{kalisch@stat.math.ethz.ch}) and Diego Colombo.

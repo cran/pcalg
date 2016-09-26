@@ -76,7 +76,7 @@ jointIda(x.pos, y.pos, mcov, graphEst = NULL, all.pasets = NULL,
   vector of possible joint causal effects.
 }
 \references{
-  [1] P. Nandy, M.H. Maathuis and T.S. Richardson (2014, 2015).
+  P. Nandy, M.H. Maathuis and T.S. Richardson (2014, 2015).
   Estimating the effect of joint interventions from observational data
   in sparse high-dimensional settings.
   \url{http://arxiv.org/abs/1407.2451}.

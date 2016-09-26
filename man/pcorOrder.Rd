@@ -9,8 +9,10 @@
 pcorOrder(i,j, k, C, cut.at = 0.9999999)
 }
 \arguments{
-  \item{i,j}{Integer variable numbers to compute partial correlations of.}
-  \item{k}{Conditioning set for partial correlations (vector of integers).}
+  \item{i,j}{(integer) position of variable \eqn{i} and \eqn{j},
+    respectively, in correlation matrix.}
+  \item{k}{(integer) positions of zero or more conditioning variables in the
+    correlation matrix.}
   \item{C}{Correlation matrix (matrix)}
   \item{cut.at}{Number slightly smaller than one; if \eqn{c} is
     \code{cut.at}, values outside of \eqn{[-c,c]} are set to \eqn{-c} or
