@@ -1,5 +1,5 @@
 1c213fc1c5a5ec68e7a5ba9293440dc3 *ChangeLog
-0db7b58816246c6f934fdc99bbc296d7 *DESCRIPTION
+bc423bbae0f5f12c0afa092636ea2d2f *DESCRIPTION
 6f25f81b0ff82b5c4480cb90eff1dde5 *NAMESPACE
 66963591a11cfdb002f5da9070f1500b *R/Aaux.R
 5085e29e474ce52b4ea5fba61d5ad003 *R/AllClasses.R
@@ -13,7 +13,7 @@ c0958d3ffcf9909629cad0a5980d360e *R/genRandDAG.R
 9187a45035684cf827be71af16325d2c *R/sysdata.rda
 0db1ba6d57801a4d8fc6cdf996384a4d *R/zzz.R
 d599e23940bca0203504c0fa6b09e01c *TODO
-a9c25c5402e9df15259511faa9d1a721 *build/vignette.rds
+6483476dd61bde2e512cda9c6b714b53 *build/vignette.rds
 f832779eae511757a99906c7670fc0ad *cleanup
 7cbe431a233e6c454e24f7b92d63fe75 *data/datalist
 1d8d4c43b9cbb9dc9dd57acd59f565bf *data/gmB.rda
@@ -27,7 +27,7 @@ f832779eae511757a99906c7670fc0ad *cleanup
 4e33425acbef8bf36705d8a75622baa8 *inst/doc/mkVignettes.R
 aa0819d2bcfb83844ff80ef66eeeafa7 *inst/doc/pcalgDoc.R
 43598f8f02fb3b909c846a048c7360c8 *inst/doc/pcalgDoc.Rnw
-c0a99493e33669ed2931c73e1e1ef2bf *inst/doc/pcalgDoc.pdf
+ad941c2f630590b88e2f620491b43130 *inst/doc/pcalgDoc.pdf
 cee0b4475c720bf58c466e1495451b22 *inst/external/N_6_1000.rds
 0d84fdc119d76d992b72f9bdbd0e613d *inst/external/gac-pags.rds
 e7a2a9117d97986b2ab6afc6b4f77478 *inst/external/test_conservative_pc_data1.rda
@@ -116,7 +116,7 @@ aa5ef5fcc6669f7fe4e7c71cbc977dff *man/skeleton.Rd
 6cf72cedd7cb73647586c65753dbd68f *man/udag2apag.Rd
 15de4fbe76e6800999fcc014adf3bd21 *man/udag2pag.Rd
 3f19bdfb286f52acc97cc8f985cd02af *man/udag2pdag.Rd
-7d946c76d88711cd0313b051923d728f *man/unifDAG.Rd
+6a673fdacc7d4964bd31a508e9faa905 *man/unifDAG.Rd
 abddab27448a30a0f87aea03c467e0ee *man/visibleEdge.Rd
 0c704ef6f6822e7ec9dca44b4676eb9f *man/wgtMatrix.Rd
 552b72ff784732d0a19ca3971a757291 *src/Makevars
@@ -141,7 +141,7 @@ ac433f470680b808ba31c6af0630b995 *tests/test_dag2essgraph.R
 e11611f462df230cc44fc3571c714a87 *tests/test_dsep.R
 89771d8a241abec27b4a3aaa729c1cd0 *tests/test_fci.R
 580f7daaaf9136c97c4996442472fd09 *tests/test_fciPlus.R
-5616660b37eb067761dfcd31c0251dc8 *tests/test_gSquareBin.R
+9c4f7d4557fe5c418494b040162ea20a *tests/test_gSquareBin.R
 254a3313c718ccb259af7da4170560ce *tests/test_gSquareDis.R
 a61f759b18b2ab67fd7d5270bb796028 *tests/test_gac.R
 c485aeb5ea3b876b560961245eefeef5 *tests/test_getNextSet.R
@@ -167,6 +167,6 @@ baed988532fc1132d59f460d02e5fbd7 *tests/test_unifDAG.R
 cd40b46d3274a112953423a19f78d4c4 *tests/test_wgtMatrix.R
 0d1ee156042f23c1c2a4a3abd0ca22ec *vignettes/Figure1FAT.pdf
 35fe720fff87739bb6b7bfe79d204d33 *vignettes/Figure2FAT.pdf
-f930246d4cfb62c9d2fb0d954be5042d *vignettes/Mybib.bib
+e09ebac6632b2bfe877e47f3f8e6640a *vignettes/Mybib.bib
 b9564ddd59a06782310989e8f33db55e *vignettes/jsslogo.jpg
 43598f8f02fb3b909c846a048c7360c8 *vignettes/pcalgDoc.Rnw

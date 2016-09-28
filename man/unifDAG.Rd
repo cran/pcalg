@@ -79,19 +79,19 @@ unifDAG.approx(n, n.exact=20, weighted=FALSE, wFUN=list(runif,min=0.1,max=1))
 \examples{
 # require("Rgraphviz")
 set.seed(123)
-dag1 <- unifDAG(20)
-dag2 <- unifDAG.approx(20,15)
+dag1 <- unifDAG(n=10)
+dag2 <- unifDAG.approx(n=10, n.exact=5)
 
-dag <- unifDAG(5)
+dag <- unifDAG(n=5)
 plot(dag)
 dag@edgeData   ## note the constant weights
 
-dag <- unifDAG(5,weighted=TRUE)
+dag <- unifDAG(n=5,weighted=TRUE)
 plot(dag)
 dag@edgeData   ## note the uniform weights between 0.1 and 1
 
 wFUN <- function(m,lB,uB) { runif(m,lB,uB) }
-dag <- unifDAG(5,weighted=TRUE,wFUN=list(wFUN,1,4))
+dag <- unifDAG(n=5,weighted=TRUE,wFUN=list(wFUN,1,4))
 dag@edgeData   ## note the uniform weights between 1 and 4
 }
 \keyword{graphs}

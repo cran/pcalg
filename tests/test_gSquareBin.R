@@ -44,7 +44,7 @@ pv.2 <- c(gSquareBin(3,1, 2, dat),
 )
 
 (eq2 <- c(all.equal(pv.2, c(rep(0.89393365, 2), 0, 0), tol=1e-8),
-          all.equal(pv.2[1], pv.2[2], tol=1e-15)))
+          all.equal(pv.2[1], pv.2[2], tol=1e-6)))
 
 ok2 <- is.logical(eq2) && all(eq2)
 
@@ -68,7 +68,7 @@ pv3 <- c(gSquareBin(1,2, 3,  dat),
          gSquareBin(2,1, 3,  dat),
          gSquareBin(1,3, 2,  dat))
 )
-(eq3 <- all.equal(pv3, c(0, 0.9054922, 0,0), tol=1e-8))
+(eq3 <- all.equal(pv3, c(0, 0.9054922, 0,0), tol=1e-7))
 ok3 <- isTRUE(eq3)
 
 
@@ -94,7 +94,7 @@ pv4 <- c(gSquareBin(1,2, c(3,4,5,6), dat),
 
 (eq4 <- c(all.equal(pv4, c(0, 0, 0, 0.0269101, 0.0269101, 0.7260011, 0.1121826),
                    tol = 2e-7),
-          all.equal(pv4[4], pv4[5], tol=1e-15)))
+          all.equal(pv4[4], pv4[5], tol=1e-6)))
 
 ok4 <- is.logical(eq4) && all(eq4)
 
