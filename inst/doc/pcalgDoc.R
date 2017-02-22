@@ -14,14 +14,7 @@ options(SweaveHooks= list(fig=function() par(mar=c(5.1, 4.1, 1.1, 2.1))),
 
 
 ###################################################
-### code chunk number 2: diagnose-lib
-###################################################
-if(FALSE && Sys.getenv("USER") == "maechler")## just for "testing"
-  print( .libPaths() )
-
-
-###################################################
-### code chunk number 3: def-gmG (eval = FALSE)
+### code chunk number 2: def-gmG (eval = FALSE)
 ###################################################
 ## ## Used to generate the  'gmG'  Gaussian data originally:
 ## require("pcalg")
@@ -33,10 +26,25 @@ if(FALSE && Sys.getenv("USER") == "maechler")## just for "testing"
 
 
 ###################################################
-### code chunk number 4: exIntro1
+### code chunk number 3: exIntro1 (eval = FALSE)
 ###################################################
+## library("pcalg")
+## data("gmG")
+
+
+###################################################
+### code chunk number 4: try-load-pcalg
+###################################################
+tryCatch({
 library("pcalg")
 data("gmG")
+}, error = function(e) {
+    cat("Error almost surely in loading package \"pcalg\":\n",
+        conditionMessage(e))
+    cat(".libPaths():\n"); print(.libPaths())
+    cat("\nFull sessionInfo():\n"); print(sessionInfo())
+    stop()
+})
 
 
 ###################################################

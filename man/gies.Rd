@@ -13,7 +13,7 @@
 gies(score, labels = score$getNodes(), targets = score$getTargets(),
      fixedGaps = NULL, adaptive = c("none", "vstructures", "triples"), 
      phase = c("forward", "backward", "turning"), iterate = length(phase) > 1,
-     turning = TRUE, maxDegree = integer(0), verbose = FALSE, ...)
+     turning = NULL, maxDegree = integer(0), verbose = FALSE, ...)
 }
 \arguments{
   \item{score}{An \R object inheriting from \code{\linkS4class{Score}}.}

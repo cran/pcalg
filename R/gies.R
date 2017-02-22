@@ -1,7 +1,7 @@
 ## GIES algorithm
 ##
 ## Author: Alain Hauser <alain.hauser@bfh.ch>
-## $Id: gies.R 393 2016-08-20 09:43:47Z alhauser $
+## $Id: gies.R 409 2017-02-05 15:41:51Z alhauser $
 ###############################################################################
 
 ##################################################
@@ -227,7 +227,7 @@ gies <- function(
     adaptive = c("none", "vstructures", "triples"), 
     phase = c("forward", "backward", "turning"),
     iterate = length(phase) > 1,
-    turning = TRUE, 
+    turning = NULL, 
     maxDegree = integer(0),
     verbose = FALSE, 
     ...)
@@ -254,13 +254,18 @@ gies <- function(
   }
   
   # Issue warning if argument 'turning' was used
-  # TODO: do not check whether 'turning' is false, but whether 'turning'
-  # was provided as an argument.
-  if (!turning) {
-    phase <- c("forward", "backward")
-    iterate <- FALSE
-    warning(paste("The argument 'turning' is deprecated; please use 'phase' instead",
-                "(cf. ?gies)", sep = " "))
+  if (!missing(turning)) {
+    stopifnot(is.logical(turning))
+    warning(paste0("The argument 'turning' is deprecated; please use 'phase'",
+                   "instead (cf. ?ges)"))
+    
+    if (turning) {
+      phase <- c("forward", "backward", "turning")
+      iterate <- FALSE
+    } else {
+      phase <- c("forward", "backward")
+      iterate <- FALSE
+    }
   }
   
   # Error checks
@@ -305,7 +310,7 @@ ges <- function(
     adaptive = c("none", "vstructures", "triples"), 
     phase = c("forward", "backward", "turning"),
     iterate = length(phase) > 1,
-    turning = TRUE, 
+    turning = NULL, 
     maxDegree = integer(0),
     verbose = FALSE, 
     ...)
@@ -331,13 +336,18 @@ ges <- function(
   }
   
   # Issue warning if argument 'turning' was used
-  # TODO: do not check whether 'turning' is false, but whether 'turning'
-  # was provided as an argument.
-  if (!turning) {
-    phase <- c("forward", "backward")
-    iterate <- FALSE
-    warning(paste("The argument 'turning' is deprecated; please use 'phase' instead",
-            "(cf. ?ges)", sep = " "))
+  if (!missing(turning)) {
+    stopifnot(is.logical(turning))
+    warning(paste0("The argument 'turning' is deprecated; please use 'phase'",
+                   "instead (cf. ?ges)"))
+    
+    if (turning) {
+      phase <- c("forward", "backward", "turning")
+      iterate <- FALSE
+    } else {
+      phase <- c("forward", "backward")
+      iterate <- FALSE
+    }
   }
   
   # Error checks

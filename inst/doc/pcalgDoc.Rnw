@@ -182,10 +182,6 @@ data set with $p = 8$ continuous variables with Gaussian noise and $n
 package \pkg{pcalg} and the data set.
 
 
-%% FALSE below disables, even for Martin:
-<<diagnose-lib, echo=FALSE>>=
-if(FALSE && Sys.getenv("USER") == "maechler")## just for "testing"
-  print( .libPaths() )
 <<def-gmG, eval=FALSE, echo=FALSE>>=
 ## Used to generate the  'gmG'  Gaussian data originally:
 require("pcalg")
@@ -194,10 +190,22 @@ p <- 8
 n <- 5000
 gGtrue <- randomDAG(p, prob = 0.3)
 gmG <- list(x = rmvDAG(n, gGtrue), g = gGtrue)
-@
-<<exIntro1>>=
+<<exIntro1, eval=FALSE>>=
 library("pcalg")
 data("gmG")
+@
+%% pcalg loading with extended error diagnostics
+%% as this "always" fails for Martin, in  R CMD build pcalg :
+<<try-load-pcalg, echo=FALSE>>=
+tryCatch({
+<<exIntro1>>
+}, error = function(e) {
+    cat("Error almost surely in loading package \"pcalg\":\n",
+        conditionMessage(e))
+    cat(".libPaths():\n"); print(.libPaths())
+    cat("\nFull sessionInfo():\n"); print(sessionInfo())
+    stop()
+})
 @
 
 
@@ -1126,7 +1134,7 @@ Once a score object is defined, the GES algorithm is called as follows:
 showF(ges)
 @
 The argument \code{score} is a score object defined before.  The
-argument \code{turning} indicates whether the novel turning phase 
+argument \code{turning} indicates whether the novel turning phase
 (see Section \ref{sec:gm}) not
 present in the original implementation of \cite{Chickering2002} should be
 used, and \code{maxdegree} can be used to bound the vertex degree of the

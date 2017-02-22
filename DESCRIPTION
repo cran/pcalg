@@ -1,6 +1,6 @@
 Package: pcalg
-Version: 2.4-3
-Date: 2016-09-21
+Version: 2.4-5
+Date: 2017-02-17
 Title: Methods for Graphical Models and Causal Inference
 Description: Functions for causal structure
   learning and causal inference using graphical models. The main algorithms
@@ -37,6 +37,6 @@ NeedsCompilation: yes
 Encoding: UTF-8
 License: GPL (>= 2)
 URL: http://pcalg.r-forge.r-project.org/
-Packaged: 2016-09-27 09:17:37 UTC; kalischm
+Packaged: 2017-02-21 20:16:13 UTC; kalischm
 Repository: CRAN
-Date/Publication: 2016-09-28 17:10:41
+Date/Publication: 2017-02-22 09:57:28

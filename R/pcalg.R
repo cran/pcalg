@@ -4270,6 +4270,7 @@ udag2pag <- function(pag, sepset, rules = rep(TRUE,10), unfVect = NULL, verbose 
   ## d=theta
 
   stopifnot(is.logical(rules), length(rules) == 10)
+  if(!is.numeric(pag))  storage.mode(pag) <- "numeric"
 
   if (any(pag != 0)) {
     p <- as.numeric(dim(pag)[1])
