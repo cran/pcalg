@@ -3207,6 +3207,18 @@ idaFast <- function(x.pos, y.pos.set, mcov, graphEst)
   beta.hat
 }
 
+idaFastOpt <- function(x.pos.set,mcov,graphEst)
+{
+     if(missing(x.pos.set)){
+       x.pos.set = 1:ncol(mcov)
+     }
+     adjmat <- as.matrix(wgtMatrix(graphEst))
+     .Call("idaFastC",(x.pos.set - 1) ,mcov,adjmat)
+}
+
+
+
+
 ## -> ../man/legal.path.Rd
 ## only called in  qreach()  with only 'c' varying
 legal.path <- function(a,b,c, amat)

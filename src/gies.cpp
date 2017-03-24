@@ -21,6 +21,7 @@ typedef boost::adjacency_list<boost::setS, boost::vecS, boost::undirectedS> Undi
 #include "pcalg/constraint.hpp"
 #include "pcalg/score.hpp"
 #include "pcalg/greedy.hpp"
+#include "pcalg/cpdag.hpp"
 #define DEFINE_GLOBAL_DEBUG_STREAM
 #include "pcalg/gies_debug.hpp"
 
@@ -644,4 +645,28 @@ RcppExport SEXP estimateSkeleton(
 
 	END_RCPP
 }
+
+
+RcppExport SEXP idaFastC(SEXP xpos,  SEXP argMcov,
+                SEXP argAdjMatrix)
+{
+       // Exception handling
+       BEGIN_RCPP
+        arma::mat covmat = (Rcpp::as<arma::mat>(argMcov));
+        arma::irowvec x = Rcpp::as<arma::irowvec>(xpos); 
+        arma::uword N = x.n_elem;
+        arma::mat adjmat_tmp = (Rcpp::as<arma::mat>(argAdjMatrix));
+        arma::sp_imat adjmat;
+        adjmat =  arma::conv_to<arma::imat>::from(adjmat_tmp);
+        cpdag graph_pd(adjmat,covmat);
+        Rcpp::List to_return(N);
+        arma::uword i=0;
+        for (arma::irowvec::iterator it=x.begin(); it < x.end(); it++){
+            to_return[i++] = graph_pd.idaFast(*it);
+        }
+        return to_return;
+       END_RCPP
+}
+
+
 
