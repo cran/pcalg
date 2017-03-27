@@ -3207,6 +3207,23 @@ idaFast <- function(x.pos, y.pos.set, mcov, graphEst)
   beta.hat
 }
 
+  ## Purpose: Estimate the causal effect of x.pos.set on each element in the
+  ## graph using the local method; graphEst and correlation matrix
+  ## have to be precomputed; orient
+  ## undirected edges at x in a way so that no new collider is
+  ## introduced; if there is an undirected edge between x and y, both directions are considered;
+  ## i.e., y might be partent of x in which case the effect is 0.
+  ## ----------------------------------------------------------------------
+  ## Arguments:
+  ## - x.pos.set: 
+  ## - mcov: Covariance matrix that was used to estimate graphEst
+  ## - graphEst: Fit of PC Algorithm (semidirected)
+  ## ----------------------------------------------------------------------
+  ## Value: list of causal values; one list element (matrix) for each element of
+  ## x.pos.set 
+  ## ----------------------------------------------------------------------
+  ## Author: Paula Perez, Date: 17 Jan 2017
+
 idaFastOpt <- function(x.pos.set,mcov,graphEst)
 {
      if(missing(x.pos.set)){

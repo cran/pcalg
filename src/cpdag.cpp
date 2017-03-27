@@ -42,51 +42,53 @@ arma::mat  cpdag::idaFast(uint32_t x ){
    // Las sparse matrices estan ordenada por columnas
    // asi que hemos tomado la traspuesta arriba. 
    arma::mat beta;
-      arma::irowvec uniq_pa, amb_pa; 
-      uniq_pa.set_size(nodes);
-      amb_pa.set_size(nodes);
-      arma::uword p = 0;
-      for (uint32_t col=0; col<nodes; col++){
-         if (ambiguous(x,col) == 1){
-            amb_pa(p) = col;
-            p++;
-         }
+   arma::irowvec uniq_pa, amb_pa; 
+   uniq_pa.set_size(nodes);
+   amb_pa.set_size(nodes);
+   arma::uword p = 0;
+   // Count the number of unambiguous parents
+   for (uint32_t col=0; col<nodes; col++){
+      if (ambiguous(x,col) == 1){
+         amb_pa(p) = col;
+         p++;
       }
-      amb_pa.resize(p);
-      p = 0;
-      for (uint32_t col=0; col<nodes; col++){
-         if (unique(x,col) == 1){
-            uniq_pa(p) = col;
-            p++;
-         }
+   }
+   amb_pa.resize(p);
+   p = 0;
+   // Count the number of unique parents
+   for (uint32_t col = 0; col<nodes; col++){
+      if (unique(x,col) == 1){
+         uniq_pa(p) = col;
+         p++;
       }
-      uniq_pa.resize(p);
-      beta.set_size(0,nodes);
-      arma::uword cbeta=0;
-      // if no ambiguous parents, construct the effects with the unique parents. 
-      // No collider checks needed.
-      if ( amb_pa.size() == 0){
-         beta.insert_rows(cbeta++, getCausal(uniq_pa,amb_pa,x));
-      } 
-      else{
-         if(amb_pa.size() > 64){
-            printf ("The number of ambiguous parents is too high");
-            exit (EXIT_FAILURE);
+   }
+   uniq_pa.resize(p);
+   beta.set_size(0,nodes);
+   arma::uword cbeta = 0;
+   // if no ambiguous parents, construct the effects with the unique parents. 
+   // No collider checks needed.
+   if ( amb_pa.size() == 0){
+      beta.insert_rows(cbeta++, getCausal(uniq_pa,amb_pa,x));
+   } 
+   else{
+     if(amb_pa.size() > 64){
+         printf ("The number of ambiguous parents is too high");
+         exit (EXIT_FAILURE);
+     }
+     arma::irowvec amb_pa_1, amb_pa_2;
+     arma::uword n = amb_pa.size();
+     uint64_t  L  = (1 << (n-1)); 
+     for (uint64_t bits = 0; bits < L; bits++){
+         directArrows(amb_pa_1,amb_pa_2,amb_pa,bits,n);
+         if( !hasNewCollider(uniq_pa,amb_pa_1,amb_pa_2,x) ){
+             beta.insert_rows(cbeta++,getCausal(uniq_pa,amb_pa_1,x));
          }
-        arma::irowvec amb_pa_1, amb_pa_2;
-        arma::uword n = amb_pa.size();
-        uint64_t  L  = (1 << (n-1)); 
-        for (uint64_t bits = 0; bits < L; bits++){
-            directArrows(amb_pa_1,amb_pa_2,amb_pa,bits,n);
-            if( !hasNewCollider(uniq_pa,amb_pa_1,amb_pa_2,x) ){
-                beta.insert_rows(cbeta++,getCausal(uniq_pa,amb_pa_1,x));
-            }
-            if( !hasNewCollider(uniq_pa,amb_pa_2,amb_pa_1,x) ){
-                beta.insert_rows(cbeta++,getCausal(uniq_pa,amb_pa_2,x));
-            }
-        }
-      }
-      return (beta.t());
+         if( !hasNewCollider(uniq_pa,amb_pa_2,amb_pa_1,x) ){
+             beta.insert_rows(cbeta++,getCausal(uniq_pa,amb_pa_2,x));
+         }
+     }
+   }
+   return (beta.t());
 }
 
 
@@ -178,7 +180,7 @@ void cpdag::directArrows(arma::irowvec &pa_1, arma::irowvec &pa_2,
       k = __builtin_popcount(bits);
       pa_1.resize(k); 
       pa_2.resize(n-k); 
-      for (i=0; i < n ; i++ ){
+      for (i = 0; i < n ; i++ ){
          if ( bits  &  (1 << i) ){
             pa_1(idx1++) = amb_pa(i);
          }  else {
