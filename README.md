@@ -1,6 +1,6 @@
 # Pcalg fork
 
-# Description 
+## Description 
 
  This is a fork from the `R` package `pcalg` 
 that implements a `C++` optimization of the 
@@ -13,7 +13,7 @@ Details and Benchmarks).
 * **Patch file**:  `dataOpt/patch_pcalg.txt`
  
 
-## Details
+### Details
 
 Given a *completed partially directed acyclic graph* `pdag`, and
 a given node `x`, we identify the unique parents `uniq_pa`  and the 
@@ -43,7 +43,7 @@ of `pa_1` and `pa_2.`
 
  
 
-## Benchmarks 
+### Benchmarks 
 
  Comparison of performance of  `idaFast` (original function of the package)
 versus our implementation, `idaFastOpt`. We have used  real data and created **cpdag** of
@@ -51,9 +51,9 @@ versus our implementation, `idaFastOpt`. We have used  real data and created **c
 graphs on a Intel(R) Xeon(R) CPU E5-4620 0 @ 2.20GHz. In the graph below, we can see 
 the performance of the two functions, in a log-log scale. 
 
-We see not only that the runtime is outrageously reduced, but also, and 
+We see not only that the runtime is significantly reduced, but also, and 
 for the **cpdag** we were testing the functions on, `idaFast` seemed to scale like 
-`O(n`<sup>`3`</sup>`)` whereas `idaFastOpt` like `O(n`<sup>`2`</sup>`)`. Not that 
+`O(n`<sup>`3`</sup>`)` whereas `idaFastOpt` like `O(n`<sup>`2`</sup>`)`. Note that 
 the scaling  is not generalizable to all types of graphs. For different input graphs, 
 one can expect a different complexity. Nevertheless, it seems that the new implementation
 has reduced it.  
@@ -61,7 +61,7 @@ has reduced it.
 
 <center> <img src="dataOpt/timings_log.png" /> </center>
 
-# Usage
+## Usage
 
 ``idaFastOpt(x.pos.set = 1:N, mcov = cov(subDat), graphEst = l$cpdag_graph)``
 
@@ -83,7 +83,7 @@ has reduced it.
    list of causal values; one list element (matrix) for each element of 
    `x.pos.set`
 
-# Tests 
+## Tests 
 
   In the folder `dataOpt`, one can find a code example in `run_idaFast.R`, 
   where both functions, `idaFast`, `idaFastOpt`, are run for the **cpdag**'s
