@@ -64,18 +64,21 @@ defStat <- function(ln, cn, nn, m, type = "pag") {
 
   res
 }
-desc <- function(m, possible = FALSE) {
+desc <- function(m, possible = FALSE, type = type) {
   ## computes all (possible) descendants of every node
   ## INPUT: adj.matrix m in MAG/PAG or DAG/CPDAG coding; if possible=TRUE, possible desc are found; o/w descendants
   ## OUPUT: list of vectors; vector at list position i contains node positions of (possible) descendants of node i
   p <- ncol(m)
   res <- vector(mode = "list", length = p)
   for (i in 1:p) {
-    res[[i]] <- possibleDeProper(m=m, x=i, y=NULL, possible=possible)
+      ## res[[i]] <- possibleDeProper(m=m, x=i, y=NULL, possible=possible)
+      res[[i]] <- possDe(m = m, x = i, y = NULL,
+                               possible = possible,
+                               ds = FALSE, type = type)
   }
   res
 }
-forbiddenNodes <- function(m,x,y)
+forbiddenNodes <- function(m,x,y,type)
 {
     ## INPUT: adj.matrix in DAG,CPDAG,MAG,PAG coding; sets of node positions x and y
     ## OUTPUT: set of node positions of nodes in the forbidden set (sorted)
@@ -85,16 +88,23 @@ forbiddenNodes <- function(m,x,y)
   possDeX <- possAnY <- c()
   for(i in 1:max(n1,n2))
   {
-    if (i <= n1)
+    if (i <= n1) {
       #find all possible descendants of a node x[i] that are on a proper path
       #relative to x (exclude x[i] because descendants of x[i] that are not
       #on a proper path are allowed)
-      possDeX <- union(possDeX, setdiff(possibleDeProper(m,x[i],x),x[i]))
-
-    if (i <= n2)
+        ## possDeX <- union(possDeX, setdiff(possibleDeProper(m,x[i],x),x[i]))
+        pdpTmp <- possDe(m = m, x = x[i], y = x, possible = TRUE,
+                         ds = FALSE, type = type)
+        possDeX <- union(possDeX, setdiff(pdpTmp, x[i]))
+    }
+    if (i <= n2) {
       #find all possible ancestors of a node y[i] that are
       #on a proper path relative to x
-      possAnY <- union(possAnY, possibleAnProper(m,y[i],x))
+        ## possAnY <- union(possAnY, possibleAnProper(m,y[i],x))
+        papTmp <- possAn(m = m, x = y[i], y = x, possible = TRUE,
+                         ds = FALSE, type = type)
+        possAnY <- union(possAnY, papTmp)
+    }
 
   }
 
@@ -105,9 +115,12 @@ forbiddenNodes <- function(m,x,y)
   fbnodes <- c()
   if (length(pdp) > 0) {
       for(j in 1:length(pdp))
-          {
-              fbnodes <- union(fbnodes,possibleDeProper(m,pdp[j],c()))
-          }
+      {
+          ## fbnodes <- union(fbnodes,possibleDeProper(m,pdp[j],c()))
+          pdpTmp2 <- possDe(m = m, x = pdp[j], y = c(), possible = TRUE,
+                            ds = FALSE, type = type)   
+          fbnodes <- union(fbnodes, pdpTmp2)
+      }
   }
 
   if (length(fbnodes) > 0) {
@@ -117,23 +130,38 @@ forbiddenNodes <- function(m,x,y)
   }
 
 }
-gac <- function(amat,x,y,z,type="pag") {
-    ## output: TRUE if GAC is fulfilled; o/w FALSE
-    res <- rep(NA, 3)
-    f <- NULL
 
-    ## Condition (0)
-    res[1] <- isAmenable(m=amat,x=x,y=y,type=type)
+##gac for pdags
+##
+## this function is the same as its equivalent in pcalg except it calls
+## the pdag fucntions given above
+##
+##currrently separated dags,pdags,cpdags from mags,pags but could be merged
 
-    ## Condition (1)
-    ## Compute forbidden set
-    f <- forbiddenNodes(m=amat, x=x, y=y)
-    res[2] <- ( length( intersect(f,z) ) == 0 )
+##however the res[3] must be calculated separately for dags,pdags,cpdags and mags,pags
 
-    ## Condition (2)
-    res[3] <- cond2(x=x,y=y,z=z,m=amat,type=type)
-
-    list(gac = all(res), res = res, f = f)
+## uses amat.cpdag encoding amat[i,j]=0,amat[j,i]=1 <=> i ->j
+gac <- function (amat, x, y, z, type = "pag") 
+{
+    if (type %in% c("dag", "cpdag", "pdag")) {
+          if (!isValidGraph(amat = amat, type = type)) {
+              message("The input graph is not a valid ",type,". See function isValidGraph() for details.\n")
+          }
+    }
+  res <- rep(NA, 3)
+  f <- NULL
+  if (type %in% c("dag","pdag","cpdag")){
+    res[1] <- isAmenable(m = amat, x = x, y = y, type = type)
+    f <- bforbiddenNodes(m = amat, x = x, y = y)
+    res[2] <- (length(intersect(f, z)) == 0)
+    res[3] <- cond3fast(x = x, y = y, z = z, m = amat)
+  } else { ##the code for MAGs, PAGs is still the same 
+    res[1] <- isAmenable(amat, x = x, y = y, type = type)   
+    f <- forbiddenNodes(amat, x = x, y = y)
+    res[2] <- (length(intersect(f, z)) == 0)
+    res[3] <- cond2(x = x, y = y, z = z, m = amat, type = type)  
+  }
+  list(gac = all(res), res = res, f = f)
 }
 isAmenable <- function(m,x,y, type = "pag") {
     ## INPUT: adj.matrix m; sets of node positions x and y; type in DAG, CPDAG,
@@ -141,15 +169,19 @@ isAmenable <- function(m,x,y, type = "pag") {
     ## OUTPUT: TRUE if m is amenabel wrt x,y; o/w FALSE
     found <- FALSE ## if found == TRUE at any time, graph is not amenable wrt x,y
     ## DAG is always amenable
-    if (type %in% c("cpdag", "mag", "pag")) {
+    if (type %in% c("pdag", "cpdag","dag","pag","mag")) { ##changed added dag just in case, makes no difference
+        if (type == "dag")  ## added the if case for dags
+            return(!found)
         i <- 0
         p <- length(x)
-
+        
         ## for all nodes in x, if amenability is still possible
         while ( (i<p) & !found) {
             i <- i+1
             ## posDesc of x[i] without going through any other x node
-            posDesc <- possibleDeProper(m,x[i],x[-i])
+            ## posDesc <- possibleDeProper(m,x[i],x[-i])
+            posDesc <- possDe(m = m, x = x[i], y = x[-i], possible = TRUE,
+                              ds = FALSE, type = type)
             ## potential problem for amenability only if there is a
             ## pdp from x[i] to y
             if ( length(intersect(y, posDesc)) != 0 ) {
@@ -163,28 +195,27 @@ isAmenable <- function(m,x,y, type = "pag") {
                     j <- j+1
                     ## check if there is a pdp from cand[j] to y without going through x[i]
                     ## cand could already be in y
-                    pathOK <- ( length(intersect(y, possibleDeProper(m,cand[j],x[i]))) != 0 )
+                    ## pathOK <- ( length(intersect(y, possibleDeProper(m,cand[j],x[i]))) != 0 )
+                    pdpTemp <- possDe(m = m, x = cand[j], y = x[i],
+                                      possible = TRUE, ds = FALSE,
+                                      type = type)
+                    pathOK <- ( length(intersect(y, pdpTemp)) != 0 )
                     if (pathOK) {
-                        ## check if first edge is problematic in CPDAG
-                        ## Problem: First edge is not x[i] -> cand[j]
-                        isCPDAG <- ( type == "cpdag" )
-                        CPDAGproblem <- ( isCPDAG & (m[x[i], cand[j]] == 1) ) ## arrow at x or undirected in CPDAG
-                        ## check if first edge is problematic in MAG/PAG
-                        ## Problem 1: First edge is not x[i] -> cand[j]
-                        PAGproblem1 <- ( !isCPDAG & ( m[x[i], cand[j]] != 2 ) & ( m[cand[j], x[i]] != 3 ) )
-                        ## Problem 2: First edge is x[i] -> cand[j] but invisible
-                        isDirEdge <- ( ( m[x[i], cand[j]] == 2 ) & ( m[cand[j], x[i]] == 3 ) )
-                        PAGproblem2 <- ( !isCPDAG & isDirEdge & !visibleEdge(m,x[i],cand[j]) )
-                        ## Problem if any of the three previous problems occurs
-                        found <- ( CPDAGproblem | PAGproblem1 | PAGproblem2 )
+                        isPDAG <- (type == "pdag" | type == "cpdag") ##changed 
+                        PDAGproblem <- (isPDAG & (m[x[i],cand[j]] == 1)) ##changed
+                        PAGproblem1 <- (!isPDAG & (m[x[i], cand[j]] != 2) & (m[cand[j], x[i]] != 3)) ##changed
+                        isDirEdge <- ((m[x[i], cand[j]] == 2) & (m[cand[j], x[i]] == 3))
+                        PAGproblem2 <- (!isPDAG & isDirEdge & !visibleEdge(m, x[i], cand[j])) ##changed
+                        found <- (PDAGproblem | PAGproblem1 | PAGproblem2)
                     } ## if pathOK
                 } ## while cand
             } ## if path from x[i] to y
         } ## while x
-    } ## if not DAG
-
-    ## if no problem was found, the graph is amenable wrt x,y
-    !found
+        return(!found)
+    } else { ## if graph type not known
+        cat("Not a valid graph type! Should be written in lowercase! \n")
+        return(NULL)
+    }
 }
 mcon <- function(ln,cn,nn,m,z,descList) {
   ## INPUT: node positions of last, current and next node on path; adj.mat. m
@@ -239,7 +270,7 @@ newStackEls <- function(s,x,y,z,m,type) {
         }
     } else {
         ## Path has at least 2 nodes
-        descList <- desc(m)
+        descList <- desc(m, type = type)
         ln <- pth[lp-1]; cn <- pth[lp]
         nb <- setdiff(setdiff(as.vector(which(m[cn,]!=0 | m[,cn]!=0)), x), pth)
         res <- list()
@@ -356,4 +387,99 @@ possibleDeProper <- function(m,x,y=NULL,possible = TRUE)
     }
   }
   sort(setdiff(v,c(0)))
+}
+
+##The following function forms a proper back-door graph G_{XY}^{pbd}
+##given the adjacency matrix, node position vectors x and y
+##
+gbg <-  function(m,x,y)
+{
+  tmp <- m
+  for (i in 1:length(x))
+  { i <- 1
+  Desc <- bPossibleDeProper(m,x[i],x[-i])
+  if (length(intersect(y, Desc)) != 0) {
+    ch <- as.vector(which(m[x[i], ] == 0 & m[, x[i]] == 1))
+    cand <- intersect(ch, Desc)
+    j <- 0
+    while (j < length(cand)) {
+      j <- j + 1
+      #pathOK <- (length(intersect(y, bpossibleDeProper(m,cand[j], x[i]))) != 0)  ##what if x - y? MISSING CASE!
+      pathOK <- ((length(intersect(y, bPossibleDeProper(m,cand[j], x))) != 0) | (cand[j] %in% y)) ##added x - y case
+      if (pathOK) {
+        tmp[cand[j],x[i]] <- 0
+      }
+    }
+  }
+  }
+  tmp
+}
+
+## the following function tests the separation condition for gac-pdags 
+## it is a pseudo check for this condition, because provided
+## that amenability and forbidden set are satisfied
+## this will exactly check the separation condition
+
+## however if amenability or forb are not satisfied
+## this check is not necessarily accurate
+
+## given a pdag adjacency matrix m it checks whether node position vector z
+## satisfies the separation condition relative to (x,y)
+
+## m encoding amat.cpdag as above m[i,j]=0, m[j,i]=1 <=> i -> j
+cond3fast <- function(x, y, z, m)
+{
+  ##the idea is to use the lemma which says
+  ## that if m is amenable and z satisfies the forbidden cond
+  ## then z satisfies separation in the pdag iff
+  ## z satisfies separation in at least one dag
+  
+  ##First find one dag D in the equivalence class represented by m
+  oneDag <- pdag2dag(as(t(m),"graphNEL"))
+  dagAmat <- t(as(oneDag$graph,"matrix"))
+  
+  ##We instead of checking the separation crit in m 
+  ## w can check the d-separation criterion in D_{XY}^{pbd}
+  gb <- gbg(dagAmat,x,y)
+  msep(t(gb),x,y,z)  ## uses the transposed of amat.cpdag encoding
+}
+
+##basically only added b's
+
+## note that provided that possibleDeProper is implemented in 
+## pcalg as looking at only def. stat. paths
+## then the already implemented forbiddenNodes can be used directly 
+## (with the addition of type: pdag)
+
+## m - adjacency matrix amat.cpdag encoding m[i,j]=0, m[j,i] = 1 <=> i -> j
+## x - vector of node position
+## y - vector of node positions
+
+## as it is now this function can only be used for pdags, dags, cpdags
+## because the bPossibleDeProper etc. functions are only defined for these
+## adjacency matrices
+bforbiddenNodes <- function (m, x, y) 
+{
+  n1 <- length(x)
+  n2 <- length(y)
+  possDeX <- possAnY <- c()
+  for (i in 1:max(n1, n2)) {
+    if (i <= n1) 
+      possDeX <- union(possDeX, setdiff(bPossibleDeProper(m, x[i], x), x[i])) ##changed
+    if (i <= n2) 
+      possAnY <- union(possAnY, bPossibleAnProper(m, y[i], x)) ##changed
+  }
+  pdp <- intersect(possDeX, possAnY)
+  fbnodes <- c()
+  if (length(pdp) > 0) {
+    for (j in 1:length(pdp)) {
+      fbnodes <- union(fbnodes, bPossibleDeProper(m, pdp[j], c())) ##changed
+    }
+  }
+  if (length(fbnodes) > 0) {
+    return(sort(fbnodes))
+  }
+  else {
+    return(fbnodes)
+  }
 }

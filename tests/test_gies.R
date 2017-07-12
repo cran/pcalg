@@ -2,7 +2,7 @@
 ####' GIES, GES, DP
 ####'
 ####' @author Alain Hauser
-####' $Id: test_gies.R 409 2017-02-05 15:41:51Z alhauser $
+####' $Id: test_gies.R 454 2017-07-11 15:03:05Z mkalisch $
 
 cat("Testing the causal inference algorithms for interventional data:\n")
 
@@ -125,3 +125,6 @@ for (cpp in c(FALSE, TRUE)) {
 }
 
 cat(if(doExtras) "\n", "Done.\n")
+
+## add test to confirm bug-fix in 2.5-0
+new("GaussParDAG", "a") ## produced a warning prior to 2.5-0

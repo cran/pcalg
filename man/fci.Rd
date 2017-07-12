@@ -71,7 +71,7 @@ fci(suffStat, indepTest, alpha, labels, p,
     because fewer tests may have been performed in the former.}
   \item{rules}{Logical vector of length 10 indicating which rules
     should be used when directing edges. The order of the rules is taken
-    from Zhang (2009).}
+    from Zhang (2008).}
   \item{doPdsep}{If \code{TRUE}, Possible-D-SEP is computed for all nodes,
     and all subsets of Possible-D-SEP are considered as conditioning
     sets in the conditional independence tests, if not defined otherwise
@@ -154,7 +154,7 @@ fci(suffStat, indepTest, alpha, labels, p,
   the v-structures are newly determined on the final skeleton (using
   information in sepset). Finally, as many as possible undetermined edge
   marks (o) are determined using (a subset of) the 10 orientation rules
-  given by Zhang (2009).
+  given by Zhang (2008).
 
   The \dQuote{Anytime FCI} algorithm was introduced by Spirtes (2001).  It
   can be viewed as a modification of the FCI algorithm that only performs

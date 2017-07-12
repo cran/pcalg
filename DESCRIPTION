@@ -1,6 +1,6 @@
 Package: pcalg
-Version: 2.4-5
-Date: 2017-02-17
+Version: 2.5-0
+Date: 2017-07-11
 Title: Methods for Graphical Models and Causal Inference
 Description: Functions for causal structure
   learning and causal inference using graphical models. The main algorithms
@@ -10,8 +10,9 @@ Description: Functions for causal structure
   (i.e. observational data) and data from experiments
   involving interventions (i.e. interventional data) without hidden
   variables). For causal inference the IDA algorithm, the Generalized
-  Backdoor Criterion (GBC) and the Generalized Adjustment Criterion (GAC)
-  are implemented.
+  Backdoor Criterion (GBC), the Generalized Adjustment Criterion (GAC)
+  and some related functions are implemented. Functions for incorporating
+  background knowledge are provided.
 Maintainer: Markus Kalisch <kalisch@stat.math.ethz.ch>
 Authors@R: c(person("Markus","Kalisch",
                     email="kalisch@stat.math.ethz.ch", role=c("aut","cre")),
@@ -30,13 +31,13 @@ Depends: R (>= 3.0.2)
 LinkingTo: Rcpp (>= 0.11.0), RcppArmadillo, BH
 Imports: stats, graphics, utils, methods, abind, graph, RBGL, igraph,
         ggm, corpcor, robustbase, vcd, Rcpp, bdsmatrix, sfsmisc (>=
-        1.0-26), fastICA, clue, gmp
+        1.0-26), fastICA, clue, gmp, dagitty
 Suggests: MASS, Matrix, Rgraphviz, mvtnorm
 ByteCompile: yes
 NeedsCompilation: yes
 Encoding: UTF-8
 License: GPL (>= 2)
 URL: http://pcalg.r-forge.r-project.org/
-Packaged: 2017-02-21 20:16:13 UTC; kalischm
+Packaged: 2017-07-11 15:04:57 UTC; kalischm
 Repository: CRAN
-Date/Publication: 2017-02-22 09:57:28
+Date/Publication: 2017-07-12 10:41:16 UTC

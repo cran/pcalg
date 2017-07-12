@@ -1,10 +1,12 @@
 \name{possibleDe}
 \alias{possibleDe}
 \title{
-Find possible descendants on definite status paths.
+[DEPRECATED] Find possible descendants on definite status paths.
 }
 \description{
-In a DAG, CPDAG, MAG or PAG determine which nodes are possible descendants
+ This function is DEPRECATED! Use \code{\link{possDe}} instead.
+
+  In a DAG, CPDAG, MAG or PAG determine which nodes are possible descendants
 of x on definite status paths. 
 }
 \usage{

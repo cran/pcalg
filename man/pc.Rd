@@ -222,6 +222,8 @@ pc(suffStat, indepTest, alpha, labels, p,
   \eqn{a \longrightarrow b \longleftarrow c \longleftarrow d}{a → b ← c ← d}. 
   In this case, \code{u2pd} is not used.
 
+  Using the function \code{\link{isValidGraph}} one can check if the final output is indeed a valid CPDAG.
+  
   Notes: (1) Throughout, the algorithm works with the column positions
   of the variables in the adjacency matrix, and not with the names of
   the variables. (2) When plotting the object, undirected and bidirected
@@ -253,7 +255,7 @@ pc(suffStat, indepTest, alpha, labels, p,
   \code{\link{udag2pdag}} for converting the
   skeleton to a CPDAG; \code{\link{gaussCItest}},
   \code{\link{disCItest}}, \code{\link{binCItest}} and
-  \code{\link{dsepTest}} as examples for \code{indepTest}.
+  \code{\link{dsepTest}} as examples for \code{indepTest}. \code{\link{isValidGraph}} for testing whether the output is a valid CPDAG.
 }
 \author{
   Markus Kalisch (\email{kalisch@stat.math.ethz.ch}), Martin Maechler,
@@ -326,6 +328,31 @@ if (require(Rgraphviz)) {
   plot(pc.B, main = "Estimated CPDAG")
   plot(gmB$g, main = "True DAG")
 }
+
+##################################################
+## Detecting ambiguities due to sampling error
+##################################################
+## Load predefined data
+data(gmG)
+n <- nrow    (gmG8$ x)
+V <- colnames(gmG8$ x) # labels aka node names
+
+## estimate CPDAG
+pc.fit <- pc(suffStat = list(C = cor(gmG8$x), n = n),
+             indepTest = gaussCItest, ## indep.test: partial correlations
+             alpha=0.01, labels = V, verbose = TRUE)
+
+## due to sampling error, some edges were overwritten:
+isValidGraph(as(pc.fit, "amat"), type = "cpdag")
+
+## re-fit with solve.confl = TRUE
+pc.fit2 <- pc(suffStat = list(C = cor(gmG8$x), n = n),
+             indepTest = gaussCItest, ## indep.test: partial correlations
+             alpha=0.01, labels = V, verbose = TRUE,
+             solve.confl = TRUE)
+
+## conflicting edge is V5 - V6
+as(pc.fit2, "amat")
 }%{examples}
 \keyword{multivariate}
 \keyword{models}

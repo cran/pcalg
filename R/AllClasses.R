@@ -2,7 +2,7 @@
 ### Part 1 : S4 classes used by pc and r/fci
 ##################################################
 
-## $Id: AllClasses.R 416 2017-02-20 15:23:46Z mmaechler $
+## $Id: AllClasses.R 450 2017-07-11 09:29:16Z mkalisch $
 
 setClass("gAlgo",
          slots = c(call = "call",
@@ -373,11 +373,17 @@ setRefClass("ParDAG",
       if (!all(sapply(object$.in.edges, is.numeric)))
         return("The vectors in 'in.edges' must contain numbers.")
 
-      edgeRange <- range(unlist(object$.in.edges))
-      if (object$edge.count() > 0 &&
-          (edgeRange[1] < 1 || edgeRange[2] > object$node.count()))
-        return("Invalid range of edge sources.")
+      ## edgeRange <- range(unlist(object$.in.edges))
+      ## if (object$edge.count() > 0 &&
+      ##     (edgeRange[1] < 1 || edgeRange[2] > object$node.count()))
+      ##   return("Invalid range of edge sources.")
 
+      if (object$edge.count() > 0) {
+          edgeRange <- range(unlist(object$.in.edges))
+          if (edgeRange[1] < 1 || edgeRange[2] > object$node.count())
+              return("Invalid range of edge sources.")
+      }
+      
       return(TRUE)
     },
 
