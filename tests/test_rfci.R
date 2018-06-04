@@ -1,4 +1,6 @@
 library(pcalg)
+doExtras <- pcalg:::doExtras()
+
 source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
 ##--> showProc.time(), assertError(), relErrV(), ...
 R.home(); sessionInfo() # helping package maintainers to debug ...
@@ -55,6 +57,7 @@ if (any(pop.fci1 != pop.rfci1)) {
   stop("Test of RFCI wrong: small example!")
 }
 
+if (doExtras) {
 ## Thomas' example (version number 8) about discriminating path orientation rule
 
 V <- as.character(1:25)
@@ -107,4 +110,6 @@ showSys.time(pop.rfci2 <- rfci(suffStat, gaussCItest, p=p.tr,
 
 if (any(pop.fci2 != pop.rfci2)) {
   stop("Test of RFCI wrong: big example!")
+}
+
 }

@@ -2,7 +2,7 @@
 ### Part 1 : S4 classes used by pc and r/fci
 ##################################################
 
-## $Id: AllClasses.R 450 2017-07-11 09:29:16Z mkalisch $
+## $Id: AllClasses.R 466 2018-01-16 14:27:47Z mmaechler $
 
 setClass("gAlgo",
          slots = c(call = "call",
@@ -342,7 +342,7 @@ inEdgeList <- function(from)
     p <- nrow(from)
     stopifnot(p == ncol(from))
     lapply(1:p, function(i) which(from[, i] != 0))
-  } else if (class(from) == "graphNEL") {
+  } else if(inherits(from, "graphNEL")) {
     nodeNames <- graph::nodes(from)
     edgeList <- lapply(graph::inEdges(from), function(v) match(v, nodeNames))
     names(edgeList) <- NULL
@@ -383,8 +383,8 @@ setRefClass("ParDAG",
           if (edgeRange[1] < 1 || edgeRange[2] > object$node.count())
               return("Invalid range of edge sources.")
       }
-      
-      return(TRUE)
+      ## else return
+      TRUE
     },
 
     methods = list(

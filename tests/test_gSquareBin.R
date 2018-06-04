@@ -48,6 +48,8 @@ pv.2 <- c(gSquareBin(3,1, 2, dat),
 
 ok2 <- is.logical(eq2) && all(eq2)
 
+ok3 <- ok4 <- ok5 <- ok6 <- TRUE
+if (doExtras) {
 ##################################################
 ## collider: x1 -> x3 <- x2
 ##################################################
@@ -154,14 +156,7 @@ args <- c(lapply(in2, function(i) list(x=xy[1,i], y=xy[2,i], S=rest[,i])),
           lapply(in2, function(i) list(x=xy[1,i], y=xy[2,i], S=sample(rest[,i], size= sample(0:(p-2), 1)))),
           lapply(in2, function(i) list(x=xy[1,i], y=xy[2,i], S=sample(rest[,i], size= sample(2:(p-2), 1)))))
 
-if(doExtras) {
-    ia <- TRUE
-} else {
-    ia <- sample(length(args), 25)
-    cat("For speed, only testing sub-sample, indices ia =\n"); print(ia)
-    args <- args[ia]
-}
-
+ia <- TRUE
 
 system.time(
 pv6 <- vapply(args, function(L) do.call(gSquareBin, c(L, list(dm=dat))), 1)
@@ -188,5 +183,6 @@ pv6.ok <- c(0, 0, 0.6427, 0.4745, 0.9698, 0.4586, 0.5739, 0.6701, 0.1889,
 (eq6 <- all.equal(pv6, pv6.ok[ia], tol= 1e-4))
 ok6 <- isTRUE(eq6)
 
+}
 if (!all(ok1,ok2,ok3,ok4,ok5,ok6))
     stop("Test gSquareBin wrong: Some dependence was not estimated correctly!")

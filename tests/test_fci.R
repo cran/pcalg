@@ -1,4 +1,5 @@
 library(pcalg)
+doExtras <- pcalg:::doExtras()
 
 showProc.time <- local({
     pct <- proc.time()
@@ -69,7 +70,7 @@ correctEst2 <- all(corr.pag2 == true.pag2@amat)
 if (!correctEst2) stop("Test fci wrong: example 2!")
 showProc.time()
 
-
+if (doExtras) {
 
 ########################################################
 ##
@@ -174,3 +175,4 @@ correctEst4 <- all(corr.pag4 == true.pag4@amat)
 if (!correctEst4) stop("Test fci wrong: example 4!")
 showProc.time()
 
+}

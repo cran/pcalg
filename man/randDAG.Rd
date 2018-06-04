@@ -98,7 +98,7 @@ randDAG(n, d, method ="er", par1=NULL, par2=NULL,
 \seealso{the package \code{\link{igraph}}, notably help pages such as
   \code{\link[igraph]{random.graph.game}} or \code{\link[igraph]{barabasi.game}};
 
-  \code{\link{unifDAG}} for generating uniform random DAGs.
+  \code{\link[unifDAG]{unifDAG}} from package \pkg{unifDAG} for generating uniform random DAGs.
 
   \code{\link{randomDAG}} a limited and soon deprecated version of \code{\link{randDAG}};
   \code{\link{rmvDAG}} for generating multivariate data according to a DAG.

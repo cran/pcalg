@@ -76,7 +76,11 @@ seed <- 547 ## Seed 547: Dsep Link wird benoetigt
 set.seed(seed)
 
 ## will get slow if p > 14; these settings take already a few minutes
-p <- 14
+if (doExtras) {
+  p <- 8
+} else {
+  p <- 14
+}
 r1 <- rDAG_noC(p, prob = 0.2)
 c(p = p, p. = r1$p.)
 chk_rDAG(r1)

@@ -1,4 +1,105 @@
 library(pcalg)
+(doExtras <- pcalg:::doExtras())
+
+## Minimalistic CRAN checks
+
+## Test 1 ############################
+## Test that "no adjustment set" and "empty adjustment set" are distinguished properly
+x <- 1; y <- 2
+cpdag <- matrix(c(0,1,1,0),2,2) ## 1 --- 2 => no adj set
+dag <- matrix(c(0,1,0,0),2,2) ## 1 --> 2 => empty adj set
+
+adjC <- adjustment(amat = cpdag, amat.type = "cpdag", x = 1, y = 2, set.type = "canonical")
+adjD <- adjustment(amat = dag, amat.type = "dag", x = 1, y = 2, set.type = "canonical")
+adjP <- adjustment(amat = dag, amat.type = "pdag", x = 1, y = 2, set.type = "canonical")
+
+stopifnot(!identical(adjC, adjD), identical(adjD, adjP) )
+
+## Test 2 ###############################
+gacVSadj <- function(amat, x, y ,z, V, type) {
+  ## gac(z) is TRUE IFF z is returned by adjustment()
+  ## x,y,z: col positions as used in GAC
+  ## Result: TRUE is result is equal
+  typeDG <- switch(type,
+                   dag = "dag",
+                   cpdag = "cpdag",
+                   mag = "mag",
+                   pag = "pag")
+  gacRes <- gac(amat,x,y, z, type)$gac 
+  adjRes <- adjustment(amat = amat, amat.type = typeDG, x = x, y = y, set.type = "all")
+  if (gacRes) { ## z is valid adj set
+    res <- any(sapply(adjRes, function(xx) setequal(z, xx)))
+  } else { ## z is not valid adj set
+    res <- all(!sapply(adjRes, function(xx) setequal(z, xx)))
+  }
+  res
+}
+
+xx <- TRUE
+
+## CPDAG 1: Paper Fig 1
+mFig1 <- matrix(c(0,1,1,0,0,0, 1,0,1,1,1,0, 0,0,0,0,0,1,
+                  0,1,1,0,1,1, 0,1,0,1,0,1, 0,0,0,0,0,0), 6,6)
+type <- "cpdag"
+x <- 3; y <- 6
+
+V <- as.character(1:ncol(mFig1))
+rownames(mFig1) <- colnames(mFig1) <- V
+
+xx <- xx &  gacVSadj(mFig1,x,y, z=c(2,4), V=V, type)
+xx <- xx &  gacVSadj(mFig1,x,y, z=c(4,5), V=V, type)
+
+type <- "pag"
+mFig3a <- matrix(c(0,1,0,0, 1,0,1,1, 0,1,0,1, 0,1,1,0), 4,4)
+V <- as.character(1:ncol(mFig3a))
+rownames(mFig3a) <- colnames(mFig3a) <- V
+xx <- xx & gacVSadj(mFig3a, x=2,      y=4, z=NULL,   V=V, type)
+
+## DAG 1 from Marloes' Talk
+mMMd1 <- matrix(c(0,1,0,1,0,0, 0,0,1,0,1,0, 0,0,0,0,0,1,
+                  0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0),6,6)
+V <- as.character(1:ncol(mMMd1))
+rownames(mMMd1) <- colnames(mMMd1) <- V
+
+type <- "dag"
+x <- 1; y <- 3
+xx <- xx &  gacVSadj(mMMd1, x,y, z=NULL, V=V, type)
+xx <- xx & gacVSadj(mMMd1, x,y, z= 2, V=V, type)
+
+if (!xx) {
+  stop("Problem when testing function gacVSadj.")
+} else {
+  message("OK, no issues were found.")
+}
+
+############################################################
+## Extensive checks
+############################################################
+if (doExtras) {
+
+## Test that "no adjustment set" and "empty adjustment set" are distinguished properly
+x <- 1; y <- 2
+cpdag <- matrix(c(0,1,1,0),2,2) ## 1 --- 2 => no adj set
+dag <- matrix(c(0,1,0,0),2,2) ## 1 --> 2 => empty adj set
+
+adjC <- adjustment(amat = cpdag, amat.type = "cpdag", x = 1, y = 2, set.type = "canonical")
+adjD <- adjustment(amat = dag, amat.type = "dag", x = 1, y = 2, set.type = "canonical")
+adjP <- adjustment(amat = dag, amat.type = "pdag", x = 1, y = 2, set.type = "canonical")
+
+stopifnot(!identical(adjC, adjD), identical(adjD, adjP) )
+
+adjCAll <- adjustment(amat = cpdag, amat.type = "cpdag", x = 1, y = 2, set.type = "all")
+adjDAll <- adjustment(amat = dag, amat.type = "dag", x = 1, y = 2, set.type = "all")
+adjPAll <- adjustment(amat = dag, amat.type = "pdag", x = 1, y = 2, set.type = "all")
+
+stopifnot( !identical(adjCAll, adjDAll), identical(adjDAll, adjPAll) )
+
+adjCMin <- adjustment(amat = cpdag, amat.type = "cpdag", x = 1, y = 2, set.type = "minimal")
+adjDMin <- adjustment(amat = dag, amat.type = "dag", x = 1, y = 2, set.type = "minimal")
+adjPMin <- adjustment(amat = dag, amat.type = "pdag", x = 1, y = 2, set.type = "minimal")
+
+stopifnot( !identical(adjCMin, adjDMin), identical(adjDMin, adjPMin) )
+
 
 #####################################################################################
 ## Test 1: Compare CPDAG and PDAG implementation and validate all sets using gac()
@@ -298,3 +399,26 @@ if (!xx) {
   message("OK, no issues were found.")
 }
 
+##################################################
+## given same graph, type=cpdag and type=pdag
+## should give same canonical set
+##################################################
+m <- rbind(c(0,1,0,0,0,0),
+           c(1,0,1,0,0,0),
+           c(0,1,0,0,0,0),
+           c(0,0,0,0,0,0),
+           c(0,1,1,1,0,0),
+           c(1,0,1,1,1,0))
+colnames(m) <- rownames(m) <- as.character(1:6)
+
+## You can see that the current adjustment function outputs different sets
+## if type = "cpdag" or type = "pdag" which shouldn't happen 
+## because it is the same graph:
+res1 <- adjustment(m,amat.type="cpdag",2,4,set.type="canonical")
+res2 <- adjustment(m,amat.type="pdag",2,4,set.type="canonical")
+
+if (!all.equal(res1, res2)) {
+    stop("Canonical set is not the same for type=cpdag and type=pdag\n")
+}
+
+}

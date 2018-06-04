@@ -26,29 +26,14 @@ options(SweaveHooks= list(fig=function() par(mar=c(5.1, 4.1, 1.1, 2.1))),
 
 
 ###################################################
-### code chunk number 3: exIntro1 (eval = FALSE)
+### code chunk number 3: exIntro1
 ###################################################
-## library("pcalg")
-## data("gmG")
-
-
-###################################################
-### code chunk number 4: try-load-pcalg
-###################################################
-tryCatch({
 library("pcalg")
 data("gmG")
-}, error = function(e) {
-    cat("Error almost surely in loading package \"pcalg\":\n",
-        conditionMessage(e))
-    cat(".libPaths():\n"); print(.libPaths())
-    cat("\nFull sessionInfo():\n"); print(sessionInfo())
-    stop()
-})
 
 
 ###################################################
-### code chunk number 5: Iplot (eval = FALSE)
+### code chunk number 4: Iplot (eval = FALSE)
 ###################################################
 ## stopifnot(require(Rgraphviz))# needed for all our graph plots
 ## par(mfrow = c(1,2))
@@ -56,18 +41,15 @@ data("gmG")
 
 
 ###################################################
-### code chunk number 6: exIntroPlot
+### code chunk number 5: exIntro
 ###################################################
 suffStat <- list(C = cor(gmG8$x), n = nrow(gmG8$x))
 pc.gmG <- pc(suffStat, indepTest = gaussCItest,
              p = ncol(gmG8$x), alpha = 0.01)
-stopifnot(require(Rgraphviz))# needed for all our graph plots
-par(mfrow = c(1,2))
-plot(gmG8$g, main = "") ; plot(pc.gmG, main = "")
 
 
 ###################################################
-### code chunk number 7: exIntroPlot
+### code chunk number 6: exIntroPlot
 ###################################################
 stopifnot(require(Rgraphviz))# needed for all our graph plots
 par(mfrow = c(1,2))
@@ -75,19 +57,19 @@ plot(gmG8$g, main = "") ; plot(pc.gmG, main = "")
 
 
 ###################################################
-### code chunk number 8: exIntro2
+### code chunk number 7: exIntro2
 ###################################################
 ida(1, 6, cov(gmG8$x), pc.gmG@graph)
 
 
 ###################################################
-### code chunk number 9: exIntro3
+### code chunk number 8: exIntro3
 ###################################################
 idaFast(1, c(4,5,6), cov(gmG8$x), pc.gmG@graph)
 
 
 ###################################################
-### code chunk number 10: skeleton-args
+### code chunk number 9: skeleton-args
 ###################################################
 showF <- function(f, width = 80) {
     ## 'width': larger than default on purpose:
@@ -103,7 +85,7 @@ showF(skeleton)
 
 
 ###################################################
-### code chunk number 11: skelExpl1Plot
+### code chunk number 10: skelExpl1Plot
 ###################################################
 ## using  data("gmG", package="pcalg")
 suffStat <- list(C = cor(gmG8$x), n = nrow(gmG8$x))
@@ -114,7 +96,7 @@ plot(gmG8$g, main = ""); plot(skel.gmG, main = "")
 
 
 ###################################################
-### code chunk number 12: skelExp2Plot
+### code chunk number 11: skelExp2Plot
 ###################################################
 data("gmD")
 suffStat <- list(dm = gmD$x, nlev = c(3,2,3,4,2), adaptDF = FALSE)
@@ -124,13 +106,13 @@ par(mfrow= 1:2); plot(gmD$g, main = ""); plot(skel.gmD, main = "")
 
 
 ###################################################
-### code chunk number 13: pc-args
+### code chunk number 12: pc-args
 ###################################################
 showF(pc)
 
 
 ###################################################
-### code chunk number 14: pcExpl-plot
+### code chunk number 13: pcExpl-plot
 ###################################################
 suffStat <- list(C = cor(gmG8$x), n = nrow(gmG8$x))
 pc.fit <- pc(suffStat, indepTest=gaussCItest, p = ncol(gmG8$x), alpha = 0.01)
@@ -138,20 +120,20 @@ par(mfrow= c(1,2));  plot(gmG8$g, main = ""); plot(pc.fit, main = "")
 
 
 ###################################################
-### code chunk number 15: obs-score-args (eval = FALSE)
+### code chunk number 14: obs-score-args (eval = FALSE)
 ###################################################
 ## score <- new("GaussL0penObsScore", data = matrix(1, 1, 1),
 ##     lambda = 0.5*log(nrow(data)), intercept = FALSE, use.cpp = TRUE, ...)
 
 
 ###################################################
-### code chunk number 16: ges-args
+### code chunk number 15: ges-args
 ###################################################
 showF(ges)
 
 
 ###################################################
-### code chunk number 17: pcExpl-plot
+### code chunk number 16: gesExpl-plot
 ###################################################
 score <- new("GaussL0penObsScore", gmG8$x)
 ges.fit <- ges(score)
@@ -159,13 +141,13 @@ par(mfrow=1:2); plot(gmG8$g, main = ""); plot(ges.fit$essgraph, main = "")
 
 
 ###################################################
-### code chunk number 18: fci-args
+### code chunk number 17: fci-args
 ###################################################
 showF(fci, width=75)
 
 
 ###################################################
-### code chunk number 19: fciExpl-plot
+### code chunk number 18: fciExpl-plot
 ###################################################
 data("gmL")
 suffStat1 <- list(C = cor(gmL$x), n = nrow(gmL$x))
@@ -175,13 +157,13 @@ par(mfrow = 1:2); plot(gmL$g, main = ""); plot(pag.est)
 
 
 ###################################################
-### code chunk number 20: rfci-args
+### code chunk number 19: rfci-args
 ###################################################
 showF(rfci)
 
 
 ###################################################
-### code chunk number 21: def-rfciExpl-plot (eval = FALSE)
+### code chunk number 20: def-rfciExpl-plot (eval = FALSE)
 ###################################################
 ## data("gmL")
 ## suffStat1 <- list(C = cor(gmL$x), n = nrow(gmL$x))
@@ -190,7 +172,7 @@ showF(rfci)
 
 
 ###################################################
-### code chunk number 22: int-score-args (eval = FALSE)
+### code chunk number 21: int-score-args (eval = FALSE)
 ###################################################
 ## score <- new("GaussL0penIntScore", data = matrix(1, 1, 1),
 ##     targets = list(integer(0)), target.index = rep(as.integer(1), nrow(data)),
@@ -198,13 +180,13 @@ showF(rfci)
 
 
 ###################################################
-### code chunk number 23: gies-args
+### code chunk number 22: gies-args
 ###################################################
 showF(gies)
 
 
 ###################################################
-### code chunk number 24: def-gmInt (eval = FALSE)
+### code chunk number 23: def-gmInt (eval = FALSE)
 ###################################################
 ## ## Used to generate the  'gmInt'  Gaussian data originally:
 ## set.seed(40)
@@ -229,7 +211,7 @@ showF(gies)
 
 
 ###################################################
-### code chunk number 25: load-gmInt
+### code chunk number 24: load-gmInt
 ###################################################
 data(gmInt)
 n.tot <- length(gmInt$target.index)
@@ -239,13 +221,13 @@ n5 <- sum(gmInt$target.index == 3)
 
 
 ###################################################
-### code chunk number 26: load-gmInt
+### code chunk number 25: load-gmInt2
 ###################################################
 data(gmInt)
 
 
 ###################################################
-### code chunk number 27: gies-fit-plot
+### code chunk number 26: gies-fit-plot
 ###################################################
 score <- new("GaussL0penIntScore", gmInt$x, targets = gmInt$targets,
              target.index = gmInt$target.index)
@@ -257,7 +239,7 @@ plot(simy.fit$essgraph, main = "")
 
 
 ###################################################
-### code chunk number 28: def-gmI (eval = FALSE)
+### code chunk number 27: def-gmI (eval = FALSE)
 ###################################################
 ## set.seed(123)
 ## p <- 7
@@ -268,7 +250,7 @@ plot(simy.fit$essgraph, main = "")
 
 
 ###################################################
-### code chunk number 29: idaExpl1
+### code chunk number 28: idaExpl1
 ###################################################
 data("gmI")
 suffStat <- list(C = cor(gmI$x), n = nrow(gmI$x))
@@ -277,7 +259,7 @@ pc.gmI <- pc(suffStat, indepTest=gaussCItest,
 
 
 ###################################################
-### code chunk number 30: idaExpl2
+### code chunk number 29: idaExpl2
 ###################################################
 par(mfrow = c(1,2))
 plot(gmI$g, main = "")
@@ -285,7 +267,7 @@ plot(pc.gmI, main = "")
 
 
 ###################################################
-### code chunk number 31: idaExpl3
+### code chunk number 30: idaExpl3
 ###################################################
 am.pdag <- wgtMatrix(pc.gmI@graph)
 ad <- allDags(am.pdag, am.pdag, NULL)
@@ -296,38 +278,38 @@ for (i in 1:6) plot(gDag[[i]], main = paste("DAG",i))
 
 
 ###################################################
-### code chunk number 32: plot-6DAGS
+### code chunk number 31: plot-6DAGS
 ###################################################
 sfsmisc::mult.fig(6)
 for (i in 1:6) plot(gDag[[i]], main = paste("DAG",i))
 
 
 ###################################################
-### code chunk number 33: idaExpl4
+### code chunk number 32: idaExpl4
 ###################################################
 ida(2, 5, cov(gmI$x), pc.gmI@graph, method = "global", verbose = FALSE)
 
 
 ###################################################
-### code chunk number 34: ida-args
+### code chunk number 33: ida-args
 ###################################################
 showF(ida)
 
 
 ###################################################
-### code chunk number 35: idaExpl5
+### code chunk number 34: idaExpl5
 ###################################################
 ida(2,5, cov(gmI$x), pc.gmI@graph, method = "local")
 
 
 ###################################################
-### code chunk number 36: idaFast-args
+### code chunk number 35: idaFast-args
 ###################################################
 showF(idaFast)
 
 
 ###################################################
-### code chunk number 37: ida-idaFast
+### code chunk number 36: ida-idaFast
 ###################################################
 (eff.est1 <- ida(2,5, cov(gmI$x), pc.gmI@graph, method="local"))
 (eff.est2 <- ida(2,6, cov(gmI$x), pc.gmI@graph, method="local"))
@@ -337,13 +319,13 @@ showF(idaFast)
 
 
 ###################################################
-### code chunk number 38: backdoor-args
+### code chunk number 37: backdoor-args
 ###################################################
 showF(backdoor)
 
 
 ###################################################
-### code chunk number 39: backdoorExCPDAG1
+### code chunk number 38: backdoorExCPDAG1
 ###################################################
 p <- 6
 amat <- t(matrix(c(0,0,1,1,0,1, 0,0,1,1,0,1, 0,0,0,0,1,0,
@@ -366,7 +348,7 @@ true.amat <- as(myCPDAG, "matrix")
 
 
 ###################################################
-### code chunk number 40: backdoorExpl
+### code chunk number 39: backdoorExpl
 ###################################################
 par(mfrow = c(1,2))
 plot(g, main = "")
@@ -374,19 +356,19 @@ plot(myCPDAG, main = "")
 
 
 ###################################################
-### code chunk number 41: backdoorExCPDAG2
+### code chunk number 40: backdoorExCPDAG2
 ###################################################
 backdoor(true.amat, 6, 3, type="cpdag")
 
 
 ###################################################
-### code chunk number 42: turn-off-plus
+### code chunk number 41: turn-off-plus
 ###################################################
 options(continue = " ") # MM: so we don't get the "+ " continuation lines
 
 
 ###################################################
-### code chunk number 43: myCItest
+### code chunk number 42: myCItest
 ###################################################
 myCItest <- function(x,y,S, suffStat) {
   if (length(S) == 0) {
@@ -401,14 +383,14 @@ myCItest <- function(x,y,S, suffStat) {
 
 
 ###################################################
-### code chunk number 44: gaussCItest-ex
+### code chunk number 43: gaussCItest-ex
 ###################################################
 suffStat <- list(C = cor(gmG8$x), n = 5000)
 pc.gmG <- pc(suffStat, indepTest=gaussCItest, p = 8, alpha = 0.01)
 
 
 ###################################################
-### code chunk number 45: myCItest-def-plot (eval = FALSE)
+### code chunk number 44: myCItest-def-plot (eval = FALSE)
 ###################################################
 ## pc.myfit <- pc(suffStat = gmG8$x, indepTest = myCItest,
 ##                p = 8, alpha = 0.01)
@@ -416,7 +398,7 @@ pc.gmG <- pc(suffStat, indepTest=gaussCItest, p = 8, alpha = 0.01)
 
 
 ###################################################
-### code chunk number 46: myCItest-ex-plot
+### code chunk number 45: myCItest-ex-plot
 ###################################################
 pc.myfit <- pc(suffStat = gmG8$x, indepTest = myCItest,
                p = 8, alpha = 0.01)
@@ -424,7 +406,7 @@ par(mfrow = c(1,2)); plot(pc.gmG, main = ""); plot(pc.myfit, main = "")
 
 
 ###################################################
-### code chunk number 47: time-tests (eval = FALSE)
+### code chunk number 46: time-tests (eval = FALSE)
 ###################################################
 ## system.time(for(i in 1:10)
 ##             pc.fit <- pc(suffStat, indepTest=gaussCItest, p = 8, alpha = 0.01))
@@ -440,13 +422,7 @@ par(mfrow = c(1,2)); plot(pc.gmG, main = ""); plot(pc.myfit, main = "")
 
 
 ###################################################
-### code chunk number 48: sessionInfo
-###################################################
-toLatex(sessionInfo(), locale=FALSE)
-
-
-###################################################
-### code chunk number 49: finalizing
+### code chunk number 47: finalizing
 ###################################################
 options(op.orig)
 

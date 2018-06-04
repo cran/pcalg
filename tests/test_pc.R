@@ -1,4 +1,5 @@
 library(pcalg)
+(doExtras <- pcalg:::doExtras())
 
 showProc.time <- local({
     pct <- proc.time()
@@ -29,6 +30,7 @@ for (ii in 1:nreps) {
 
 showProc.time()
 
+if (doExtras) {
 ##################################################
 ## Conservative PC
 ##################################################
@@ -172,3 +174,4 @@ correctEst6 <- all(dag8.amat == dag9.amat)
 if (!correctEst6) stop("Test population conservative PC wrong: example 6!")
 
 showProc.time()
+}

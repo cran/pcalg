@@ -67,7 +67,8 @@ gac(amat, x, y, z, type = "pag")
   
   For details on the GAC for DAGs, CPDAGs, PAGs see Perkovic et. al (2015,2017a). For details on the GAC for MAGs see van der Zander et. al (2014) and for details on the GAC for maximal PDAGs see Perkovic et. al (2017b).
 
-  For the coding of the adjacency matrix see \link{amatType}.
+  For the coding of the adjacency matrix see \link{amatType}. The input
+  matrix can either be of class \code{matrix} or of class \code{amat}.
 }
 \value{
   A \code{\link{list}} with three components:

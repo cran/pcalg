@@ -34,7 +34,7 @@ is returned that consists of all (possible) ancestors of \code{x} and {y},
 minus (possible) descendants of nodes on proper causal paths.  This canonical adjustment set is always valid if any valid set exists at all.
 }
 \value{
-List of adjustment sets.
+If adjustment sets exist, list of length at least one (list elements might be empty vectors, if the empty set is an adjustment set). If no adjustment set exists, an empty list is returned.
 }
 \references{
   E. Perkovic, J. Textor, M. Kalisch and M.H. Maathuis (2015). A

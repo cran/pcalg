@@ -1,0 +1,1608 @@
+\documentclass{article}
+\usepackage{amsmath}% sophisticated mathematical formulas with amstex (includes \text{})
+\usepackage{amssymb}% (ditto)
+\usepackage{natbib}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\definecolor{Red}{rgb}{0.5,0,0}
+\definecolor{Blue}{rgb}{0,0,0.5}
+\hypersetup{% no ugly  color rectangles around links
+  hyperindex = {true},
+  colorlinks = {true},
+  linktocpage = {true},
+  plainpages = {false},
+  linkcolor = {Blue},
+  citecolor = {Blue},
+  urlcolor = {Red},
+  pdfview = {XYZ null null null}
+}
+\newcommand*{\pkg}[1]{\texttt{#1}}% or use jss.cls which defines that
+
+%\bibliographystyle{unsrtnat}
+\bibliographystyle{plainnat}
+
+\begin{document}
+
+<<preliminaries, echo=FALSE, results=hide>>=
+op.orig <-
+options(width = 79,
+        ## SweaveHooks= list(fig=function() par(mar=c(5.1, 4.1, 1.1, 2.1))),
+        useFancyQuotes = FALSE,
+        ## prompt="R> ", continue="+  " # << JSS
+           prompt="> " , continue="  "  # << nicer
+        )
+Sys.setenv(LANGUAGE = "en")
+if(.Platform$OS.type != "windows")
+  Sys.setlocale("LC_MESSAGES","C")
+
+PCversion <- packageDescription('pcalg')$Version # *not* "2.6-0" - needs updating
+@
+
+%\VignetteIndexEntry{Overview of the 'pcalg' Package for R}
+%\VignetteDepends{pcalg, Rgraphviz, huge, ggplot2} % plus pcalg's dep. graph, dagitty, igraph
+\SweaveOpts{engine=R, eps=FALSE, pdf=TRUE, strip.white=true, keep.source=TRUE}% ,width=7,height=4
+
+% title
+\title{An Overview of the \texttt{pcalg} Package for \texttt{R}}
+\author{M. Kalisch\thanks{ETH Z\"urich} \and
+  A. Hauser\thanks{Bern University of Applied Sciences} \and
+  M.H. Maathuis\footnotemark[1] \and
+  Martin M\"achler\footnotemark[1]}
+\maketitle
+% end title
+\tableofcontents
+
+<<loadPackage, echo=FALSE, message=FALSE, warning=FALSE>>=
+library(pcalg)
+stopifnot(require(Rgraphviz))# needed for all our graph plots
+library(graph)
+@
+
+<<show-args, echo=FALSE>>=
+showF <- function(f, width = 50) {
+    ## 'width': larger than default on purpose:
+    nam <- deparse(substitute(f))
+    stopifnot(is.function(f))
+    ll <- capture.output(str(removeSource(f), width=width))
+    ll[1] <- sub("function *", nam, ll[1])
+    writeLines(ll)
+}
+@
+
+\section{Introduction}
+The paper \cite{KalischEtAl12} reports on pcalg Version 1.1-4. Back then,
+the package covered basic functions for
+structure learning (\texttt{pc}, \texttt{fci}, \texttt{rfci}), as well as a method to compute bounds on total causal effects (\texttt{ida}). Since 2012, the \pkg{pcalg} package has been extended in two main areas: structure learning methods and covariate adjustment methods.
+
+In this document, we give an overview of the functionality of \texttt{pcalg}  (\Sexpr{PCversion}). In section~2 and 3 we focus on methods for structure learning and covariate adjustment, respectively. In section~4 we discuss provided methods for random graph generation (e.g. for simulation studies). In section~5 we end with notes on some implementation details. The sections can be read independently.
+
+We assume that the reader is familiar with basic terminology of structure learning and causal inference. For theoretical background or technical details we refer the reader to papers throughout the text. As a first introduction, one might consult the overview papers \cite{KalischBuehlmann14}, \cite{handbookNandy16}, \cite{drton17} or \cite{deml18}.
+
+\section{Structure Learning}
+\subsection{Introduction}
+\label{sec:intro-structure-learning}
+The goal in structure learning is to estimate the DAG or MAG representing
+the causal structure of the data generating mechanism, while the exact
+parameters of the causal structure are of less importance. For this,
+observational data or a mix of observational and interventional data might
+be available. Sometimes it might only be possible to estimate the Markov
+equivalence class of the true DAG or MAG.
+
+The available functions for structure learning in package \pkg{pcalg} can be categorized in the following way:
+
+\begin{itemize}
+\item Constraint-based assuming no hidden confounders, i.i.d.: \\ \texttt{skeleton()}, \texttt{pc()}, \texttt{lingam()}
+\item Constraint-based, allowing hidden variables, i.i.d.: \\ \texttt{fci()}, \texttt{rfci()}, \texttt{fciPlus()}
+\item Score-based assuming no hidden confounders, i.i.d.: \\ \texttt{ges()}
+\item Hybrid of constraint-based and score-based, assuming no hidden confounders, i.i.d.: ARGES (implemented in \texttt{ges()})
+\item Score-based possibly with data from different settings, no hidden variables: \\ \texttt{gies() and \texttt{simy()}}
+\end{itemize}
+More details on the assumptions can be found in section \ref{sec:slAssumptions}.
+
+\subsection{Constraint-based methods}
+This section follows \cite{KalischBuehlmann14}, where more details can
+be found.
+Given a causal structure one can derive constraints which every
+distribution generated from this causal structure must obey. The most
+prominent example of such constraints are conditional independence
+statements. Constraint-based learning checks for such constraints given
+data and thus ideally can reverse-engineer the causal structure of the data
+generating mechanism.
+
+\subsubsection{\texttt{pc()} and \texttt{skeleton()}}
+\label{sec:skeleton}
+One prominent example of constraint-based learning (assuming no latent
+variables are present) is the PC-algorithm \cite{SpirtesEtAl00} which
+estimates the CPDAG of the true causal structure. It can be outlined in
+three steps.
+
+In the first step of the PC-algorithm, the skeleton of the DAG is estimated.
+The skeleton of a DAG is the undirected graph that has the same edges as the DAG but no edge orientations.
+The algorithm starts with a complete undirected graph. Then, for each edge (say, between
+$a$ and $c$) the constraint is tested, whether there is any conditioning
+set $s$, so that $a$ and $c$ are conditional independent given $s$. If such
+a set (called a \emph{separation set} or $sepset(a,c)$) is found, the edge between $a$ and
+$c$ is deleted.
+
+In the second step of the PC-algorithm (i.e. after finding the skeleton as explained above),
+unshielded triples are oriented. An unshielded triple are three nodes $a$, $b$ and $c$ with $a-b$, $b-c$ but $a$ and $c$ are not connected. If node $b$ is not in $sepset(a,c)$, the unshielded triples $a-b-c$ is oriented into an unshielded collider $a \rightarrow b \leftarrow c$. Otherwise $b$ is marked as a non-collider on $a-b-c$.
+
+In the third step, the partially directed graph from step two is checked using three rules to see if further edges can be oriented while avoiding new unshielded colliders (all of them were already found in step two) or cycles (which is forbidden in a DAG).
+
+The first part of the PC-algorithm is implemented in function \texttt{skeleton()}.
+The main task of function \texttt{skeleton()} in finding the skeleton is to compute and test several conditional
+independencies. To keep the function flexible, \texttt{skeleton()} takes as
+argument a function \texttt{indepTest()} that performs these conditional
+independence tests and returns a p-value. All information that is needed in
+the conditional independence test can be passed in the argument
+\texttt{suffStat}. The only exceptions are the number of variables \texttt{p}
+and the significance level \texttt{alpha} for the conditional independence
+tests, which are passed separately. Instead of specifying the number of
+variables \texttt{p}, one can also pass a character vector of variable names
+in the argument \texttt{labels}.
+
+We show the usage of this function in a short example using built-in data.
+The dataset $gmG8$ contains $n=5000$ observations of $p = 8$
+continuous variables with a multivariate Gaussian distribution.
+
+<<exIntro1>>=
+library("pcalg")
+data("gmG") ## loads data set gmG8
+@
+
+In this example, the predefined function
+\texttt{gaussCItest()} is used for testing conditional independence. The
+corresponding sufficient statistic consists of the correlation matrix of
+the data and the sample size. Based on this input, the function \texttt{skeleton()}
+estimates the skeleton of the causal structure. The true DAG and the estimated skeleton of the causal structure are shown in
+Fig.~\ref{fig:intro1}.
+
+<<exIntroSkel>>=
+suffStat <- list(C = cor(gmG8$x), n = nrow(gmG8$x))
+varNames <- gmG8$g@nodes
+skel.gmG8 <- skeleton(suffStat, indepTest = gaussCItest,
+                      labels = varNames, alpha = 0.01)
+@
+
+Finding the skeleton is also the first step in the algorithms FCI, RFCI and FCI+.
+
+The PC-algorithm is implemented in function \texttt{pc()}. The arguments follow closely the arguments of \texttt{skeleton()}, i.e., the most important arguments consist of an conditional independence test and a suitable sufficient statistic.
+
+We continue the previous example and illustrate function \texttt{pc()} using the built-in dataset $gmG8$. The result is shown in
+Fig.~\ref{fig:intro1} (bidirected edges need to be interpreted as undirected edges in the resulting CPDAG).
+
+<<exIntroPC>>=
+suffStat <- list(C = cor(gmG8$x), n = nrow(gmG8$x))
+varNames <- gmG8$g@nodes
+pc.gmG8 <- pc(suffStat, indepTest = gaussCItest,
+              labels = varNames, alpha = 0.01)
+@
+
+
+\begin{figure}[htb]
+  \centering
+<<exIntroPlot, echo=FALSE, fig=TRUE, fig.width=5, fig.height=2.5>>=
+stopifnot(require(Rgraphviz))# needed for all our graph plots
+par(mfrow = c(1,3))
+plot(gmG8$g, main = "");    box(col="gray")
+plot(skel.gmG8, main = ""); box(col="gray")
+plot(pc.gmG8, main = "");   box(col="gray")
+@
+\caption{True causal DAG (left), estimated skeleton (middle) and estimated CPDAG (right). In the CPDAG, bidirected edges need to be interpreted as undirected edges.}
+\label{fig:intro1}
+\end{figure}
+
+
+The PC algorithm is known to be order-dependent, in the sense that the
+computed skeleton depends on the order in which the variables are given. Therefore,
+\cite{ColomboMaathuis14} proposed a simple modification, called PC-stable, that yields
+order-independent adjacencies in the skeleton. In this function we
+implement their modified algorithm by using the argument
+\texttt{method = "stable"}, while the old order-dependent implementation
+can be called by using the argument \texttt{method = "original"}.
+While the argument \texttt{method = "stable"} calls an implementation
+of PC-stable written completely in \texttt{R}, the argument
+\texttt{method = "stable.fast"} calls a faster \texttt{C++}
+implementation of the same algorithm. In most cases,
+\texttt{method = "stable.fast"} will be the method of choice. The
+method \texttt{"stable"} is mostly of use in cases where strict backward-compatibility
+is required.  Backward-compatibility is also the reason why the default value
+for the argument \texttt{method} is still \texttt{"stable"} rather than
+\texttt{"stable.fast"}.
+
+We recall that in the default implementation unshielded triples $a-b-c$ are oriented based on $sepset(a,c)$.
+In the conservative (\texttt{conservative = TRUE}; see \cite{Ramsey06cons}) or majority rule (\texttt{maj.rule = TRUE}; see \cite{ColomboMaathuis14}) versions, the algorithm determines all subsets of $Adj(a) \setminus {c}$ (where $Adj(a)$ are all nodes adjecent to $a$) and $Adj(c) \setminus {a}$ that make $a$ and $c$ conditionally independent. They are called separating sets. In the conservative version $a-b-c$ is oriented as $a \rightarrow b \leftarrow c$ if $b$ is in none of the separating sets. If $b$ is in all separating sets, it is set as a non v-structure. If, however, $b$ is in only some separating sets, the triple $a - b - c$ is marked as "ambiguous".  Moreover, if no separating set is found among the neighbors, the triple is also marked as "ambiguous".
+
+In the majority rule version the triple $a - b - c$
+is marked as "ambiguous" if and only if $b$ is in exactly 50 percent of such
+separating sets or no separating set was found. If $b$ is in less than 50
+percent of the separating sets it is set as a v-structure, and if in more
+than 50 percent it is set as a non v-structure.
+
+Drawing a conclusion, the stable version of estimating the skeleton resolves the order-dependence issue wrt. the skeleton. Moreover, the useage of either the conservative or the majority rule versions resolve the order-dependence issues of the
+determination of the v-structures.
+
+\subsubsection{\texttt{fci()} and \texttt{rfci()}}
+\label{sec:fci}
+Another prominent example of constraint-based learning, which allows for
+latent variables, is the FCI-algorithm \cite{SpirtesEtAl00}. FCI estimates
+the PAG of the underlying causal structure and can be outlined in five
+steps.
+
+In the first and second step, an initial skeleton and unshielded colliders
+are found as in the PC-algorithm. In the third step, a set called
+``Possible-D-SEP'' is computed. The edges of the initial skeleton are then
+tested for conditional independence given subsets of Possible-D-SEP (note
+that Possible-D-SEP is not restricted to adjacency sets of $X$ and $Y$).
+If conditional independencies are found, the conditioning sets are recorded
+as separating sets and the corresponding edges are removed (as in step 1 of
+PC-algorithm). Thus, edges of the initial skeleton might be removed and the
+list of separating sets might get extended. In step four, unshielded
+colliders in the updated skeleton are oriented based on the updated list of
+separating sets. In step five, further orientation rules are applied (see \cite{Zhang08-orientation-rules}).
+
+The FCI-algorithm is implemented in the function \texttt{fci()}. As in the function \texttt{pc()}
+we need two types of input: A function that evaluates conditional independence tests in a suitable
+way and a sufficient statistic of the data (i.e.,
+a suitable summary) on which the conditional independence function
+works. Again, significance level \texttt{alpha} acts as a tuning
+parameter.
+
+As an example, we show the usage of function \texttt{fci()} on a built-in dataset \texttt{gmL} containing four variables with a multivariate Gaussian distribution. The data was generated from a DAG model with one latent variable (variable $1$) and four observed variables (variables $2$, $3$, $4$ and $5$) as shown in Fig.~\ref{fig:intro2}. We use the correlation matrix as sufficient statistic and function \texttt{gaussCItest()} as conditional independence test. Based on this input, the function \texttt{fci()}
+estimates the causal structure of the observed variables in the form of a PAG as shown in
+Fig.~\ref{fig:intro2}\footnote{Due to a persistent bug in package \pkg{Rgraphviz} the edge marks are not always placed at the end of an edge, as here on the edge between node $2$ and node $5$.}.
+
+<<exIntroFCI>>=
+data("gmL")
+suffStat <- list(C = cor(gmL$x), n = nrow(gmL$x))
+fci.gmL <- fci(suffStat, indepTest=gaussCItest,
+               alpha = 0.9999, labels = c("2","3","4","5"))
+@
+
+\begin{figure}[htb]
+  \centering
+<<exIntroPlotFCI, echo=FALSE, fig=TRUE, fig.width=5, fig.height=2.5>>=
+stopifnot(require(Rgraphviz))# needed for all our graph plots
+par(mfrow = c(1,2))
+plot(gmL$g) ; box(col="gray")
+plot(fci.gmL); box(col="gray")
+@
+\caption{True causal DAG (left) and estimated PAG on the observed nodes with the labels $2$, $3$, $4$ and $5$ (right).}
+\label{fig:intro2}
+\end{figure}
+
+The function \texttt{rfci()} is a fast approximation of the function \texttt{fci()}. It avoids computing any Possible-D-SEP sets and does not conduct tests conditioning on subsets of Possible-D-SEP. This makes RFCI much faster than FCI. Mainly the orientation rules for unshielded triples were modified in order to produce an RFCI-PAG which, in the oracle version, is guaranteed to have the correct ancestral relationships.
+
+Since the FCI and RFCI algorithms are build upon the PC algorithm, they
+are also order-dependent in their skeleton estimation. It is more involved, however, to resolve their order-dependence
+issues in the skeleton, see \cite{ColomboMaathuis14}. However, the default
+function estimates an initial order-independent skeleton in these
+algorithms (for additional details on how to make the final skeleton of FCI
+fully order-independent, see \cite{ColomboMaathuis14}).
+
+\subsubsection{\texttt{fciPlus()}}
+The FCI algorithm yields the true PAG (ignoring sampling error) but suffers
+(in the worst case) from exponential runtime even if the underlying graph
+is sparse. The RFCI algorithm is a fast approximation of the FCI
+algorithm. While the output of RFCI might be a different graph (even when
+ignoring sampling error), the derived ancestral informations are guaranteed
+to be correct but perhaps less informative than the true PAG.
+
+\cite{ClaassenMooijHeskes13} proposed the FCI+ algorithm which improves
+on FCI and RFCI in the following way: It yields the true PAG (ignoring
+sampling error) and is of polynomial complexity in the number of nodes, at
+least for sparse graphs with a bounded neighbourhood. The FCI+ algorithm in
+implemented in the function \texttt{fciPlus()}. The available arguments are a
+subset of the arguments available in \texttt{fci()}.
+
+We return to the example from section \ref{sec:fci} and show the usage of function \texttt{fciPlus()} on the built-in dataset \texttt{gmL} containing four gaussian variables.
+
+<<exIntroFCIplus>>=
+suffStat <- list(C = cor(gmL$x), n = nrow(gmL$x))
+fciPlus.gmL <- fciPlus(suffStat, indepTest=gaussCItest,
+                       alpha = 0.9999, labels = c("2","3","4","5"))
+@
+
+The estiamted PAG is identical to the PAG shown in Fig.~\ref{fig:intro2}.
+
+
+\subsection{Score-based methods}
+An alternative to constraint-based learning is a score-based
+approach. The idea behind score-based learning is the following: The
+agreement between data and a possible causal structure is assessed by a
+score. The causal structure is then estimated by the causal structure
+with the best score. With this approach the choice of the scoring function
+is crucial. Moreover, due to the large space of possible causal structures, heuristic
+search methods are often used.
+
+\subsubsection{\texttt{ges() for the GES algorithm}}
+\label{sec:ges}
+A prominent example of score-based learning is Greedy-Equivalent-Search
+(GES) (\cite{Chickering02, Chickering03}). This algorithm
+scores the causal structure using a score-equivalent and decomposable
+score, such as the BIC score
+(\cite{Schwarz78}). A score is score-equivalent, if it assigns
+the same value to all DAGs within the same Markov equivalence class. A
+score is decomposable, if it can be computed as a sum of terms (typically
+one term for each node) depending only on local features of the causal
+structure.
+
+The idea of GES is to greedily search through Markov equivalence classes, i.e. the space of CPDAGs. It can be outlined in two (or three) steps. The GES algorithm starts with a CPDAG (often the empty CPDAG) and then adds, in a first step (called ``forward phase''), edges in a greedy way (i.e. maximising the increase in score) until the considered score cannot be further increased.  A single edge addition or, more precisely, forward step conceptually consists of getting a DAG representative of the former CPDAG, adding a single arrow to this DAG, and finally calculating the CPDAG of the new DAG.  Then, in a second step (called ``backward phase''), edges are greedily removed until, again, an optimum of the score is reached.  As before, a single backward step in the space of CPDAGs is analogous to removing a single arrow from a graph in the space of DAGs.  The benefit of the GES algorithm lies in the fact that it explores the search space in a computationally efficient manner, i.e. without actually generating the aforementioned representatives. GES was shown to be consistent in the setting where the number of variables remains fixed and the sample size goes to infinity (see \cite{Chickering02}). This is quite remarkable, since it involves a greedy search.
+
+The algorithm can be improved by including a turning phase ("third step") of edges (see \cite{HauserBuehlmann12}).
+
+For the score-based GES algorithm, we have to define a score object before applying the inference algorithm.
+A score object is an instance of a class derived from the base class
+\texttt{Score}.  This base class is implemented as a virtual reference class.
+At the moment, the \pkg{pcalg} package only contains classes derived from
+\texttt{Score} for Gaussian data: \texttt{GaussL0penObsScore} for purely
+i.i.d. data, and \texttt{GaussL0penIntScore} for a mixture of
+data sources (e.g. observational and interventional data); for the GES algorithm, we only need
+the first one here, but we will encounter the second one in the discussion
+of GIES, an extension of GES to interventional data (see section \ref{sec:gies}).
+However, the flexible implementation using class inheritance allows the user to
+implement own score classes for different scores.
+
+The predefined score-class \texttt{GaussL0penObsScore} implements an $\ell_0$-penalized maximum-likelihood estimator for observational data from a linear structural equation model with Gaussian noise.  In such a model, associated with a DAG $G$, every structural equation is of the form $X = c + BX + \varepsilon$ where $\varepsilon$ follows a mutivariate normal distribution and $B_{ij} \neq 0$ iff node $X_j$ is a parent of node $X_i$ in $G$.
+Given a dataset $D$, the score of a DAG $G$ is then defined as
+\begin{equation}
+  S(G, D) := \log(L(D)) - \lambda \cdot k\ ,
+  \label{eqn:score-definition}
+\end{equation}
+where $L(D)$ stands for the maximum of the likelihood function of the model, and $k$ represents the number of parameters in the model.
+
+An instance of \texttt{GaussL0penObsScore} is generated as follows:
+<<obs-score-args, eval = FALSE>>=
+score <- new("GaussL0penObsScore", data = matrix(1, 1, 1),
+    lambda = 0.5*log(nrow(data)), intercept = FALSE,
+    use.cpp = TRUE, ...)
+@
+The data matrix is provided by the argument \texttt{data}.  The penalization
+constant $\lambda$ (see equation (\ref{eqn:score-definition})) is specified
+by \texttt{lambda}.  The default value of \texttt{lambda}
+corresponds to the BIC score; the AIC score is realized by setting
+\texttt{lambda} to $1$.  The argument \texttt{intercept} indicates whether the
+model should allow for intercepts (\texttt{c} in the above equation) in the linear structural equations.
+The last argument \texttt{use.cpp} indicates whether the
+internal C++ library should be used for calculation, which is in most cases
+the best choice for reasons of speed.
+
+Once a score object is defined, the GES algorithm is called as follows:
+<<ges-args, echo = FALSE>>=
+showF(ges)
+@
+The argument \texttt{score} is a score object defined before.  The phases (forward, backward, or turning) that should actually be used are specified with the \texttt{phase} argument.  The argument \texttt{iterate} indicates whether the specified phases should be executed only once (\texttt{iterate = FALSE}), or whether they should be executed over and over again until no improvement of the score is possible anymore (\texttt{iterate = TRUE}).  The default settings require all three phases to be used iteratively.  The original implementation of \cite{Chickering2002} corresponds to setting \texttt{phase = c("forward", "backward"), iterate = FALSE}.
+
+In Fig.~\ref{fig:gesFit}, we re-analyze the dataset used in the example of
+Fig.~\ref{fig:intro1} with the GES algorithm.  The estimated graph is
+exactly the same in this case.  Note that GES is order-independent (although the result depends on the starting graph of GES) by design,
+and that it does, in contrast to the PC algorithm, not depend on the \texttt{skeleton()}
+function.
+
+\begin{figure}
+  \centering
+<<gesExpl-plot, fig=TRUE, fig.width=5, fig.height=2.5>>=
+score <- new("GaussL0penObsScore", gmG8$x)
+ges.fit <- ges(score)
+par(mfrow=1:2)
+plot(gmG8$g, main = "")          ; box(col="gray")
+plot(ges.fit$essgraph, main = ""); box(col="gray")
+@
+\caption{True underlying DAG (left) and CPDAG (right) estimated
+  with the GES algorithm fitted on the simulated Gaussian dataset \texttt{gmG8}.}
+\label{fig:gesFit}
+\end{figure}
+
+
+\subsubsection{\texttt{gies()}}
+\label{sec:gies}
+The algorithms PC and GES both rely on the i.i.d.\ assumption and are not
+suited for causal inference from interventional data.  The GIES algorithm,
+which stands for ``greedy interventional equivalence search'', is a
+generalization of GES to a mix of observational and interventional (where interventions are known) data or data from different settings (\cite{HauserBuhlmann2012}).
+It does not only make sure that interventional
+data points are handled correctly (instead of being wrongly treated as
+observational data points), but also accounts for the improved
+identifiablity of causal models under interventional data by returning an
+\emph{interventional CPDAG}.
+
+The usage of \texttt{gies()} is similar to that of
+\texttt{ges()} described above. Actually, the function \texttt{ges()} is only an
+internal wrapper for \texttt{gies()}.
+
+A dataset with jointly interventional and observational data points is
+\emph{not} i.i.d.  In order to use it for causal inference, we must specify
+the intervention target each data point belongs to.  This is done by
+specifying the arguments \texttt{target} and \texttt{target.index} when
+generating an instance of \texttt{GaussL0penIntScore}:
+<<int-score-args, eval = FALSE>>=
+score <- new("GaussL0penIntScore", data = matrix(1, 1, 1),
+    targets = list(integer(0)),
+    target.index = rep(as.integer(1), nrow(data)),
+    lambda = 0.5*log(nrow(data)), intercept = FALSE,
+    use.cpp = TRUE, ...)
+@
+The argument \texttt{targets} is a list of all (mutually different) targets
+that have been intervened in the experiments generating the dataset (joint interventions are possible).  The
+allocation of sample indices to intervention targets is specified by the
+argument \texttt{target.index}.  This is an integer vector whose first entry
+specifies the index of the intervention target in the list \texttt{targets}
+of the first data point, whose second entry specifies the target index of
+the second data point, and so on.
+
+An example can be found in the dataset \texttt{gmInt} which can be loaded by
+<<load-gmInt>>=
+data(gmInt)
+@
+<<inspect-gmInt, echo = FALSE>>=
+n.tot <- length(gmInt$target.index)
+n.obs <- sum(gmInt$target.index == 1)
+n3 <- sum(gmInt$target.index == 2)
+n5 <- sum(gmInt$target.index == 3)
+@
+The dataset consists of \Sexpr{n.tot} data points sampled from the DAG in Fig.~\ref{fig:gesFit}, among them \Sexpr{n.obs} observational ones, \Sexpr{n3} originating from an intervention at vertex $3$ (with node label "Ctrl") and \Sexpr{n5} originating from an intervention at vertex $5$ (with node label "V5").  These sampling properties are encoded by \texttt{gmInt\$targets}, which is a list consisting of an empty vector, the (one-dimensional) vector \texttt{c(3)} and the vector \texttt{c(5)}, and by \texttt{gmInt\$target.index}, which is a vector with \Sexpr{n.tot} entries in total, \Sexpr{n.obs} $1$'s (referring to the first target, the empty one), \Sexpr{n3} $2$'s (referring to the second target, \texttt{c(3)}), and finally \Sexpr{n5} $3$'s (referring to the third target, \texttt{c(5)}).
+
+Once a score object for interventional data is defined as described above, the GIES algorithm
+is called as follows:
+<<gies-args, echo = FALSE>>=
+showF(gies, width = 60)
+@
+Most arguments coincide with those of \texttt{ges()}.  The causal model underlying \texttt{gmInt} as well as the interventional CPDAG estimated by GIES can be found in Fig.~\ref{fig:giesFit}.
+
+<<def-gmInt, eval=FALSE, echo=FALSE>>=
+## Used to generate the  'gmInt'  Gaussian data originally:
+set.seed(40)
+p <- 8
+n <- 5000
+gGtrue <- randomDAG(p, prob = 0.3)
+pardag <- as(gGtrue, "GaussParDAG")
+pardag$set.err.var(rep(1, p))
+targets <- list(integer(0), 3, 5)
+target.index <- c(rep(1, 0.6*n), rep(2, n/5), rep(3, n/5))
+
+x1 <- rmvnorm.ivent(0.6*n, pardag)
+x2 <- rmvnorm.ivent(n/5, pardag, targets[[2]],
+                    matrix(rnorm(n/5, mean = 4, sd = 0.02), ncol=1))
+x3 <- rmvnorm.ivent(n/5, pardag, targets[[3]],
+                    matrix(rnorm(n/5, mean = 4, sd = 0.02), ncol=1))
+gmInt <- list(x = rbind(x1, x2, x3),
+              targets = targets,
+              target.index = target.index,
+              g = gGtrue)
+@
+
+
+\begin{figure}
+  \centering
+<<gies-fit-plot, fig=TRUE, fig.width=5, fig.height=2.5>>=
+score <- new("GaussL0penIntScore", gmInt$x, targets = gmInt$targets,
+             target.index = gmInt$target.index)
+gies.fit <- gies(score)
+simy.fit <- simy(score)
+par(mfrow = c(1,3))
+plot(gmInt$g, main = "")           ; box(col="gray")
+plot(gies.fit$essgraph, main = "") ; box(col="gray")
+plot(simy.fit$essgraph, main = "") ; box(col="gray")
+@
+  \caption{The underlying DAG (left) and the CPDAG estimated with
+    the GIES algorithm (middle) and the dynamic programming approach of
+    \cite{Silander2006} (right) applied on the simulated interventional
+    Gaussian dataset \texttt{gmInt}.  This dataset contains data from
+    interventions at vertices $3$ (with label "Ctrl") and $5$ (with label "V5"); accordingly, the orientation of
+    all arrows incident to these two vertices becomes identifiable (see
+    also Fig.~\ref{fig:gesFit} for comparison with the observational
+    case).}
+  \label{fig:giesFit}
+\end{figure}
+
+\subsubsection{\texttt{simy()}}
+As an alternative to GIES, we can also use the dynamic programming approach
+of \cite{Silander2006} to estimate the interventional CPDAG from
+this interventional dataset.  This algorithm is implemented in the
+function \texttt{simy()} which has the same arguments as \texttt{gies()}.
+This approach yields the \emph{exact}
+optimum of the BIC score at the price of a computational complexity which
+is exponential in the number of variables.  On the small example based on
+$8$ variables this algorithm is feasible; however, it is not
+feasible for more than approximately $25$ variables, depending on the
+processor and memory of the machine.  In this example, we get exactly the
+same result as with \texttt{gies()} (see Fig.~\ref{fig:giesFit}).
+
+\subsection{Hybrid methods: ARGES}
+\label{sec:arges}
+It is possible to restrict the search space of GES to subgraphs of a skeleton or conditional independence graph (CIG)\footnote{In a CIG an edge is missing if the two end-nodes are conditionally independent when conditioning on all remaining nodes.}
+estimated in advance.  Such a combination of a constraint-based and a
+score-based algorithm is called a hybrid method.
+
+GES can be restricted to subgraphs of a given graph using the argument \texttt{fixedGaps}.  This argument takes a symmetric boolean matrix; if the entry $(i, j)$ is \texttt{TRUE}, \texttt{ges()} is not allowed to put an edge between nodes $i$ and $j$.  In other words, the argument \texttt{fixedGaps} takes the adjacency matrix of the graph complement \footnote{i.e. edges become gaps and gaps become edges}
+of a previously estimated CIG or skeleton, as illustrated in the follwing code example:
+<<rgesExpl>>=
+score <- new("GaussL0penObsScore", gmG8$x)
+suffStat <- list(C = cor(gmG8$x), n = nrow(gmG8$x))
+skel.fit <- skeleton(suffStat = suffStat, indepTest = gaussCItest,
+                     alpha = 0.01, p = ncol(gmG8$x))
+skel <- as(skel.fit@graph, "matrix")
+ges.fit <- ges(score, fixedGaps = !skel)
+@
+The resulting graph is not shown, it is the same as in Fig.~\ref{fig:gesFit}.
+
+The drawback of this straight-forward approach of a hybrid algorithm is the lack of consistency, even when using a consistent estimator for the undirected graph.  \cite{NandyHauserMaathuis18} showed that a small modification of the forward phase of GES makes its combination with a consistent CIG or skeleton estimator consistent again; this modification is called ARGES, ``adaptively restricted GES''.  ARGES can be called using the argument \texttt{adaptive} of the function \texttt{ges()}:
+
+<<argesExpl, message=FALSE>>=
+score <- new("GaussL0penObsScore", gmG8$x)
+library(huge)
+huge.path <- huge(gmG8$x, verbose = FALSE)
+huge.fit <- huge.select(huge.path, verbose = FALSE)
+cig <- as.matrix(huge.fit$refit)
+ges.fit <- ges(score, fixedGaps = !cig, adaptive = "vstructures")
+@
+
+In this example (which again yields the same plot as in Fig.~\ref{fig:gesFit}), we used methods from package \pkg{huge} to estimate the CIG in advance.  Next, we called \texttt{ges()} with the argument \texttt{adaptive="vstructures"}, which calls a variant of ARGES called ARGES-CIG.  When estimating the \emph{skeleton} instead of the CPDAG in advance, one should use ARGES-skeleton instead, another variant of ARGES (called by the argument \texttt{adaptive="triples"}).  In both variants of ARGES, only the forward phase is different from the base version of GES, the backward (and possibly turning) phase are identical. Note that the instruction on fixed gaps is not guaranteed to be respected in the final output as explained in \cite{NandyHauserMaathuis18}.
+
+\subsection{Restricted structural equation models: LINGAM}
+Given observational data, the causal structure can in general only be
+determinded up to the Markov equivalence class of the causal structure. In
+special cases, however, full identification of the causal structure is
+possible.
+
+A prominent example is the Linear Non-Gaussian Acyclic Model (LINGAM) for
+Causal Discovery, see \cite{ShimizuEtAl06-JMLR}. This method aims at discovering the
+complete causal structure of continuous-valued data, under the following
+assumptions: The data generating process is linear ($X = c + BX + \varepsilon$), there are no
+unobserved confounders, and error variables have non-Gaussian
+distributions of non-zero variances. The method is based on independent
+component analysis and is implemented in the function \texttt{lingam()}.
+
+The input of \texttt{lingam()} is a data matrix with $n$ rows (samples) and
+$p$ columns (variables). The output is an \texttt{R} object of (S3) class
+\texttt{"LINGAM"}, basically a \texttt{list} with three components:
+\texttt{Bpruned} contains a $p \times p$-matrix $B$ of linear coefficients, where
+$B_{i,j} \neq 0$ if $j \rightarrow i$. \texttt{stde} is a
+vector of length $p$ with the standard deviations of the estimated
+residuals. \texttt{ci} is a vector of length $p$ with the intercepts of each
+equation.
+
+As an example, we show how to completely discover the true causal structure
+in the setting of only two correlated variables assuming no unobserved
+confounders. Note that when assuming a linear generating process with
+Gaussian errors, it would not be possible to completely discover the causal
+structure. However, since we now assume non-Gaussian errors,
+\texttt{lingam()} will succeed in completely determining the causal structure.
+
+<<lingamExpl, echo = TRUE>>=
+set.seed(1234)
+n <- 500
+## Truth: stde[1] = 0.89
+eps1 <- sign(rnorm(n)) * sqrt(abs(rnorm(n)))
+## Truth: stde[2] = 0.29
+eps2 <- runif(n) - 0.5
+
+## Truth: ci[2] = 3, Bpruned[1,1] = Bpruned[2,1] = 0
+x2 <- 3 + eps2
+## Truth: ci[1] = 7, Bpruned[1,2] = 0.9, Bpruned[2,2] = 0
+x1 <- 0.9*x2 + 7 + eps1
+# Truth: x1 <- x2
+@
+
+Thus, the causal graph of variables $x_1$ and $x_2$ is $x_1 \leftarrow x_2$. In the linear coefficients matrix $B$, the only non-zero entry is $B_{1,2}=0.9$. The true vector of intercepts has entries $c_1 = 7$ and $c_2 = 3$. Note that the equations are linear and the errors follow non-gaussian distributions, thus following the main assumptions of LINGAM. Now, we use the function \texttt{lingam()} to estimate the causal structure:
+
+<<estimateLingam, echo=TRUE>>=
+X <- cbind(x1,x2)
+res <- lingam(X)
+res
+@
+
+We can see that the structure of the causal model was estimated correctly: The only non-zero entry in the estimated linear coefficients matrix (called \texttt{Bpruned} in output) is $\hat{B}_{1,2}$, i.e., the estimated causal structure is $x_1 \leftarrow x_2$. Moreover, the estimated value of $\hat{B}_{1,2}=0.91$ comes very close to the true value $B_{1,2}=0.9$. The estimated vector of intercepts (called \texttt{ci} in the output: $6.92$ and $3.01$) is also close to the true vector of intercepts ($7$ and $3$).
+
+\subsection{Adding background knowledge}
+\label{sec:addBK}
+In many applications background knowledge of the causal system is available. This information is typically of two kinds: Either it is known that a certain edge must or must not be present. Or the orientation of a given edge is known (e.g. temporal information). This kind of background knowledge can be incorporated in several structure learning functions.
+
+As explained in section \ref{sec:ges}, function \texttt{ges()} has the argument \texttt{fixedGaps} for restricting GES to a certain subgraph, which results in the ARGES algorithm.
+
+In functions \texttt{skeleton()}, \texttt{pc()}, \texttt{fci()}, \texttt{rfci()} (but currently not \texttt{fciPlus()}) background knowledge on the presence or absence of edges can be entered through the arguments \texttt{fixedEdges} and \texttt{fixedGaps} and is guaranteed to be respected in the final output.
+
+Moreover, for CPDAGs background knowledge on the orientation of edges can be added using function \texttt{addBgKnowledge()}. Note that adding orientation information to a CPDAG might not result in a CPDAG anymore but will always result in a PDAG. Applying the orientation rules from \cite{Meek95} might orient further edges resulting in a maximally oriented PDAG (see \cite{emaBackground17} for more details). Function \texttt{addBgKnowledge()} is called as follows:
+<<showAddBgKnowledge>>=
+showF(addBgKnowledge)
+@
+The argument \texttt{gInput} is either a \texttt{graphNEL}-object or an adjacency matrix of type \texttt{amat.cpdag}. \texttt{x} and \texttt{y} are node labels so that edges should be oriented in the direction $x \to y$. If argument \texttt{checkInput} is \texttt{TRUE}, the input adjacency matrix is carefully checked to see if it is a valid graph. This is done using function \texttt{isValidGraph()}, which checks whether an adjacency matrix with coding \texttt{amat.cpdag} is of type CPDAG, DAG or maximally oriented PDAG. Based on this input, function \texttt{addBgKnowledge()} adds orientation $x \to y$ to the adjacency matrix and completes the orientation rules from \cite{Meek95}. If $x$ and $y$ are not specified (or empty vectors) this function simply completes the orientation rules from \cite{Meek95}. If $x$ and $y$ are vectors of length $k$, $k>1$, this function tries to add $x_i \to y_i$ to the adjacency matrix  and complete the orientation rules from \cite{Meek95} for every $i$ in $1,...,k$ (see Algorithm 1 in \cite{emaBackground17}). The output of function \texttt{addBgKnowledge()} is a maximally oriented PDAG with coding \texttt{amat.cpdag}.
+
+As an example, we force on the CPDAG in Fig.~\ref{fig:addBgKnowledge} (left) the orientation $a \to b$. By applying the orientation rules of \cite{Meek95} afterwards, edge $b \to c$ becomes oriented, too.
+<<explAddBgKnowledge>>=
+amat <- matrix(c(0,1,0, 1,0,1, 0,1,0), 3,3) ## a -- b -- c
+colnames(amat) <- rownames(amat) <- letters[1:3]
+## force a -> b
+bg <- addBgKnowledge(gInput = amat, x = "a", y = "b")
+@
+
+\begin{figure}
+  \centering
+<<explAddBgKnowledgePlot, fig=TRUE, fig.width=5, fig.height=2.5>>=
+par(mfrow = c(1,2))
+plot(as(t(amat), "graphNEL")); box(col="gray")
+plot(as(t( bg ), "graphNEL")); box(col="gray")
+@
+  \caption{Left: Original CPDAG. Right: After adding the background knowledge $a \to b$ the edge $b \to c$ is automatically directed by applying the orientation rules from \cite{Meek95}. The result is a maximally oriented PDAG.}
+  \label{fig:addBgKnowledge}
+\end{figure}
+
+Note that it is currently \emph{not} possible to define edge orientations \emph{before} the CPDAG is estimated. Moreover, adding background knowledge in the form of edge orientations is currently not supported for PAGs or interventional CPDAGs.
+
+\subsection{Summary of assumptions}
+\label{sec:slAssumptions}
+In the following we summarize the assumptions of all mentioned structure
+learning methods.
+
+\begin{description}
+\item[PC algorithm:] Faithfulness; no hidden or selection variables; consistent in
+  high-dimensional settings given suitable assumptions; consistency in a standard asymptotic regime with a fixed number
+  of variables follows as a special case; implemented in function \texttt{pc()}; see \cite{KaBu07a} for full
+  details.
+
+\item[FCI algorithm:] Faithfulness; allows for hidden and selection variables; consistent
+  in high-dimensional settings given suitable assumptions; consistency in a standard asymptotic regime with a fixed number
+  of variables follows as a special case; implemented in function \texttt{fci()}; see \cite{rfci} for full
+  details.
+
+\item[RFCI algorithm:] Faithfulness; allows for hidden and selection variables; polynomial runtime if the graph resulting in step 1 of RFCI is
+  sparse; consistent in high-dimensional settings given suitable assumptions; consistency in a standard asymptotic regime with a fixed number of variables follows as a special case; implemented in function \texttt{rfci()}; see \cite{rfci} for full details.
+
+\item[FCI+ algorithm:] Faithfulness; allows for hidden and selection variables; polynomial runtime if the true underlying causal PAG is sparse; implemented in function \texttt{fciPlus()}. See \cite{ClaassenMooijHeskes13} for full details.
+
+\item[LINGAM:] No hidden or selection variables; data generating process is a linear structural equation model with non-Gaussian errors; see \cite{ShimizuEtAl06-JMLR} for full details.
+
+\item[GES algorithm:] Faithfulness; no hidden or selection variables; consistency in high-dimensional setting given suitable assumptions (see \cite{NandyHauserMaathuis18}); consistency in a standard asymptotic regime with a fixed number of variables. Implemented in function \texttt{ges()}. See \cite{Chickering2002} for full details.
+
+\item[ARGES algorithm:] Faithfulness; no hidden or selection variables; consistency in high-dimensional
+  settings given suitable assumptions; implemented in function \texttt{ges()}, using argument \texttt{adaptive = TRUE}; see \cite{NandyHauserMaathuis18} for full details.
+
+\item[GIES algorithm:] Faithfulness; no hidden or selection variables; mix of observational
+  and interventional data; implemented in function \texttt{gies()}; see \cite{HauserBuehlmann12} for full details.
+
+\item[Dynamic programming approach of Silander and Myllymäki:] Same assumptions as for GIES,
+  but only up to approximately $25$ variables (depending on CPU and memory
+  resources).  Implemented in function \texttt{simy()}. See \cite{Silander2006} for full details.
+
+\end{description}
+
+%%%%%%%%%%%%
+\section{Covariate Adjustment}
+\subsection{Introduction}
+Estimating causal effects from observational data is possible when
+using the right confounding variables as an adjustment set:
+
+\textbf{Adjustment set}; \cite{maathuis2013generalized}
+   Let $\mathbf{X,Y}$ and $\mathbf{Z}$ be pairwise disjoint node sets in a DAG, CPDAG, MAG or PAG $G$. Then $\mathbf{Z}$ is an adjustment set relative to $(\mathbf{X,Y})$ in $G$  if for any density\footnote{We use the notation for continuous random variables throughout. The discrete analogues should be obvious.} $f$ consistent with $G$ we have
+   \begin{equation}
+   f(\mathbf{y}|do(\mathbf{x}))=
+   \begin{cases}
+   f(\mathbf{y}|\mathbf{x}) & \text{if }\mathbf{Z} = \emptyset,\\
+   \int_{\mathbf{z}}f(\mathbf{y}|\mathbf{x,z})f(\mathbf{z})d\mathbf{z}  & \text{otherwise.}
+   \end{cases}
+   \label{lab}
+   \end{equation}
+   \label{defadjustment}
+
+\noindent{}Thus, adjustment sets allow to write post-intervention densities involving the do-operator (left-hand side of \eqref{lab}) as specific functions of the usual conditional densities (right-hand side of \eqref{lab}). The latter can be estimated from observational data.
+
+However, in practice it is hard to determine what a valid adjustment set
+is. A common misconception is that adjusting for more variables is always
+better. This is not the case, as is detailed in the ``M-bias graph''
+example (\cite{Shrier2008,Rubin2008}).
+
+Given the practical importance of covariate adjustment, criteria have been
+developed for finding a valid adjustment set given the true causal
+structure underlying the data. For example, Pearl's Back-door Criterion (BC)
+(\cite{pearl1993bayesian}) is a well known criterion for
+DAGs. \cite{ShpitserVanderWeeleRobins10} and \cite{ShpitserVanderWeeleRobins10appendum} refined the back-door criterion to a sound and
+complete graphical criterion for adjustment in
+DAGs. Others considered more general graph
+classes, which can represent structural uncertainty. \cite{VanderZanderEtAl14} gave
+sound and complete graphical criteria for
+MAGs that allow for unobserved variables (latent confounding). \cite{maathuis2013generalized} generalize this criterion for
+DAGs, CPDAGs, MAGs and PAGs (Generalized Backdoor Criterion,
+GBC). These two criteria are sound (i.e., if the criterion claims that a
+set is a valid adjustment set, then this claim is correct) but incomplete
+(i.e., there might be valid adjustment sets which are not detected by the
+criterion). \cite{perkovic15_uai} present a criterion for
+covariate adjustment that is sound and complete for DAGs, CPDAGs,
+MAGs and PAGs without selection variables (Generalize Adjustment
+Criterion, GAC). The theoretical contribution of that paper closes the
+chapter on covariate adjustment for the corresponding graph classes. More
+details on GAC can be found in \cite{perkovic16_arxiv}.
+
+Recently, \cite{emaBackground17} extended the use of GAC on graphs incorporating background knowledge: PDAGs.
+
+In the following example we show that, given suitable assumptions, the
+total causal effect of a variable $X$ on another variable $Y$ can be
+estimated using linear regression with the correct adjustment set
+$\mathbf{Z}$. Assume the data is generated by a multivariate Gaussian
+density that is consistent with a causal DAG $G$. Let
+$\mathbf{Z} \neq \emptyset$ be a valid adjustment set (e.g. according to
+GAC) relative to two
+variables $X$ and $Y$ in~$G$ such that $\mathbf{Z} \cap \{ X \cup Y \} = \{\}$. Then
+\begin{eqnarray}
+E(Y | do(x))& =& \alpha + \gamma x + \beta^T E(\mathbf{z}).
+\label{eqn:totalEffect}
+\end{eqnarray}
+
+\noindent{} We define the total causal effect of $X$
+on $Y$ as $\frac{\partial }{\partial x}E(Y | do(x))$. Thus, the total
+causal effect of $X$ on $Y$ is $\gamma$, which is the regression
+coefficient of $X$ in the regression of $Y$ on $X$ and $\mathbf{Z}$.
+
+The available functions for covariate adjustment in package \pkg{pcalg} can be categorized in the following way:
+\begin{itemize}
+\item Compute causal effect by (conceptually) listing all DAGs in a given equivalence class:
+\texttt{ida()}, \texttt{jointIda()}
+\item Check if a given set is a valid adjustment set:
+\texttt{backdoor()}, \texttt{gac()} (also incorporating background knowledge )
+\item Given a graph, find a (or several) valid adjustment set(s):
+\texttt{adjustment()}, \texttt{backdoor()}
+\end{itemize}
+
+More details on assumptions can be found in section \ref{sec:assumptions}.
+
+\subsection{Methods for Covariate Adjustment}
+\subsubsection[ida()]{\texttt{ida()}}
+The first functions for estimating the causal
+effect of a single intervention variable $X$ on a target variable $Y$ using
+covariate adjustment included in \texttt{pcalg} were: \texttt{ida()} and a restricted but
+faster version \texttt{idaFast()} (for several target variables at the same
+time with restricted options). Conceptually, the method works as follows.
+First, an estimated CPDAG is provided as input (e.g. using the function \texttt{pc()}). Then we extract a collection of "valid"
+parent sets of the intervention variable from the estimated CPDAG. For each
+set of valid parent sets we compute a linear regression of $Y$ on $X$ using
+the parent set as covariate adjustment set. Thus, for each valid parent
+set, we derive one estimated effect resulting in a multi-set of causal
+effects.
+
+This function can be called in the following way:
+\par\vspace*{-1.2ex}
+<<ida-args, echo=FALSE>>=
+showF(ida)
+@
+\par\vspace*{-1ex}
+
+\texttt{x.pos} and \texttt{y.pos} are the (integer) positions of variables $X$ and $Y$, respectively. \texttt{mcov} is the covariance matrix that was used to estimte the CPDAG passed in argument \texttt{graphEst}. With argument \texttt{type} one can define if the estimated graph is either a CPDAG or a PDAG (e.g. after including background knowledge).
+If \texttt{method} is set to \texttt{global} the algorithm considers all DAGs in the represented by the CPDAG or PDAG, hence is slow. If \texttt{method} is set to \texttt{local} the algorithm only considers the neighborhood of $X$ in the CPDAG or PDAG, hence is faster. Moreover, the multiplicities of the estimated causal effects might be wrong.
+As an example, suppose that a CPDAG represents eight DAGs. The global method might produce the multiset {1.3, -0.5, 0.7, 1.3, 1.3, -0.5, 0.7, 0.7}. The unique values in this set are -0.5, 0.7 and 1.3, and the multiplicities are 2, 3 and 3. The local method, on the other hand, might produce {1.3, -0.5, -0.5, 0.7}. The unique values are again -0.5, 0.7 and 1.3, but the multiplicities are now 2, 1 and 1. Since the unique values of the multisets of the "global" and "local" method are identical, summary measures of the multiset that only depend on the unique values (e.g. minimum absolute value) can be estimate by the faster local method.
+
+As an example, we simulate a random DAG, sample data, estimate the CPDAG (see Fig.~\ref{fig:ida}) and apply \texttt{ida} to find the total causal effect from node number $2$ to node number $5$ using both the local and the global method. We can see that both methods produce the same unique values but different multiplicities.
+<<exIDA>>=
+## Simulate the true DAG
+set.seed(123)
+p <- 7
+myDAG <- randomDAG(p, prob = 0.2) ## true DAG
+myCPDAG <- dag2cpdag(myDAG) ## true CPDAG
+
+## simulate Gaussian data from the true DAG
+n <- 10000
+dat <- rmvDAG(n, myDAG)
+
+## estimate CPDAG and PDAG -- see  help(pc)
+suffStat <- list(C = cor(dat), n = n)
+pc.fit <- pc(suffStat, indepTest = gaussCItest, p=p, alpha = 0.01)
+
+## Supppose that we know the true CPDAG and covariance matrix
+(l.ida.cpdag <- ida(2,5, cov(dat),
+                    myCPDAG, method = "local", type = "cpdag"))
+(g.ida.cpdag <- ida(2,5, cov(dat),
+                    myCPDAG, method = "global", type = "cpdag"))
+@
+
+\begin{figure}
+  \centering
+<<plotExIDA, fig=TRUE>>=
+if (require(Rgraphviz)) {
+  ## plot the true and estimated graphs
+  par(mfrow = c(1,2))
+  plot(myDAG, main = "True DAG"); box(col="gray")
+  plot(pc.fit, main = "Estimated CPDAG"); box(col="gray")
+}
+@
+  \caption{The true DAG (left) and the true CPDAG (right) in the example
+    illustrating \texttt{ida()}.}
+  \label{fig:ida}
+\end{figure}
+
+\subsubsection[jointIda()]{\texttt{jointIda()}}
+The function \texttt{jointIda()} extends \texttt{ida()} by allowing a
+\emph{set} of intervention variables (i.e., not just a single intervention
+variable).
+
+Assuming observational data that are multivariate Gaussian and faithful to
+the true (but unknown) underlying causal DAG (without hidden variables),
+the function estimates the multiset of possible total joint effects of $X$
+on $Y$. The total joint effect of $X = (X_1,X_2)$ on $Y$ is defined via Pearl's
+do-calculus as the vector
+$(E[Y|do(X_1=x_1+1,X_2=x_2)]-E[Y|do(X_1=x_1,X_2=x_2)],
+E[Y|do(X_1=x_1,X_2=x_2+1)]-E[Y|do(X_1=x_1,X_2=x_2)])$, with a similar
+definition for more than two variables.  These values are equal to the
+partial derivatives (evaluated at $(x_1,x_2)$) of $E[Y|do(X=x_1',X_2=x_2')]$
+with respect to $x_1'$ and $x_2'$.  Moreover, under the Gaussian assumption,
+these partial derivatives do not depend on the values at which they are
+evaluated.
+
+As with \texttt{ida()}, \texttt{jointIda()} needs an estimated CPDAG as input. It then
+constructs a collection of ``jointly valid'' parent sets of all
+intervention variables. For each set of jointly valid parent sets we apply
+RRC (recursive regressions for causal effects) or MCD (modifying the
+Cholesky decomposition) to estimate the total joint effect of $X$ on $Y$
+from the sample covariance matrix.
+
+When $X$ is a single variable, \texttt{jointIda()} estimates the same
+quantities as \texttt{ida()}. When \texttt{graphEst} is a CPDAG,
+\texttt{jointIda()} yields correct multiplicities of the distinct elements of
+the resulting multiset (i.e., it matches \texttt{ida()} with
+\texttt{method="global"} up to a constant factor), while \texttt{ida()} with
+\texttt{method="local"} does not have this property. Like \texttt{idaFast()},
+the effect on several target variables can be computed at the same time.
+
+In the following example, we generate a DAG on six nodes and generate data
+from it (see Fig.~\ref{fig:jointIda}).
+
+<<jointIdaExpl1, echo = TRUE>>=
+## Generate DAG for simulating data
+p <- 6
+V <- as.character(1:p)
+edL <- list(
+    "1" = list(edges=c(3,4), weights=c(1.1,0.3)),
+    "2" = list(edges=c(6),  weights=c(0.4)),
+    "3" = list(edges=c(2,4,6),weights=c(0.6,0.8,0.9)),
+    "4" = list(edges=c(2),weights=c(0.5)),
+    "5" = list(edges=c(1,4),weights=c(0.2,0.7)),
+    "6" = NULL)
+myDAG <- new("graphNEL", nodes=V, edgeL=edL,
+             edgemode="directed") ## true DAG
+myCPDAG <- dag2cpdag(myDAG) ## true CPDAG
+covTrue <- trueCov(myDAG) ## true covariance matrix
+@
+
+Then, we use \texttt{jointIda()} to estimate (using method
+\texttt{RCC}) the causal effect of an intervention at nodes $1$ and $2$ on
+the target variable $6$. First, we use the true DAG and the true
+covariance matrix for illustration.
+
+<<jointIdaDAG>>=
+## Compute causal effect using true CPDAG and true cov. matrix
+(resExactDAG <- jointIda(x.pos = c(1,2), y.pos = 6,
+                         mcov = covTrue,
+                         graphEst = myDAG,
+                         technique = "RRC"))
+@
+
+The result is a matrix representing the estimated possible total joint effects of $X$ on $Y$.  The
+number of rows equals the number of intervention variables. Thus, when intervening at both node 1 and node 2, a unit increase
+in node 1 leads to an increase of 0.99 in node 6, while a unit increase
+in node 2 leads to an increase of 0.40 in node 6.
+
+Now we replace the true DAG by the true CPDAG. It is usually not possible anymore to estimate the causal effects uniquely. Thus, the result is a matrix representing the multiset
+containing the estimated possible total joint effects of $X$ on $Y$.  The
+number of rows equals the number of intervention variables. Each column
+represents a vector of possible joint causal effects.
+
+<<jointIdaCPDAG>>=
+(resExactCPDAG <- jointIda(x.pos = c(1,2), y.pos = 6,
+                           mcov = covTrue,
+                           graphEst = myCPDAG,
+                           technique = "RRC"))
+@
+
+In this example, the multisets contain three elements. The first and the third column coincide with our finding in the previous DAG example. The middle column shows new values. Without further information we cannot decide which of the elements of the multiset correspond to the true underlying causal system.
+
+\begin{figure}
+  \centering
+<<jointIdaPlot, fig=TRUE>>=
+par(mfrow = c(1,2))
+plot(myDAG)  ; box(col="gray")
+plot(myCPDAG); box(col="gray")
+@
+  \caption{The true DAG (left) and the true CPDAG (right) in the example
+    illustrating \texttt{jointIda()}.}
+  \label{fig:jointIda}
+\end{figure}
+
+For building intuition, we will inspect the true underlying DAG and confirm
+the result: Node 2 is a parent node of node 6 and the weight is indeed
+0.40. Thus, the causal effect of node 2 on node 6 is indeed 0.4. Now we
+compute the causal effect of node 1 on node 6. There are several possible
+directed paths from node 1 to node 6: 1-3-6, 1-3-2-6, 1-3-4-2-6 and
+1-4-2-6. If node 1 was the only intervention variable, we would now compute
+the causal effects along all 4 paths and add them up. However, since we did
+a joint intervention on node 1 \emph{and} node 2, the value of node 2 is
+fixed. Thus, changing the value of node 1 will have an effect on node 6
+only over directed paths that do \emph{not} include node 2. Thus, the only
+directed path is 1-3-6 with edge weights $1.1$ and $0.9$. Multiplying these
+two weights we get the causal effect along this path of $0.99$, as was also
+produced with the function \texttt{jointIda()}.
+
+However, the input of \texttt{jointIda()} is not the true DAG but the true
+CPDAG. The parent set of node 2 is unique in this CPDAG. However, the
+parent set of node 2 is not unique. At first sight, possible parent sets
+for node 2 are: empty set, only node 3, only node 5, both node 3 and
+5. However, if both node 3 and node 5 would be parent sets of node 1, this
+would introduce a new v-structure in the graph. Thus, this parent set is
+not valid and we are left with three valid parent sets on of which
+coincides with the parent sets in the true DAG (only node 5 is parent). For
+each of the three valid parent sets the same calculation as before yields
+the values in the three columns of the output.
+
+In practice, both the CPDAG and the covariance matrix will be only
+estimates. Thus, both the estimated values and the multiplicities (number
+of columns of the result) are prone to error.
+
+\subsubsection[backdoor()]{\texttt{backdoor()}}
+This function implements the Generalized Backdoor Criterion (GBC). The GBC is a
+generalization of Pearl's backdoor criterion (see \cite{Pearl93}) defined
+for directed acyclic graphs (DAGs) for single
+interventions and single outcome variable to more general
+types of graphs (CPDAGs, MAGs, and PAGs) that describe Markov equivalence
+classes of DAGs with and without latent variables but without selection
+variables. For more details see \cite{MaathuisColombo15}.
+
+The motivation to find a set $W$ that satisfies the generalized backdoor
+criterion with respect to $X$ and $Y$ in the given graph relies on the
+result of the generalized backdoor adjustment that says: If a set of
+variables $W$ satisfies the generalized backdoor criterion relative to $X$
+and $Y$ in the given graph, then the causal effect of $X$ on $Y$ is
+identifiable and is given by: $P(Y|\text{do}(X = x)) = \sum_W
+P(Y|X,W) \cdot P(W)$. This result allows to write post-intervention densities
+(the one written using Pearl's do-calculus) using only observational
+densities estimated from the data.
+
+This function can be called in the following way:
+\par\vspace*{-1.2ex}
+<<backdoor-args, echo=FALSE>>=
+showF(backdoor)
+@
+\par\vspace*{-1ex}
+
+where \texttt{amat} is the adjacency matrix of the given graph, \texttt{x}
+denotes the column position of the cause variable, \texttt{y} denotes the
+column position of the effect variable, and \texttt{mcov} is the covariance
+matrix of the original data.
+
+The argument \texttt{type} specifies the type of graph of the given adjacency
+matrix in \texttt{amat}. If the input graph is a DAG (\texttt{type="dag"}),
+this function reduces to Pearl's backdoor criterion for single
+interventions and single outcome variable, and the parents of $X$ in the
+DAG satisfies the backdoor criterion unless $Y$ is a parent of
+$X$. Therefore, if $Y$ is a parent of $X$, there is no set $W$ that
+satisfies the generalized backdoor criterion relative to $X$ and $Y$ in the
+DAG and NA is output. Otherwise, the causal effect is identifiable and a
+set $W$ that satisfies the generalized backdoor criterion relative to $X$
+and $Y$ in the DAG is given. If the input graph is a CPDAG $C$
+(\texttt{type="cpdag"}), a MAG $M$, or a PAG $P$ (with both $M$ and $P$ not
+allowing selection variables), this function first checks if the total
+causal effect of $X$ on $Y$ is identifiable via the generalized backdoor
+criterion (see \cite{MaathuisColombo15}, Theorem 4.1). If the effect is not
+identifiable, the output is NA. Otherwise, an explicit set $W$ that
+satisfies the generalized backdoor criterion relative to $X$ and $Y$ in the
+given graph is found.
+
+Note that if the set $W$ is equal to the empty set, the output is NULL.
+
+At this moment this function is not able to work with PAGs estimated using
+the \texttt{rfci} Algorithm.
+
+It is important to note that there can be pair of nodes \texttt{x} and
+\texttt{y} for which there is no set $W$ that satisfies the generalized
+backdoor criterion, but the total causal effect might be identifiable via
+some other technique.
+
+To illustrate this function, we use the CPDAG displayed in
+Fig.~4, page 15 of \cite{MaathuisColombo15}. The R-code below is used to generate
+a DAG \texttt{g} that belongs to the required equivalence class which is
+uniquely represented by the estimated CPDAG \texttt{myCPDAG}.
+
+<<backdoorExCPDAG1>>=
+p <- 6
+amat <- t(matrix(c(0,0,1,1,0,1, 0,0,1,1,0,1, 0,0,0,0,1,0,
+                   0,0,0,0,1,1, 0,0,0,0,0,0, 0,0,0,0,0,0), 6,6))
+V <- as.character(1:6)
+colnames(amat) <- rownames(amat) <- V
+edL <- vector("list",length=6)
+names(edL) <- V
+edL[[1]] <- list(edges=c(3,4,6),weights=c(1,1,1))
+edL[[2]] <- list(edges=c(3,4,6),weights=c(1,1,1))
+edL[[3]] <- list(edges=5,weights=c(1))
+edL[[4]] <- list(edges=c(5,6),weights=c(1,1))
+g <- new("graphNEL", nodes=V, edgeL=edL, edgemode="directed")
+
+cov.mat <- trueCov(g)
+
+myCPDAG <- dag2cpdag(g)
+true.amat <- as(myCPDAG, "matrix")
+## true.amat[true.amat != 0] <- 1
+@
+
+The DAG \texttt{g} and the CPDAG \texttt{myCPDAG} are shown in Fig.~\ref{fig:backdoor}.
+\begin{figure}
+  \centering
+<<backdoorExpl, fig=TRUE, echo=FALSE>>=
+par(mfrow = c(1,2))
+plot(g, main = ""); box(col="gray")
+plot(myCPDAG, main = ""); box(col="gray")
+@
+\caption{True DAG (left) and estimated CPDAG (right).}
+\label{fig:backdoor}
+\end{figure}
+
+Now, we want to check if the effect of $V_6$ on $V_3$ in the given CPDAG is
+identifiable using \texttt{backdoor()} and if this is the case know which set
+$W$ satisfies the generalized backdoor criterion. As explained in Example 4 in
+\cite{MaathuisColombo15}, the causal effect of $V_6$ on $V_3$ in the CPDAG
+\texttt{myCPDAG} is identifiable via the generalized backdoor criterion and
+there is a set $W = \{1,2\}$ that satisfies the generalized backdoor criterion:
+
+<<backdoorExCPDAG2>>=
+backdoor(true.amat, 6, 3, type="cpdag")
+@
+
+\subsubsection[gac()]{\texttt{gac()}}
+The Generalized Adjustment Criterion (GAC) is a generalization of the
+Generalized Backdoor Criterion (GBC) of \cite{MaathuisColombo15}: While
+GBC is sufficient but not necessary, GAC is both sufficient and necessary
+for DAGs, CPDAGs, MAGs and PAGs. Moreover, while GBC was originally only
+defined for single intervention and target variables, GAC also works with
+sets of target and/or intervention variables. For more details see \cite{perkovic16_arxiv}. The Generalized Adjustment Criterion (GAC) is implemented in
+function \texttt{gac()}.
+
+This function can be called in the following way:
+\par\vspace*{-1.2ex}
+<<gac-args, echo=FALSE>>=
+showF(gac)
+@
+\par\vspace*{-1ex}
+where \texttt{amat} is the adjacency matrix of the given graph. \texttt{x} is a
+vector with all the (integer) positions of intervention nodes. \texttt{y} is a
+vector with all the (integer) positions of target nodes. \texttt{z} is a
+vector with all the (integer) positions of the adjustment set that should
+be checked with the GAC.
+
+The output of \texttt{gac()} will be a list with three components: \texttt{gac}
+is \texttt{TRUE} if \texttt{z} satisfies the GAC relative to \texttt{(x,y)} in
+the graph represented by \texttt{amat} and \texttt{type}. \texttt{res} is a
+logical vector of length three indicating if each of the three conditions
+(0), (1) and (2) of GAC are true. \texttt{f} is a vector containing (integer)
+node positions of nodes in the forbidden set.
+
+In the following example we consider the CPDAG shown in Fig.~\ref{fig:gac}(a) and check whether the set consisting of node 2 and node 4
+satisfies the GAC for estimating the causal effect from node 3 to node 6.
+<<gacExample, echo = TRUE>>=
+mFig1 <- matrix(c(0,1,1,0,0,0, 1,0,1,1,1,0, 0,0,0,0,0,1,
+                  0,1,1,0,1,1, 0,1,0,1,0,1, 0,0,0,0,0,0), 6,6)
+type <- "cpdag"
+x <- 3; y <- 6
+## Z satisfies GAC :
+gac(mFig1, x,y, z=c(2,4),    type)
+@
+
+In the output we can see that all three conditions of GAC are satisfied and
+thus, GAC is satisfied. The forbidden set consists of node 6.
+
+Function \texttt{gac()} can also be used on maximally oriented PDAGs. Such a graph might arise by adding orientational background knowledge to a CPDAG (see section \ref{sec:addBK}). Details can be found in \cite{emaBackground17}. As an illustration we reproduce Example 4.7b in \cite{emaBackground17} (shown in Fig.~\ref{fig:gac}(b)):
+
+<<>>=
+mFig3a <- matrix(c(0,1,0,0, 0,0,1,1, 0,0,0,1, 0,0,1,0), 4,4)
+type <- "pdag"
+x <- 2; y <- 4
+## Z does not satisfy GAC
+str( gac(mFig3a,x,y, z=NULL, type) )## not amenable rel. to (X,Y)
+@
+
+\begin{figure}
+  \centering
+<<plotGacExpl, fig=TRUE, echo = FALSE>>=
+if (require(Rgraphviz)) {
+  colnames(mFig1) <- rownames(mFig1) <- as.character(1:6)
+  g1 <- as(t(mFig1), "graphNEL")
+  colnames(mFig3a) <- rownames(mFig3a) <- as.character(1:4)
+  g2 <- as(t(mFig3a), "graphNEL")
+  ## plot the true and estimated graphs
+  par(mfrow = c(1,2))
+  plot(g1, main = "(a)"); box(col="gray")
+  plot(g2, main = "(b)"); box(col="gray")
+}
+@
+  \caption{A CPDAG (left) and the PDAG from Example 4.7 (right) from \cite{emaBackground17} used in the example
+    illustrating \texttt{gac()}.}
+  \label{fig:gac}
+\end{figure}
+
+\subsubsection[adjustment()]{\texttt{adjustment()}}
+The previously discussed functions check whether a given set of variables is valid for adjustment or not. However, with the exception of \texttt{backdoor()}, they don't help finding a valid adjustment set in the first place. For finding valid adjustment sets the function \texttt{adjustment()} can be used. This function is an interface to the function \texttt{adjustmentSet()} from package \pkg{dagitty}. This function can be called in the following way:
+
+<<showAdjustment>>=
+showF(adjustment)
+@
+
+
+\subsection{Summary of assumptions}
+\label{sec:assumptions}
+\subsection{Methods for covariate adjustment}
+\begin{description}
+  \item[IDA:] No hidden or selection variables; all conditional expectations
+    are linear; see \cite{MaKaBu09} for full
+    details. Implemented in function \texttt{ida()}.
+  \item[jointIDA:] Same assumptions as IDA but can deal with several
+    intervention variables at the same time. Implemented in function
+    \texttt{jointIda()}.
+  \item[Pearl's Backdoor Criterion (BC):]  No hidden or selection
+    variables. Sound, but not complete. Implemented as a special case of GBC
+    in function \texttt{gbc()}.
+  \item[Generalized Backdoor Criterion (GBC):] Allows for arbitrarily many hidden
+    but no selection variables; works on DAG, CPDAG, MAG and PAG. Sound, but
+    not complete. Implemented in function \texttt{gbc()}.
+  \item[Generalized Adjustment Criterion (GAC):] Allows for arbitrarily many
+    hidden but no selection variables; works on DAG, CPDAG, MAG and
+    PAG. Sound and complete. Implemented in function \texttt{gac()}.
+\end{description}
+
+\section{Random DAG Generation}
+Simulation methods are essential to investigate the performance of estimation methods. For that reason, the \pkg{pcalg} package included from the
+beginning the function \texttt{randomDAG} to generate random
+DAGs. However, the method implemented there was restricted to Erd\"os-Renyi
+graphs. We now include the new function \texttt{randDAG()} which can sample
+random graphs from a much wider class.
+
+Eight different random graph models are provided. The Erd\"os-Renyi Graph Model and some important extensions are available (Regular Random Graph Model, Geometric Random Graph Model, Bipartite Random Graph Model, Watts-Strogatz Random
+Graph Model and the Interconnected-Island Random Graph Model). Moreover, graph models with
+power law degree distributions are provided (Power-Law Random Graph Model and the
+Barabasi-Albert Random Graph Model). The methods are based on the analogous
+\texttt{.game} functions in the \pkg{igraph} package.
+
+As an option, individual parameters can be
+passed for all methods. Alternatively, the desired expected neighborhood
+size of the sampled graph can be specified and the individual parameters
+will be set automatically. Using the option \texttt{DAG}, the output can
+either be a DAG or the skeleton of a DAG. In contrast to the old
+function \texttt{randomDAG()}, the nodes in the DAG produced by the new function \texttt{randDAG()} are not topologically sorted.
+
+In the following example we generate a random graph \texttt{dag1} according
+to the Erd\"os-Renyi random graph model (\texttt{method="er"}) and a random graph \texttt{dag2}
+according to the Power-Law random graph model (\texttt{method="power"}). In both cases, the number of
+nodes is $n=100$ and the expected neighborhood size is
+$d=3$.
+
+<<randDAGexplSimple, echo=TRUE>>=
+n <- 100; d <- 3; s <- 2
+myWgtFun <- function(m,mu,sd) { rnorm(m,mu,sd) }
+set.seed(42)
+dag1 <- randDAG(n=n, d=d, method = "er", DAG = TRUE)
+dag2 <- randDAG(n=n, d=d, method = "power", DAG = TRUE)
+@
+
+
+<<evalRandDAGexpl, echo = FALSE>>=
+w1 <- wgtMatrix(dag1)
+deg1 <- apply(w1 + t(w1), 2, function(x) sum(x != 0))
+max1 <- max(deg1)
+mean1 <- mean(deg1)
+
+w2 <- wgtMatrix(dag2)
+deg2 <- apply(w2 + t(w2), 2, function(x) sum(x != 0))
+max2 <- max(deg2)
+mean2 <- mean(deg2)
+@
+
+The average neighborhood sizes in \texttt{dag1} and \texttt{dag2} are
+$\Sexpr{mean1}$ and $\Sexpr{mean2}$, respectively. The maximum neighborhood
+sizes in \texttt{dag1} and \texttt{dag2}, however, are $\Sexpr{max1}$ and
+$\Sexpr{max2}$, respectively. Thus, as expected, in the power-law graph
+some nodes have a much larger neighborhood size than in the Erd\"os-Renyi graph.
+
+We now expand the previous example by also generating edge weights. This is done using the arguments \texttt{weighted = TRUE} and \texttt{wFUN}. The argument \texttt{wFUN} takes a function for randomly generating the edge weights. For this example, function \texttt{myWgtFun} is defined and passed to argument \texttt{wFUN}. Function \texttt{myWgtFun} takes as first argument a number of edges \texttt{m} (this value will be automatically specified within the call of \texttt{randDAG} and therefore it need not be specified by the user) for which it returns a vector of length \texttt{m} containing the generated weights. Alternatively, \texttt{wFUN} can be a list consisting of the function in the first entry and of further arguments of the function in the additional entries. In this example, the edge weights are sampled independently from $N(0, s^2)$ where $s=2$.
+
+<<randDAGexplExtended, echo=TRUE>>=
+n <- 100; d <- 3; s <- 2
+myWgtFun <- function(m,mu,sd) { rnorm(m,mu,sd) }
+set.seed(42)
+dag1 <- randDAG(n=n, d=d, method = "er", DAG = TRUE,
+                weighted = TRUE, wFUN = list(myWgtFun, 0, s))
+dag2 <- randDAG(n=n, d=d, method = "power", DAG = TRUE,
+                weighted = TRUE, wFUN = list(myWgtFun, 0, s))
+@
+
+Previous versions of package \pkg{pcalg} contained the functions \texttt{unifDAG()} and \\
+\texttt{unifDAG.approx()} for sampling DAGs uniformly from the space of all DAGs
+given a certain number of nodes. These functions were moved to the package \pkg{unifDAG}.
+
+\section{General Object Handling}
+\subsection{A comment on design}
+The \pkg{pcalg} package is an organically growing collection of functions related to structure learning and causal inference. It captures several research results produced at the Seminar for Statistics, ETH Z\"urich and also implements several other common algorithms (e.g. for comparison). Given this history, we hope the user will forgive the lack of an overarching design.
+
+Functionality centered around constraint based learning (\texttt{skeleton()}, \texttt{pc()}, \texttt{fci()}, \texttt{rfci()} and \texttt{fciPlus()}) is based on the S4 classes \texttt{pcAlgo} and \texttt{fciAlgo} (both inheriting from virtual class \texttt{gAlgo}) and the S3 class \texttt{amat}.
+
+Functionality centered around score based learning (\texttt{gies()}, \texttt{ges()}, \texttt{simy()}) are based on the virtual reference classes \texttt{ParDAG} (for parametric causal models), \texttt{Score} (for scoring classes) and \texttt{EssGraph} (for interventional CPDAGs).
+
+Functionality centered around covariate adjustment mainly follows functional programming.
+
+\subsection{Adjacency matrices} \label{sec:amat}
+Two types of adjacency matrices are used in package \pkg{pcalg}: Type
+  \texttt{amat.cpdag} for DAGs and CPDAGs and type \texttt{amat.pag} for
+  MAGs and PAGs. See helpfile of \texttt{amatType} for coding conventions for the entries of the adjacency matrices. The required type of adjacency matrix is documented in the help files of the respective functions or classes.
+
+  Using the coercion \texttt{as(from, "amat")} one can extract such adjacency
+  matrices as (S3) objects of \texttt{class} \texttt{"amat"}. We illustrate this using the estimated CPDAG from section \ref{sec:skeleton}:
+
+<<amatTypeCoercion, echo = TRUE>>=
+## as(*, "amat") returns an adjacency matrix incl. its type
+as(pc.gmG8, "amat")
+@
+
+  In some functions, more detailed information on the graph type is needed
+  (i.e. DAG or CPDAG; MAG or PAG). Such information is passed in a
+  separate argument. We illustrate this using the function \texttt{gac()} which, in this example, takes as input an adjacency matrix \texttt{m1} of type \texttt{amat.cpdag}. In addition to that, the information that the input is actually a DAG is passed through the argument \texttt{type}:
+
+<<amatTypeAdditional, echo=TRUE>>=
+## INPUT: Adjacency matrix of type 'amat.cpdag'
+m1 <- matrix(c(0,1,0,1,0,0, 0,0,1,0,1,0, 0,0,0,0,0,1,
+               0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0), 6,6)
+## more detailed information on the graph type needed by gac()
+str( gac(m1, x=1,y=3, z=NULL, type = "dag") )
+@
+
+\subsection{Interface to package dagitty}
+The web-based software \emph{DAGitty} offers functionality for analyzing causal graphical models. The R package \texttt{dagitty} offers an interface to \emph{DAGitty}. In our package \texttt{pcalg} we offer the function \texttt{pcalg2dagitty()} for converting the adjacency matrix of type \texttt{amat.cpdag} or \texttt{amat.pag} into a \texttt{dagitty} object. Thus, it is easy to use the full functionality of \texttt{dagitty}. As an example, we convert an adjacency matrix to a dagitty object and use the function \texttt{is.dagitty()} from the \pkg{dagitty} package to verify that the resulting object is indeed a \texttt{dagitty} object.
+
+<<pcalg2dagitty, message = FALSE>>=
+n <- nrow    (gmG8$x)
+V <- colnames(gmG8$x) # labels aka node names
+
+amat <- wgtMatrix(gmG8$g)
+amat[amat != 0] <- 1
+dagitty_dag1 <- pcalg2dagitty(amat,V,type="dag")
+dagitty::is.dagitty(dagitty_dag1)
+@
+%% MM: above, do *not* require(dagitty) : it masks our randomDAG() !
+
+\subsection{Methods for visualizing graph objects}
+The most flexible way to visualize graph objects is via the \pkg{Rgraphviz} package. In this package, several different edge marks are possible. Unfortunately, due to a persistent bug, the edgemarks are sometimes not placed at the end of an edge but at some other position along the edge. Nevertheless, for most purposes \pkg{Rgraphviz} will probably produce the best visualization of the graph. As an example, we plot in Fig.~\ref{fig:rgraphviz} a DAG and a PAG (which requires more complex edgemarks).
+
+\begin{figure}[h!]
+  \centering
+<<Rgraphviz, fig=TRUE, message=FALSE>>=
+set.seed(42)
+p <- 4
+## generate and draw random DAG :
+myDAG <- randomDAG(p, prob = 0.4)
+myCPDAG <- dag2cpdag(myDAG)
+
+## find skeleton and PAG using the FCI algorithm
+suffStat <- list(C = cov2cor(trueCov(myDAG)), n = 10^9)
+fci.fit <- fci(suffStat, indepTest=gaussCItest,
+               alpha = 0.9999, p=p, doPdsep = FALSE)
+if (require(Rgraphviz)) {
+  par(mfrow = c(1,2))
+  plot(myCPDAG); box(col="gray") ## CPDAG
+  plot(fci.fit); box(col="gray") ## PAG
+}
+@
+\caption{True causal DAG (left) and the corresponding PAG (right) visualized using package \texttt{Rgraphviz}.}
+\label{fig:rgraphviz}
+\end{figure}
+
+If the package \texttt{Rgraphviz} is not available, we provide the function \texttt{iplotPC()} as an interface to the \pkg{igraph} package for plotting \texttt{pcAlgo} objects (graphs with more complex edge marks, e.g. circles, are currently not supported). As an example, we plot in Fig.~\ref{fig:igraph} the result of calling the function \texttt{pc()} using the function \texttt{iplotPC()}:
+
+\begin{figure}[h!]
+  \centering
+<<iplot, fig=TRUE, message=FALSE>>=
+data(gmG)
+n <- nrow    (gmG8$ x)
+V <- colnames(gmG8$ x) # labels aka node names
+
+## estimate CPDAG
+pc.fit <- pc(suffStat = list(C = cor(gmG8$x), n = n),
+             indepTest = gaussCItest, ## indep.test: partial correlations
+             alpha=0.01, labels = V, verbose = FALSE)
+if (require(igraph)) {
+  par(mfrow = c(1,1))
+  iplotPC(pc.fit)
+}
+@
+\caption{Visualizing with the \pkg{igraph} package: The Estimated CPDAG.}
+\label{fig:igraph}
+\end{figure}
+
+Finally, if neither \texttt{Rgraphviz} nor \texttt{igraph} are available, the estimated graph object can be converted to an adjacency matrix and inspected in the console. See the helpfile of \texttt{amatType} for coding details.
+<<showAmat>>=
+as(pc.fit,  "amat") ## Adj. matrix of type  'amat.cpdag'
+as(fci.fit, "amat") ## Adj. matrix of type  'amat.pag'
+@
+
+Alternatively, for \texttt{pcAlgo} objects also an edge list can be produced.
+<<showEdgeList>>=
+showEdgeList(pc.fit) ## Edge list
+@
+
+For graph objects it is possible to visualize only a sub-graph using function \texttt{plotSG()}.
+
+% Possible extension:
+% rewrite showEdgeList to work for both pc and fci objects
+% rewrite plotSG to work for both pc and fci objects -> plotSubGraph
+
+% BIB
+\newpage
+\bibliography{Mybibliography}
+% \bibliographystyle{plainurl}
+
+\newpage
+\section{Appendix A: Simulation study}
+In this section we give more details on the simulation study in chapter 5 of \cite{emaBackground17}. We show how to reproduce Fig.~4 and Fig.~5 in that document. However, in this document we choose parameter settings so that the simulation study can be computed very quickly but the results are much less informative. Still, they show the same qualitative behavior as in the paper.
+
+First, we set up the parameters. In the comments we indicate the parameter settings that were chosen in \cite{emaBackground17}:
+<<simParSettings>>=
+possible_p <- c(seq(5,10,by=1))   # paper: possible_p = c(seq(20,100,by=10))
+possible_neighb_size <- c(1:3)    # paper: possible_neighb_size = c(3:10)
+num_settings <-10                 # paper: num_settings = 1000
+num_rep <- 2                      # paper: num_rep = 20
+pb <- seq(0,1,by=0.5)             # paper: pb = seq(0,1,by=0.2)
+@
+
+%% FIXME: gives  10 x  message  " Graph is not amenable "  :
+Next we define a helper function and run the simulation:
+<<simRunSim, message=FALSE, warning=FALSE>>=
+## helper function
+revealEdge <- function(c,d,s) {
+  ## cpdag, dag, selected edges to reveal
+  if (!anyNA(s)) { ## something to reveal
+    for (i in 1:nrow(s)) {
+      c[s[i,1], s[i,2]] <- d[s[i,1], s[i,2]]
+      c[s[i,2], s[i,1]] <- d[s[i,2], s[i,1]]
+    }
+  }
+  c
+}
+
+## save results from each iteration in here:
+resFin <- vector("list", num_settings)
+
+## run simulation
+for(r in 1:num_settings) {
+
+  set.seed(r)
+  ## Then we sample one setting:
+  p <-  sample(possible_p,1)
+  neigh <- sample(possible_neighb_size,1)
+  prob <- round(neigh/(p-1),3)
+
+  resFin[[r]] <- vector("list", num_rep)
+
+  ## then for every setting selected we generate num_rep graphs
+  for (i in 1:num_rep){
+
+    ## get DAG
+    isEmpty <-  1
+    while(isEmpty){
+      g <- randomDAG(p, prob)  ## true DAG
+      cpdag <- dag2cpdag(g) ## true CPDAG
+
+      ## get adjacency matrix of the CPDAG  and DAG
+      cpdag.amat <- t(as(cpdag,"matrix"))
+      dag.amat <- t(as(g,"matrix"))
+      dag.amat[dag.amat != 0] <- 1
+
+      ## only continue if the graph is not fully un-connected
+      if (sum(dag.amat)!= 0){
+        isEmpty <- 0
+      }
+    }
+
+    ## choose x and y
+    y <- NULL
+    while(is.null(y)){
+      # choose x
+      x <- sample(p,1)
+
+      ## choose y as a node connected to x but not x <- y
+      skeleton <- cpdag.amat + t(cpdag.amat)
+      skeleton[skeleton == 2] <- 1
+      connectt <- possDe(skeleton,x, type = "pdag")
+      if (length(connectt) != 1) {
+        pa.x <- which(dag.amat[x,]==1 & dag.amat[,x]==0)
+        ## remove x and parents of x (in the DAG) from pos.y
+        pos.y <- setdiff(setdiff(connectt, pa.x), x)
+        if (length(pos.y)==1){
+          y <- pos.y[1]
+        } else if (length(pos.y) > 0) {
+          y <- sample(pos.y, 1)
+        }
+      }
+    }
+
+    ## calculate true effect:
+    true_effect <- causalEffect(g,y,x)
+
+    ## sample data for ida
+    ## need to set nData
+    nData <- 200
+    dat <- rmvDAG(nData, g) ## sample data from true DAG
+
+    ## Resulting lists, of same length as 'pb' :
+    pdag.amat <-
+    adjust_set <-
+    result_adjust_set <-
+    ida_effects <- vector("list", length(pb))
+
+    ## for each proportion of background knowledge
+    ## find a PDAG and an adjustment set relative to (x,y) in this
+    ## PDAG aditionally calculate the set of possible total
+    ## causal effects of x on y using ida in this PDAG
+    for (j in 1:length(pb)){
+      ## reveal proportion pb[j] of bg knowledge
+      tmp <- ( (cpdag.amat + t(cpdag.amat))==2 ) &
+        lower.tri(cpdag.amat)
+      ude <- which(tmp, arr.ind = TRUE) ## undir edges
+      nbg <- round(pb[j] * nrow(ude)) ## nmb of edges to reveal
+      ## edges to reveal
+      sele <- if (nbg>0) ude[sample(nrow(ude), nbg),,drop=FALSE] else NA
+      ## reveal edges
+      pdag.amat[[j]] <- revealEdge(cpdag.amat, dag.amat, sele)
+      pdag.amat[[j]] <- addBgKnowledge(pdag.amat[[j]],
+                                       checkInput = FALSE)
+
+      ## find adjustment set (if it exists)
+      adjust <- adjustment(pdag.amat[[j]],amat.type="pdag",x,y,
+                           set.type="canonical")
+      adjust_set[[j]] <- if (length(adjust) > 0) adjust$'1' else NA
+      result_adjust_set[[j]] <- length(adjust) > 0
+      ## ida
+      ## convert to graph for ida()
+      pdag.g <- as(t(pdag.amat[[j]]), "graphNEL")
+      ida_effects[[j]] <- ida(x,y,cov(dat), graphEst = pdag.g,
+                              method = "local", type = "pdag")
+
+      ## for j = 1 that is when pdag.g == cpdag compare
+      ## runtime of local method for CPDAGs vs. PDAGs
+      if (j == 1){
+        time.taken.ida <-
+          system.time(ida(x,y,cov(dat), graphEst = pdag.g,
+                          method = "local", type = "cpdag"))
+        time.taken.bida <-
+          system.time(ida(x,y,cov(dat), graphEst = pdag.g,
+                          method = "local", type = "pdag"))
+      }
+    }
+
+    ## save the results
+    resFin[[r]][[i]] <- list(seed=r, p=p, prob=prob, neigh=neigh,
+                             pb=pb, i=i, nData=nData,
+                             dag.amat=dag.amat,
+                             pdag.amat=pdag.amat,
+                             x=x, y=y,
+                             adjust_set = adjust_set,
+                             result_adjust_set = result_adjust_set,
+                             true_effect = true_effect,
+                             ida_effects = ida_effects,
+                             time.taken.ida = time.taken.ida,
+                             time.taken.bida = time.taken.bida)
+  }
+}
+@
+
+Next we transform the output of the simulation into a data frame containing summary statistics:
+<<simList2Df>>=
+## total number of unique cpdags = num_settings*num_rep graphs
+nn <- sum(sapply(resFin, length))
+## make data frame with relevant summary info
+nBG <- length(pb)
+x <- rep(NA, nn*nBG)
+df1 <- data.frame(setting=x, g=x, p=x, neigh=x, pb=x,
+                  resAdj = x, idaNum = x, idaRange = x,
+                  timeIda = x, timeBida = x,
+                  trueEff = x)
+ii <- 0
+for (i1 in 1:length(resFin)) { ## settings
+  nLE <- length(resFin[[i1]])
+  for (i2 in 1:nLE) { ## graphs per setting
+    for (i3 in 1:nBG) { ## BGK
+      ii <- ii + 1
+      df1[ii,"setting"] <- i1 ## List index for setting
+      df1[ii,"g"] <- i2 ## List index for graph within setting
+      df1[ii,"p"] <- resFin[[i1]][[i2]]$p ## Nmb nodes in graph
+      ## Ave size of neighborhood
+      df1[ii,"neigh"] <- resFin[[i1]][[i2]]$neigh
+      ## fraction of background knowledge
+      df1[ii,"pb"] <- resFin[[i1]][[i2]]$pb[i3]
+      ## true if adj set exists
+      df1[ii,"resAdj"] <-
+        resFin[[i1]][[i2]]$result_adjust_set[[i3]]
+      ## nmb unique results of ida
+      df1[ii,"idaNum"] <-
+        length(unique(resFin[[i1]][[i2]]$ida_effects[[i3]]))
+      ## range of results of ida
+      df1[ii,"idaRange"] <-
+        diff(range(resFin[[i1]][[i2]]$ida_effects[[i3]]))
+      ## runtime for CPDAG using option "cpdag"
+      df1[ii,"timeIda"] <-
+        resFin[[i1]][[i2]]$time.taken.ida[[1]]
+      ## runtime for CPDAG using option "pdag"
+      df1[ii,"timeBida"] <-
+        resFin[[i1]][[i2]]$time.taken.bida[[1]]
+      df1[ii,"trueEff"] <-
+        resFin[[i1]][[i2]]$true_effect
+    }
+  }
+}
+@
+
+Finally, we illustrate the result using plots. First, we reproduce a plot like Fig.~4 in \cite{emaBackground17} in Fig.~\ref{fig:simFig4}:
+<<simFig4Prepare>>=
+  ## Fig 4 in paper: Fraction of identifiable effects
+  ## Fraction of identifiable effects: ALL EFFECTS
+  tm1 <- tapply(X=df1$resAdj, INDEX=as.factor(df1$pb), FUN = mean)
+  ts1 <- tapply(X=df1$resAdj, INDEX=as.factor(df1$pb),
+                FUN = function(x) sd(x)/sqrt(length(x)))
+  ## Fraction of identifiable effects: add means for
+  ## only NON-ZERO EFFECTS
+  dfNZ <- subset(df1, subset = (trueEff!=0) )
+  tm <- c(tm1,tapply(X=dfNZ$resAdj, INDEX=as.factor(dfNZ$pb),
+                     FUN = mean))
+  ts <- c(ts1,tapply(X=dfNZ$resAdj, INDEX=as.factor(dfNZ$pb),
+                     FUN = function(x) sd(x)/sqrt(length(x))))
+
+  dfID <- data.frame(pb = as.factor(names(tm)), fit = tm, se = ts,
+                     TrueEffect =
+                       as.factor(c(rep("All", length(tm)/2),
+                                   rep("Non-zero", length(tm)/2))))
+@
+
+\begin{figure}
+  \centering
+<<simFig4, fig=TRUE, message = FALSE>>=
+if(require(ggplot2)) {
+  k <- ggplot(dfID, aes(pb, fit, ymin = fit-se,
+                        ymax = fit+se, col = TrueEffect))
+  k + geom_pointrange() +
+    xlab("Proportion of background knowledge") +
+    ylab("Fraction of identifiable effects via adjustment") +
+    theme(legend.position = c(0.9,0.1),
+          axis.text=element_text(size = 14),
+          axis.title = element_text(size = 14),
+          legend.text=element_text(size = 14),
+          legend.title=element_text(size = 14))
+}
+@
+  \caption{Conceptually reproducing Fig.~4 from \cite{emaBackground17}. The parameter setting was simplified a lot in order to reduce runtime, but the qualitative result is still observable: As the proportion of background knowledge increases, the fraction of identifiable effects increases, too.}
+  \label{fig:simFig4}
+\end{figure}
+
+Then we reproduce a plot like Fig.~5 in \cite{emaBackground17} in Fig.~\ref{fig:simFig5}:
+<<simFig5prepare>>=
+## use dfNU2: settings where effect is NOT unique given zero bg knowledge
+nn <- length(pb)
+idx <- rep(seq(1,nrow(df1), by = nn), each = nn) ## pb=0 rows
+nmbIda <- df1$idaNum[idx]
+dfNU2 <- df1[nmbIda > 1,]
+
+bnTmp <- cut(x=dfNU2$idaNum, breaks = c(0,1,2,3,4,1e9),
+             labels = c("1", "2", "3", "4", "5+"))
+dfNU2$idaNumF <- factor(bnTmp, levels = levels(bnTmp)[5:1])
+df3 <- dfNU2[,c("pb", "idaNumF")]
+df3$idx <- 1:nrow(df3)
+
+df3N <- aggregate(idx ~ pb + idaNumF, data = df3, FUN = length)
+df3N$idaNumF <- droplevels(df3N$idaNumF)
+@
+
+\begin{figure}
+  \centering
+<<simFig5, fig=TRUE>>=
+ggplot(df3N, aes(x = pb, y=idx, fill = idaNumF)) +
+  geom_bar(stat = "identity") +
+  ylab("Number of simulation settings") +
+  xlab("Proportion of background knowledge")+
+  theme(axis.text =  element_text(size = 14),
+        axis.title=  element_text(size = 14),
+        legend.text= element_text(size = 14),
+        legend.title=element_text(size = 14)) +
+  guides(fill=guide_legend(title="#effects"))
+@
+\caption{Conceptually reproducing Fig.~5 from \cite{emaBackground17}. The parameter setting was simplified a lot in order to reduce runtime, but the qualitative result is still observable: As the proportion of background knowledge increases, the fraction simulation settings in which unambiguous identification of the causal effect is possible increases.}
+\label{fig:simFig5}
+\end{figure}
+
+\end{document}

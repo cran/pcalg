@@ -114,7 +114,7 @@
 
 \begin{document}
 
-<<preliminaries, echo=FALSE, results=hide>>=
+<<preliminaries, echo=FALSE>>=
 op.orig <-
 options(SweaveHooks= list(fig=function() par(mar=c(5.1, 4.1, 1.1, 2.1))),
         width = 75, digits = 5,
@@ -190,22 +190,11 @@ p <- 8
 n <- 5000
 gGtrue <- randomDAG(p, prob = 0.3)
 gmG <- list(x = rmvDAG(n, gGtrue), g = gGtrue)
-<<exIntro1, eval=FALSE>>=
+@
+
+<<exIntro1>>=
 library("pcalg")
 data("gmG")
-@
-%% pcalg loading with extended error diagnostics
-%% as this "always" fails for Martin, in  R CMD build pcalg :
-<<try-load-pcalg, echo=FALSE>>=
-tryCatch({
-<<exIntro1>>
-}, error = function(e) {
-    cat("Error almost surely in loading package \"pcalg\":\n",
-        conditionMessage(e))
-    cat(".libPaths():\n"); print(.libPaths())
-    cat("\nFull sessionInfo():\n"); print(sessionInfo())
-    stop()
-})
 @
 
 
@@ -232,13 +221,12 @@ result.
 stopifnot(require(Rgraphviz))# needed for all our graph plots
 par(mfrow = c(1,2))
 plot(gmG8$g, main = "") ; plot(pc.gmG, main = "")
-@% two plots side by sid
+@ % two plots side by sid
 
-<<exIntroPlot>>=
+<<exIntro>>=
 suffStat <- list(C = cor(gmG8$x), n = nrow(gmG8$x))
 pc.gmG <- pc(suffStat, indepTest = gaussCItest,
              p = ncol(gmG8$x), alpha = 0.01)
-<<Iplot>>
 @
 \begin{figure}[htb]
   \centering
@@ -1147,7 +1135,7 @@ exactly the same in this case.
 
 \begin{figure}
   \centering
-<<pcExpl-plot, fig=TRUE>>=
+<<gesExpl-plot, fig=TRUE>>=
 score <- new("GaussL0penObsScore", gmG8$x)
 ges.fit <- ges(score)
 par(mfrow=1:2); plot(gmG8$g, main = ""); plot(ges.fit$essgraph, main = "")
@@ -1513,7 +1501,7 @@ from the DAG in Figure~\ref{fig:skelExpl}, among them \Sexpr{n.obs}
 observational ones, \Sexpr{n3} originating from an intervention at vertex
 $3$ and \Sexpr{n5} originating from an intervention at vertex $5$.  It can
 be loaded by calling
-<<load-gmInt>>=
+<<load-gmInt2>>=
 data(gmInt)
 @
 The underlying causal model (or its interventional essential graph,
@@ -1947,14 +1935,14 @@ We can now use this function together with \code{pc()}.
 suffStat <- list(C = cor(gmG8$x), n = 5000)
 pc.gmG <- pc(suffStat, indepTest=gaussCItest, p = 8, alpha = 0.01)
 @
-<<myCItest-def-plot, eval=False>>=
+<<myCItest-def-plot, eval=FALSE>>=
 pc.myfit <- pc(suffStat = gmG8$x, indepTest = myCItest,
                p = 8, alpha = 0.01)
 par(mfrow = c(1,2)); plot(pc.gmG, main = ""); plot(pc.myfit, main = "")
 @
 \begin{figure}[htb]
   \centering
-<<myCItest-ex-plot, echo=False, fig=TRUE>>=
+<<myCItest-ex-plot, echo=FALSE, fig=TRUE>>=
 <<myCItest-def-plot>>
 @
 \caption{The estimated CPDAGs using the predefined conditional independence
@@ -1977,7 +1965,7 @@ $0.059$ seconds using \code{gaussCItest()} versus $1.05$
 seconds using \code{myCItest()}).
 %% MM: Nach Verbesserung [lm.fit()] ist's immer noch deutlich langsame
 %% -----   myCItest() noch wesentlich schneller geschrieben werden muss !
-<<time-tests, eval=false, echo=false>>=
+<<time-tests, eval=FALSE, echo=FALSE>>=
 system.time(for(i in 1:10)
             pc.fit <- pc(suffStat, indepTest=gaussCItest, p = 8, alpha = 0.01))
       ##  User      System verstrichen
@@ -2085,10 +2073,6 @@ important to further validate the methods in a range of applications. We
 hope that the \pkg{pcalg} package contributes to this important
 issue by providing well-documented and easy to use software.
 
-\section{Session information}
-
-<<sessionInfo, results=tex>>=
-toLatex(sessionInfo(), locale=FALSE)
 <<finalizing, echo=FALSE>>=
 options(op.orig)
 @

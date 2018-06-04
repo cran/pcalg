@@ -53,7 +53,42 @@ adjustment <- function(amat, amat.type, x, y, set.type)
       return(vector(mode = "list", length = 0))
     }
     f <- bforbiddenNodes(m = amat, x = x, y = y)
-    
+        ##############################################################
+    ### EMA : The changes start in the folowing line, added if (set.type == "canonical") {new code } else { old code }
+    if (set.type == "canonical"){
+      
+      ##form canonical set adjustb
+      possanx <- possany <- adjustb <-  c()
+      for(i in 1:max(length(x),length(y)))
+      {
+        if (i <= length(x)){
+          possanx <- union(possanx,possAn(m = amat, x = x[i], type = amat.type))
+        }
+        if (i <= length(y)){
+          possany <- union(possany,possAn(m = amat, x = y[i], type = amat.type))
+        }
+      }
+      adjustb <- union(possanx,possany)
+      adjustb <- setdiff(adjustb,union(f,union(x,y)))
+      adjustb <- sort(adjustb)
+      
+      result.gac <- gac(amat = amat, x = x, y = y, z = adjustb, type = amat.type)$gac
+      
+      ##output the canonical set if it is valid
+      if (result.gac)
+      {
+        nn <- length(adjustb)
+        if (nn > 0) {
+            res <- list('1' = adjustb)
+        } else {
+            ## res <- vector("list", 0L)
+            res <- list('1' = integer(0))
+        }
+      } else {
+        res <-  vector(mode = "list", length = 0)
+      }   
+    }      ### EMA : changes end here, in terms of the if statement 
+    else { ###  EMA : new line
     ## step 2
     oneDag <- pdag2dag(as(t(amat),"graphNEL"))    
     amatD <- t(as(oneDag$graph,"matrix"))
@@ -87,7 +122,7 @@ adjustment <- function(amat, amat.type, x, y, set.type)
     } else {
       res <- vector("list", 0L)
     }
-    
+    } ### EMA : new line
   }
   res
 }

@@ -248,7 +248,7 @@ jointIda <- function(x.pos, y.pos, mcov, graphEst = NULL,
     amat[which(amat != 0)] <- 1
 
     ## check if valid input amat
-    if (!isValidGraph(amat = amat, type = type)) {
+    if (!isValidGraph(amat = t(amat), type = type)) {
       message("The input graph is not a valid ",type,". See function isValidGraph() for details.\n")
     }
 

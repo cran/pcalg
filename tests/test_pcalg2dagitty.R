@@ -2,6 +2,7 @@
 
 library(pcalg)
 library(dagitty)
+doExtras <- pcalg:::doExtras()
 
 res <- rep(FALSE, 10)
 ####################
@@ -62,6 +63,9 @@ dagitty_cpdag1 <- pcalg2dagitty(amat,V,type="cpdag")
 
 res[3] <- (dagitty_cpdag1 == "pdag {\nAuthor\nBar\nCtrl\nGoal\nV5\nV6\nV7\nV8\nAuthor -- Bar\nAuthor -> V6\nAuthor -> V8\nBar -- Ctrl\nBar -> V5\nV5 -> V6\nV5 -> V8\nV6 -> V7\n}\n")
 
+stopifnot(all(res[1:3]))
+
+if (doExtras) {
 #############
 ## Test CPDAG 2
 #############
@@ -448,4 +452,5 @@ if (!xx) {
     stop("Problem when testing function gacVSdagitty.")
 } else {
     message("OK, no issues were found.")
+}
 }

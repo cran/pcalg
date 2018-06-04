@@ -51,6 +51,14 @@ importFrom("igraph", graph.adjacency, igraph.from.graphNEL, is.chordal,
 
 importFrom("RBGL",
 	   biConnComp, johnson.all.pairs.sp, separates, bfs, connectedComp)
+## problems on Mac;
+## used in
+## biConnComp: pdsep -> fci
+## johnson.all.pairs.sp -> dsep (-> dsepTest), dreach (-> backdoor)
+## separates -> dsep
+## bfs -> dsep
+## connectedComp -> pag2magAM, backdoor
+
 ## also    sp.between -- but only for deprecated beta.special(), hence RBGL::*
 
 importFrom("ggm", isAcyclic, transClos, topOrder, msep)
@@ -63,7 +71,6 @@ importFrom("sfsmisc", digitsBase, is.whole)
 
 importFrom("fastICA", fastICA)
 importFrom("clue", solve_LSAP)
-importFrom("gmp", as.bigz, chooseZ, as.bigq)
 importFrom("dagitty", dagitty, isAdjustmentSet, adjustmentSets)
 ###----- Exports ------------------------------------------------------
 
@@ -139,8 +146,6 @@ export(trueCov,
        fciPlus,
        lingam, LINGAM,
        randDAG,
-       unifDAG,
-       unifDAG.approx,
        gac,
        ## no longer: use as(*,"amat")
        ##  displayAmat,
@@ -150,7 +155,8 @@ export(trueCov,
        pcalg2dagitty,
        addBgKnowledge,
        adjustment,
-       isValidGraph)
+       isValidGraph,
+       ages)
 
 ## These are "internal" i.e., in man/pcalg-internal.Rd
 ## _FIXME ?_                     ---------------------
