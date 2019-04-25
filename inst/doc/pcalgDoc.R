@@ -270,7 +270,7 @@ plot(pc.gmI, main = "")
 ### code chunk number 30: idaExpl3
 ###################################################
 am.pdag <- wgtMatrix(pc.gmI@graph)
-ad <- allDags(am.pdag, am.pdag, NULL)
+ad <- pdag2allDags(am.pdag)$dags
 gDag <- vector("list", nrow(ad))
 for (i in 1:nrow(ad)) gDag[[i]] <- as(matrix(ad[i, ], 7, 7), "graphNEL")
 par(mfrow = c(3,2))

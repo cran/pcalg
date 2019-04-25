@@ -1,5 +1,5 @@
 library(pcalg)
-
+suppressWarnings(RNGversion("3.5.0"))
 set.seed(34)
 g <- randomDAG(5,0.8)
 trMat <- matrix(0, 5,5)

@@ -261,7 +261,7 @@ jointIda <- function(x.pos, y.pos, mcov, graphEst = NULL,
     }
     ####################
   } else { ## check format of all.pasets :
-    if(!is.list(all.pasets) || vapply(all.pasets, length, 1L) != nx)
+    if(!is.list(all.pasets) || any(vapply(all.pasets, length, 1L) != nx) )
       stop("all.pasets is not given in an appropriate format.")
   }
   

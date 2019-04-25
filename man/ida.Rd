@@ -158,6 +158,7 @@ causalEffect(g, y, x)
 }
 \examples{
 ## Simulate the true DAG
+suppressWarnings(RNGversion("3.5.0"))
 set.seed(123)
 p <- 7
 myDAG <- randomDAG(p, prob = 0.2) ## true DAG

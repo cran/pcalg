@@ -1,7 +1,7 @@
 ## GIES algorithm
 ##
 ## Author: Alain Hauser <alain.hauser@bfh.ch>
-## $Id: gies.R 409 2017-02-05 15:41:51Z alhauser $
+## $Id: gies.R 484 2019-04-04 09:03:47Z mkalisch $
 ###############################################################################
 
 ##################################################
@@ -356,7 +356,12 @@ ges <- function(
   }
   phase <- match.arg(phase, several.ok = TRUE)
   # TODO extend...
-  
+
+  if(min(score$pp.dat$data.count) <= score$pp.dat$vertex.count){
+      warning("The data set is high-dimensional, ges might not be
+able to terminate")
+  }
+
   caus.inf(
       "GIES", 
       score = score, 

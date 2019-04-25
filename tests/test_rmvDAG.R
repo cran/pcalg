@@ -1,5 +1,5 @@
 library(pcalg)
-
+suppressWarnings(RNGversion("3.5.0"))
 set.seed(100)
 
 wmat <- rbind(c(0,1,0,0,0),

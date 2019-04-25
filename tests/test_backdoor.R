@@ -1,5 +1,5 @@
 library(pcalg)
-(doExtras <- pcalg:::doExtras())
+## (doExtras <- pcalg:::doExtras())
 
 ## NB: add tests in addition to the simple ones from Maathuis and Colombo (2013)
 ## in ../man/backdoor.Rd
@@ -10,8 +10,10 @@ library(pcalg)
 `%w/o%` <- function(x, y) x[!match(x, y, nomatch = 0L)]
 
 ###-------- DAG ----------------------
+suppressWarnings(RNGversion("3.5.0"))
 set.seed(47)
-p <- if(doExtras) 17 else 12
+## p <- if(doExtras) 17 else 12
+p <- 12
 myDAG <- randomDAG(p, prob = 1/4) ## true DAG
 
 ## Extract the adjacency matrix of the true DAG
@@ -26,14 +28,15 @@ LL <- lapply(nodes, function(i)
 		    amat = true.amat, x = i, type="dag"))
 ), "\n")
 
-if(doExtras) {
-    for(i in nodes[1:3]) ## Nodes 1,2,3 are all "root" nodes:
-	stopifnot(vapply(LL[[i]], identical, NA, y=integer(0)))
+## if(doExtras) {
+##     for(i in nodes[1:3]) ## Nodes 1,2,3 are all "root" nodes:
+## 	stopifnot(vapply(LL[[i]], identical, NA, y=integer(0)))
 
-    str(LL[-(1:3)]) ## Martin: interesting.. Q: is "this" known? A: yes, basically
-} else {
-    str(LL)
-}
+##     str(LL[-(1:3)]) ## Martin: interesting.. Q: is "this" known? A: yes, basically
+## } else {
+##     str(LL)
+## }
+str(LL)
 
 ###-------- CPDAG --------------------
 

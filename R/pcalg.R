@@ -1985,7 +1985,7 @@ skeleton <- function(suffStat, indepTest, alpha, labels, p,
   ## - fixedEdges: Edges marked here are not changed (logical)
   ## - NAdelete: delete edge if pval=NA (for discrete data)
   ## - m.max: maximal size of conditioning set
-  ## - numCores: number of cores to be used for calculation if 
+  ## - numCores: number of cores to be used for calculation if
   ##   method = "stable.fast"
   ## ----------------------------------------------------------------------
   ## Value:
@@ -2955,7 +2955,7 @@ hasExtension <- function(amat, amatSkel, x, pa1, pa2.t, pa2.f, type, nl) {
   ## VALUE: TRUE if amat has extension
   if (type == "pdag") {
     xNL <- nl[x]
-    fromXNL <- rep(xNL, length(pa2.f)) 
+    fromXNL <- rep(xNL, length(pa2.f))
     toXNL <- rep(xNL, length(pa2.t))
     pa2.fNL <- nl[pa2.f]
     pa2.tNL <- nl[pa2.t]
@@ -2978,12 +2978,12 @@ revealEdge <- function(c,d,s) { ## cpdag, dag, selected edges to reveal
   c
 }
 
-ida <- function (x.pos, y.pos, mcov, graphEst, method = c("local", "global"), 
+ida <- function (x.pos, y.pos, mcov, graphEst, method = c("local", "global"),
                  y.notparent = FALSE, verbose = FALSE, all.dags = NA,
-                 type = c("cpdag", "pdag")) 
+                 type = c("cpdag", "pdag"))
 {
   stopifnot(x.pos == (x <- as.integer(x.pos)),
-            y.pos == (y <- as.integer(y.pos)), 
+            y.pos == (y <- as.integer(y.pos)),
             length(x) == 1, length(y) == 1,
             type %in% c("pdag", "cpdag"))
   method <- match.arg(method)
@@ -2998,7 +2998,7 @@ ida <- function (x.pos, y.pos, mcov, graphEst, method = c("local", "global"),
 
   nl <- colnames(amat) ## Node labels
   ## double-check that node labels exist (they should given a graph input)
-  stopifnot(!is.null(nl)) 
+  stopifnot(!is.null(nl))
   amatSkel <- amat + t(amat)
   amatSkel[amatSkel != 0] <- 1
   ##local method needs changing
@@ -3019,13 +3019,13 @@ ida <- function (x.pos, y.pos, mcov, graphEst, method = c("local", "global"),
       wgt.ambig <- wgt.est - wgt.unique
       ##orient pa2 out of x
       pa2 <- which(wgt.ambig[x, ] != 0)
-      if (verbose) 
-        cat("\n\nx=", x, "y=", y, "\npa1=", pa1, "\npa2=", 
+      if (verbose)
+        cat("\n\nx=", x, "y=", y, "\npa1=", pa1, "\npa2=",
             pa2, "\n")
       if (length(pa2) == 0) {
         beta.hat <- lm.cov(mcov, y, c(x, pa1))
-        if (verbose) 
-          cat("Fit - y:", y, "x:", c(x, pa1), "|b.hat=", 
+        if (verbose)
+          cat("Fit - y:", y, "x:", c(x, pa1), "|b.hat=",
               beta.hat, "\n")
       }
       else {
@@ -3049,15 +3049,15 @@ ida <- function (x.pos, y.pos, mcov, graphEst, method = c("local", "global"),
               beta.hat[ii] <- 0
             }
             else {
-              beta.hat[ii] <- lm.cov(mcov, y, c(x, pa1, 
+              beta.hat[ii] <- lm.cov(mcov, y, c(x, pa1,
                                                 pa2[i2]))
-              if (verbose) 
-                cat("Fit - y:", y, "x:", c(x, pa1, pa2[i2]), 
+              if (verbose)
+                cat("Fit - y:", y, "x:", c(x, pa1, pa2[i2]),
                     "|b.hat=", beta.hat[ii], "\n")
             }
           }
         }
-        if (length(pa2) > 1) 
+        if (length(pa2) > 1)
           for (i in 2:length(pa2)) {
             pa.tmp <- combn(pa2, i, simplify = TRUE)
             for (j in seq_len(ncol(pa.tmp))) {
@@ -3069,10 +3069,10 @@ ida <- function (x.pos, y.pos, mcov, graphEst, method = c("local", "global"),
                   beta.hat[ii] <- 0
                 }
                 else {
-                  beta.hat[ii] <- lm.cov(mcov, y, c(x, 
+                  beta.hat[ii] <- lm.cov(mcov, y, c(x,
                                                     pa1, pa2.t))
-                  if (verbose) 
-                    cat("Fit - y:", y, "x:", c(x, pa1, 
+                  if (verbose)
+                    cat("Fit - y:", y, "x:", c(x, pa1,
                                                pa2.t), "|b.hat=", beta.hat[ii], 
                         "\n")
                 }
@@ -3107,8 +3107,8 @@ ida <- function (x.pos, y.pos, mcov, graphEst, method = c("local", "global"),
       }
       else {
         beta.hat[i] <- lm.cov(mcov, y, c(x, pa1))
-        if (verbose) 
-          cat("Fit - y:", y, "x:", c(x, pa1), "|b.hat=", 
+        if (verbose)
+          cat("Fit - y:", y, "x:", c(x, pa1), "|b.hat=",
               beta.hat[i], "\n")
       }
     }
@@ -3229,16 +3229,17 @@ legal.path <- function(a,b,c, amat)
 ##' @param y        Starting node
 ##' @param dist     Distance of nodes included in subgraph from starting node y
 ##' @param amat     Adjacency matrix of skeleton graph (optional)
-##' @param directed Boolean; should the plotted subgraph be directed?
+##' @param directed should the plotted subgraph be directed?
 ##' @param main
 ##' --------------- see ../man/plotSG.Rd
 plotSG <- function(graphObj, y, dist, amat = NA, directed = TRUE,
-                   main = paste("Subgraph of ", deparse(substitute(graphObj)),
-                     "\nfrom ", y, " with distance ", dist ))
+                   plot = requireNamespace("Rgraphviz"),
+                   main = paste("Subgraph of", deparse(substitute(graphObj)),
+                                "from ", y, " with dist <=", dist),
+                   cex.main = 1.25, font.main = par("font.main"), col.main=par("col.main"),
+                   ...)
 {
-  ## Author: Daniel Stekhoven, Date: 26 Jan 2010, 08:56
-
-  check.Rgraphviz()
+  ## Author: Daniel Stekhoven, Date: 26 Jan 2010;   MM: tweaks
   stopifnot(dist >= 1)
 
   ## Extract adjacency matrix (if necessary)
@@ -3275,10 +3276,16 @@ plotSG <- function(graphObj, y, dist, amat = NA, directed = TRUE,
     as(amat[rel.nodes, rel.nodes], "graphNEL")
 
   ## Plot subgraph
-  Rgraphviz::plot( sg )
-  if(!is.null(main))
-    title(main = main)
-  invisible(sg)
+  if(plot) {
+    if(requireNamespace("Rgraphviz")) {
+      ## FIXME: use "new Rgraphvis interface: layoutGraph(), renderGraph() [includes title!]
+      Rgraphviz::plot(sg, ...) ## TODO: leave room for title
+      if(!is.null(main))
+        title(main = main, cex.main=cex.main, font.main=font.main, col.main=col.main)
+    } else check.Rgraphviz() # error!
+    invisible(sg)
+  }
+  else sg
 }
 
 
@@ -3793,15 +3800,16 @@ minDiscrPath <- function(pag, a,b,c, verbose = FALSE)
       ## else :
       pred <- mpath[m-1]
       path.list[[1]] <- NULL
-      visited[d] <- TRUE
+
 
       ## d is connected to c -----> search iteratively
       if (pag[d,c] == 2 && pag[c,d] == 3 && pag[pred,d] == 2) {
+        visited[d] <- TRUE
         ## find all neighbours of d not visited yet
         indR <- which(pag[d,] != 0 & pag[,d] == 2 & !visited) ## r *-> d
         if (length(indR) > 0)
           ## update the queues
-          path.list <- updateList(mpath, indR, path.list)
+          path.list <- updateList(mpath[-1], indR, path.list)
       }
     } ## {while}
   }
@@ -6860,8 +6868,8 @@ allDags.internal <- function(gm,a,tmp, verbose = FALSE)
 ## This fucntion, given a graphNEL object, or an adjacency matrix
 ## just completes orientations under rules R1-R4 from Meek 1995
 
-## note that this function accepts the t(amat.cpdag) encoding that is 
-## m[i,j]=1,m[j,i]=0 <=> i -> j 
+## note that this function accepts the t(amat.cpdag) encoding that is
+## m[i,j]=1,m[j,i]=0 <=> i -> j
 ## same as udag2pdag
 applyOrientationRules <- function(gInput, verbose=FALSE) {
   res <- gInput
@@ -6909,7 +6917,7 @@ applyOrientationRules <- function(gInput, verbose=FALSE) {
     }
     ## x11()
     ## plot(as(pdag,"graphNEL"), main="After Rule1")
-    
+
     ## rule 2
     ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a -> b
     for (i in seq_len(nrow(ind))) {
@@ -6925,7 +6933,7 @@ applyOrientationRules <- function(gInput, verbose=FALSE) {
     }
     ## x11()
     ## plot(as(pdag,"graphNEL"), main="After Rule2")
-    
+
     ## rule 3
     ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a - b
     for (i in seq_len(nrow(ind))) {
@@ -6950,7 +6958,7 @@ applyOrientationRules <- function(gInput, verbose=FALSE) {
     }
     ## x11()
     ## plot(as(pdag,"graphNEL"), main="After Rule3")
-    
+
     ## rule 4
     ind <- which((pdag==1 & t(pdag)==1), arr.ind=TRUE) ## a - b
     if (length(ind)>0) {
@@ -6974,13 +6982,13 @@ applyOrientationRules <- function(gInput, verbose=FALSE) {
           }
         }
       }
-      
-      
+
+
     }
   }
   if (!is.matrix(res))
   {
-    res <- as(pdag,"graphNEL") 
+    res <- as(pdag,"graphNEL")
   } else {
     res <- pdag
   }
@@ -6988,14 +6996,14 @@ applyOrientationRules <- function(gInput, verbose=FALSE) {
 }
 
 ## This function is supposed to add the bg knowledge x -> y to the pdag in gInput
-## x and y should be vectors of node LABELS 
+## x and y should be vectors of node LABELS
 ## gInput can be either the graphNEL object or adjacency matrix
 ## same encoding as in amat.cpdag above m[i,j]=0, m[j,i]=1 <=> i->j
-addBgKnowledge <- function(gInput,x=c(),y=c(),verbose=FALSE, checkInput = TRUE)      
+addBgKnowledge <- function(gInput,x=c(),y=c(),verbose=FALSE, checkInput = TRUE)
 {
   res <- gInput
   ##new line
-  if (!is.matrix(gInput)) { 
+  if (!is.matrix(gInput)) {
     if (numEdges(gInput)>0) {
       g <- t(as(gInput,"matrix")) ## g_ji if i->j
       p <- as.numeric(dim(g)[1])
@@ -7003,7 +7011,7 @@ addBgKnowledge <- function(gInput,x=c(),y=c(),verbose=FALSE, checkInput = TRUE)
       if (verbose) cat("Invalid or empty PDAG! This function only accepts graphNEL or adj mat\n")
       return(NULL)
     }
-  } else { 
+  } else {
     ##for me its easier to use an adjacency matrix
     if (length(res[1,])>0) {
       g <- res
@@ -7022,7 +7030,7 @@ addBgKnowledge <- function(gInput,x=c(),y=c(),verbose=FALSE, checkInput = TRUE)
       return(NULL)
     }
   }
-  
+
   ##CHANGED!
   if (length(x)!=length(y)) {
     if (verbose) cat("length of\n",x,"and\n",y,"\nshould be the same!\n")
@@ -7036,12 +7044,12 @@ addBgKnowledge <- function(gInput,x=c(),y=c(),verbose=FALSE, checkInput = TRUE)
   i <- 1
   ## orient edge by edge
   ## after adding one orientation complete the orientation rules
-  
+
   ##NEW if there are no edges to orient!!
   if (k ==0){
     pdag <- t(applyOrientationRules(t(pdag),verbose))
     if (!is.matrix(res)) {
-      res <- as(t(pdag),"graphNEL") 
+      res <- as(t(pdag),"graphNEL")
     } else {
       res <- pdag
     }
@@ -7055,7 +7063,7 @@ addBgKnowledge <- function(gInput,x=c(),y=c(),verbose=FALSE, checkInput = TRUE)
     if (verbose) cat("Your input pdag is not maximal! You can obtain a maximal pdag by calling: addBgKnowledge(gInput)\n")
     return(NULL)
   }
-  
+
   while (i <=k)
   {
     ## for each new edge
@@ -7075,7 +7083,7 @@ addBgKnowledge <- function(gInput,x=c(),y=c(),verbose=FALSE, checkInput = TRUE)
       if ((pdag[from,to] ==1) & (pdag[to,from] ==0)){
         if (verbose) cat("Invalid bg knowledge! Cannot add orientation ",x[i],"->",y[i]," because",y[i],"->",x[i],"is already in the PDAG. \n")
         return(NULL)
-      } 
+      }
       if ((pdag[from,to] ==0) & (pdag[to,from] ==0)){
         if (verbose) cat("Invalid bg knowledge! Cannot add orientation",x[i],"->",y[i]," because there is no edge between",x[i],"and",y[i],"in the PDAG. \n")
         return(NULL)
@@ -7086,7 +7094,7 @@ addBgKnowledge <- function(gInput,x=c(),y=c(),verbose=FALSE, checkInput = TRUE)
 
   if (!is.matrix(res))
   {
-    res <- as(t(pdag),"graphNEL") 
+    res <- as(t(pdag),"graphNEL")
   } else {
     res <- pdag
   }
@@ -7106,29 +7114,29 @@ revealEdge <- function(c,d,s) { ## cpdag, dag, selected edges to reveal
 connectedNodes <- function(m,x){
   #q denotes unvisited nodes/ nodes in queue
   #v denotes visited nodes
-  q <- v <- rep(0,length(m[,1])) 
-  i <- k <-  1     
+  q <- v <- rep(0,length(m[,1]))
+  i <- k <-  1
   if(length(x)>1){
     cat("Need to do this node by node!\n")
     return(NULL)
   }
-  q <- sort(x)           
+  q <- sort(x)
   tmp <- m
-  
+
   while(q[k]!=0 & k<=i)
   {
     t <- q[k]
     #mark t as visited
-    v[k] <- t       
+    v[k] <- t
     k <- k+1
-    #find all neighbors of t   
+    #find all neighbors of t
     s <- tmp[t,] + tmp[,t]
     neighborss <- which(s!=0)
     ## if there are neighbors of t
     ## add the ones not already added
     if (length(neighborss)>0){
       for(j in 1: length(neighborss))
-        if (!(neighborss[j] %in% q))   
+        if (!(neighborss[j] %in% q))
         {
           i <- i+1
           q[i] <- neighborss[j]
@@ -7136,8 +7144,8 @@ connectedNodes <- function(m,x){
     }
   }
   ## remove all leftover zeros from initialization and x
-  connectt <-setdiff(v,c(0,x))   
-  
+  connectt <-setdiff(v,c(0,x))
+
   return(sort(connectt))
 }
 
@@ -7151,7 +7159,7 @@ adjustb <- function(m,x,y)
   for(j in 1:length(y)){
     bpossany <- union(bpossany,possAn(m,y[j]))
   }
-  
+
   adjustbb <- union(bpossanx,bpossany)
   notbb <- bforbiddenNodes(m, x, y)
   notbb <- union(notbb,c(x,y))

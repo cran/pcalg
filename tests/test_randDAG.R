@@ -1,4 +1,5 @@
 library(pcalg)
+suppressWarnings(RNGversion("3.5.0"))
 ## setwd("/sfs/u/kalischm/research/packages/unifDAGs/")
 ## source("aux_general.R")
 ## source("randDAG.R")

@@ -1,5 +1,5 @@
 library(pcalg)
-
+suppressWarnings(RNGversion("3.5.0"))
 .libPaths()
 ## acyclic graphs
 

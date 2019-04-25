@@ -1,5 +1,5 @@
 library(pcalg)
-
+suppressWarnings(RNGversion("3.5.0"))
 set.seed(42)
 
 ## wmat_ij is edge from j to i

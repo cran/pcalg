@@ -68,6 +68,7 @@ pcSelect(y, dm, alpha, corMethod = "standard",
 \examples{
 p <- 10
 ## generate and draw random DAG :
+suppressWarnings(RNGversion("3.5.0"))
 set.seed(101)
 myDAG <- randomDAG(p, prob = 0.2)
 if (require(Rgraphviz)) {
@@ -90,19 +91,6 @@ with(pcS, zMin[G])
 ## is most evident from the data (its zMin is 18.64, so quite large - as
 ## a rule of thumb for judging what is large, you could use quantiles
 ## of the Standard Normal Distribution)
-
-## The result should be the "same" when using pcAlgo:
-resU <- pcAlgo(d.mat, alpha = 0.05, corMethod = "standard",directed=TRUE)
-resU
-if (require(Rgraphviz))
-  plot(resU, zvalue.lwd=TRUE)
-## as can be seen, the PC algorithm also finds 4,5,6 as the important
-## variables for 10; and variable 6 seems to be the strongest.
-
-## as pcAlgo() is deprecated, now use pc() instead:
-res2 <- pc(list(C=cor(d.mat), n=n), indepTest=gaussCItest, p=p, alpha=0.05)
-if (require(Rgraphviz))
-  plot(res2, zvalue.lwd=TRUE)
 }
 \keyword{multivariate}
 \keyword{models}

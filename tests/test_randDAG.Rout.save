@@ -1,6 +1,6 @@
 
-R version 3.3.1 Patched (2016-07-22 r70961) -- "Bug in Your Hair"
-Copyright (C) 2016 The R Foundation for Statistical Computing
+R Under development (unstable) (2019-04-14 r76395) -- "Unsuffered Consequences"
+Copyright (C) 2019 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -16,6 +16,7 @@ Type 'demo()' for some demos, 'help()' for on-line help, or
 Type 'q()' to quit R.
 
 > library(pcalg)
+> suppressWarnings(RNGversion("3.5.0"))
 > ## setwd("/sfs/u/kalischm/research/packages/unifDAGs/")
 > ## source("aux_general.R")
 > ## source("randDAG.R")
@@ -36,7 +37,7 @@ Type 'q()' to quit R.
 > set.seed(37)
 > rD.10.4 <- rDAGall(10, 4)
 Warning message:
-In .Call("R_igraph_degree_sequence_game", as.numeric(out.deg), in.deg,  :
+In degree.sequence.game(degs, method = "vl") :
   At gengraph_graph_molloy_hash.cpp:332 :Cannot shuffle graph, maybe there is only a single one?
 > ## with a low-level warning
 > rD.10.4 # looks ok
@@ -404,4 +405,4 @@ Number of Edges = 137
 > 
 > proc.time()
    user  system elapsed 
-  1.022   0.135   1.149 
+  1.729   0.129   2.127 

@@ -2,7 +2,7 @@
 ####          ~~~~~~~~                             ~~~~
 
 library(pcalg)
-
+suppressWarnings(RNGversion("3.5.0"))
 p <- 10
 n <- 1000
 

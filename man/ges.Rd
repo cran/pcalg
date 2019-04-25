@@ -18,7 +18,8 @@ ges(score, labels = score$getNodes(),
 }
 \arguments{
   \item{score}{An instance of a class derived from \code{\linkS4class{Score}}
-    which only accounts for observational data.}
+    which only accounts for observational data. If the
+dataset is high-dimensional (p>=n) \code{ges} might not be able to terminate.}
   \item{labels}{Node labels; by default, they are determined from the scoring
     object.}
   \item{fixedGaps}{logical \emph{symmetric} matrix of dimension p*p.  If entry

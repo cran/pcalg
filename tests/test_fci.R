@@ -78,7 +78,7 @@ if (doExtras) {
 ##
 ########################################################
 
-
+suppressWarnings(RNGversion("3.5.0"))
 set.seed(40)
 ##Random graph only R1-R10
 g3 <- randomDAG(14,0.3)

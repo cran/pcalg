@@ -1,5 +1,6 @@
 ## Test file ages
 library(pcalg)
+suppressWarnings(RNGversion("3.5.0"))
 (doExtras <- pcalg:::doExtras())
 
 ## Known example where ges and ages output a different result

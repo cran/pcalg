@@ -50,6 +50,7 @@ ok2 <- is.logical(eq2) && all(eq2)
 
 ok3 <- ok4 <- ok5 <- ok6 <- TRUE
 if (doExtras) {
+    suppressWarnings(RNGversion("3.5.0"))
 ##################################################
 ## collider: x1 -> x3 <- x2
 ##################################################

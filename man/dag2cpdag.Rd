@@ -47,36 +47,29 @@ dag2cpdag(g)
   Alain Hauser(\email{alain.hauser@bfh.ch})}
 \seealso{\code{\link{dag2essgraph}}, \code{\link{randomDAG}}, \code{\link{pc}}}
 \examples{
-p <- 10  ## number of random variables
-s <- 0.4 ## sparseness of the graph
+## A -> B <- C
+am1 <- matrix(c(0,1,0, 0,0,0, 0,1,0), 3,3)
+colnames(am1) <- rownames(am1) <- LETTERS[1:3]
+g1 <- as(t(am1), "graphNEL") ## convert to graph
+cpdag1 <- dag2cpdag(g1)
 
-## generate a random DAG
-set.seed(42)
-g <- randomDAG(p, s)
-g01 <- 1*(as(g,"matrix") > 0) # 0/1-version of adjacency matrix
-print.table(g01, zero.=".")
+if(requireNamespace("Rgraphviz")) {
+    par(mfrow = c(1,2))
+    plot(g1)
+    plot(cpdag1)
+}
 
-## compute its unique CPDAG
-system.time(
-  res <- dag2cpdag(g)
-)
-## res has some bidirected edges
-##  ==> adj.matrix: no longer upper triangular, but {0,1}
-print.table(as(res, "matrix"), zero.=".")
-dm <- as(res, "matrix") - g01 ## difference: 2 entries in lower tri.
-print.table(dm, zero.=".")
-stopifnot(all(dm \%in\% 0:1), sum(dm == 1) == 2)
+## A -> B -> C
+am2 <- matrix(c(0,1,0, 0,0,1, 0,0,0), 3,3)
+colnames(am2) <- rownames(am2) <- LETTERS[1:3]
+g2 <- as(t(am2), "graphNEL") ## convert to graph
+cpdag2 <- dag2cpdag(g2)
 
-## Find CPDAG with PC algorithm:
-## As dependence oracle, we use the true correlation matrix in
-## gaussCItest() with a large "virtual sample size" and a large alpha:
-system.time(
-rpc <- pc(suffStat = list(C = cov2cor(trueCov(g)), n = 10^9),
-          indepTest = gaussCItest, alpha = 0.9999, p = p)
-)
-## confirm that it coincides with dag2cpdag()'s result:
-stopifnot(all.equal(as( res,     "matrix"),
-                    as(rpc@graph,"matrix"), tol=0))
+if(requireNamespace("Rgraphviz")) {
+    par(mfrow = c(1,2))
+    plot(g2)
+    plot(cpdag2)
+}
 }
 \keyword{multivariate}
 \keyword{models}

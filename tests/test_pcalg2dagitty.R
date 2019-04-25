@@ -2,6 +2,7 @@
 
 library(pcalg)
 library(dagitty)
+suppressWarnings(RNGversion("3.5.0"))
 doExtras <- pcalg:::doExtras()
 
 res <- rep(FALSE, 10)

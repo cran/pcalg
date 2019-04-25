@@ -1,5 +1,5 @@
 library(pcalg)
-
+suppressWarnings(RNGversion("3.5.0"))
 set.seed(123)
 nreps <- 100
 res <- logical(nreps)

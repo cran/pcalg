@@ -57,7 +57,8 @@ if (any(pop.fci1 != pop.rfci1)) {
   stop("Test of RFCI wrong: small example!")
 }
 
-if (doExtras) {
+## if (doExtras) {
+if (FALSE) {
 ## Thomas' example (version number 8) about discriminating path orientation rule
 
 V <- as.character(1:25)
