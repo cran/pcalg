@@ -34,5 +34,7 @@ V <- colnames(gmG8$x) # labels aka node names
 
 amat <- wgtMatrix(gmG8$g)
 amat[amat != 0] <- 1
+if(requireNamespace("dagitty")) {
 dagitty_dag1 <- pcalg2dagitty(amat,V,type="dag")
+}
 }

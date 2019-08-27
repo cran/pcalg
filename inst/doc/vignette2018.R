@@ -437,7 +437,7 @@ if (require(Rgraphviz)) {
 ###################################################
 ### code chunk number 42: showAdjustment
 ###################################################
-showF(adjustment)
+    showF(adjustment)
 
 
 ###################################################
@@ -501,8 +501,10 @@ V <- colnames(gmG8$x) # labels aka node names
 
 amat <- wgtMatrix(gmG8$g)
 amat[amat != 0] <- 1
-dagitty_dag1 <- pcalg2dagitty(amat,V,type="dag")
-dagitty::is.dagitty(dagitty_dag1)
+if(requireNamespace("dagitty")) {
+    dagitty_dag1 <- pcalg2dagitty(amat,V,type="dag")
+    dagitty::is.dagitty(dagitty_dag1)
+}
 
 
 ###################################################
@@ -668,8 +670,12 @@ for(r in 1:num_settings) {
                                        checkInput = FALSE)
 
       ## find adjustment set (if it exists)
+        if(requireNamespace("dagitty")) {
       adjust <- adjustment(pdag.amat[[j]],amat.type="pdag",x,y,
                            set.type="canonical")
+      } else {
+          adjust <- NULL
+      }
       adjust_set[[j]] <- if (length(adjust) > 0) adjust$'1' else NA
       result_adjust_set[[j]] <- length(adjust) > 0
       ## ida

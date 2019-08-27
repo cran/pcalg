@@ -1,77 +1,89 @@
 \name{ida}
-\title{Estimate Multiset of Possible Total Causal Effects}
+\title{Estimate Multiset of Possible Joint Total Causal Effects}
 \alias{ida}
 \alias{causalEffect}
 \description{
-  \code{ida()} estimates the multiset of possible total causal effects
-  of one variable (\code{x}) onto another variable (\code{y})
-  from observational data.
-
-  \code{causalEffect(g,y,x)} computes the true causal effect
-  (\eqn{\beta_{\mathrm{true}}}{beta.true}) of x on y in g.
+  \code{ida()} estimates the multiset of possible joint total causal effects
+  of variables (\code{X}) onto variables (\code{Y})
+  from observational data via adjustment.
 }
 \usage{
-ida(x.pos, y.pos, mcov, graphEst, method = c("local","global"),
+ida(x.pos, y.pos, mcov, graphEst, method = c("local","optimal","global"),
     y.notparent = FALSE, verbose = FALSE, all.dags = NA, type = c("cpdag", "pdag"))
-
-causalEffect(g, y, x)
 }
 \arguments{
-  \item{x.pos, x}{(integer) position of variable \code{x} in the covariance matrix.}
-  \item{y.pos, y}{(integer) position of variable \code{y} in the covariance matrix.}
+  \item{x.pos, x}{Positions of variables \code{X} in the covariance matrix.}
+  \item{y.pos, y}{Positions of variables \code{Y} in the covariance matrix.}
   \item{mcov}{Covariance matrix that was used to estimate \code{graphEst}.}
   \item{graphEst}{Estimated CPDAG or PDAG. The CPDAG is typically from \code{\link{pc}()}: If
     the result of \code{\link{pc}} is \code{pc.fit}, the estimated CPDAG
-    can be obtained by \code{pc.fit@graph}. The PDAG can be obtained from CPDAG by adding bacground knowledge using \code{addBgKnowledge()}.}
+    can be obtained by \code{pc.fit@graph}. A PDAG can be obtained from the CPDAG by adding background knowledge using \code{addBgKnowledge()}.}
   \item{method}{Character string specifying the method with default \code{"local"}.
     \describe{
-      \item{\code{"global"}:}{The algorithm considers all DAGs in the
-      represented by the CPDAG or PDAG, hence is \emph{slow}.}
-      \item{\code{"local"}:}{The algorithm only considers the
-      neighborhood of \code{x} in the CPDAG or PDAG, hence is \emph{faster}.}
+      \item{\code{"global"}:}{The algorithm considers all undirected edges 
+      in the CPDAG or PDAG, using the possible parents as adjustment sets 
+      to estimate \emph{all} possible causal effects. It is hence \emph{slow}
+      and can only be applied to singleton \code{X}.} 
+      \item{\code{"local"}:}{The algorithm only considers edges in the
+      neighborhood of \code{X} in the CPDAG or PDAG, 
+      using the possible parents as adjustment sets 
+      to estimate the \emph{unique} possible causal effects. 
+      It is hence much \emph{faster} than \code{"global"} 
+      and can only be applied to singleton \code{X}.}
+      \item{\code{"optimal"}:}{The algorithm considers only those edges necessary to compute
+      the possible optimal valid adjustment sets, using these as adjustment sets to estimate 
+      the \emph{unique} possible causal effects. It is
+      hence \emph{faster} than the \code{"global"} option but also slower than \code{"local"}. 
+      It provides more efficient estimates than both alternatives but is also more sensitive to faulty graph estimates. 
+      Can be applied to sets \code{X}.}
     }
     See details below.}
-  \item{y.notparent}{Logical; if true, any edge between \code{x} and
-    \code{y} is assumed to be of the form \code{x->y}.}
+  \item{y.notparent}{Logical; for singleton \code{X} and \code{Y}. 
+    If true, any edge between \code{X} and
+    \code{Y} is assumed to be of the form \code{X->Y}. Not implemented for the \code{method="optimal"}}
   \item{verbose}{If TRUE, details on the regressions are printed.}
   \item{all.dags}{All DAGs in the equivalence class represented by the CPDAG or PDAG 
      can be precomputed by \code{\link{pdag2allDags}()} and passed via
     this argument.  In that case, \code{\link{pdag2allDags}(..)} is not called
     internally.
     This option is only relevant when using \code{method="global"}.}
-  \item{g}{Graph in which the causal effect is sought.}
   \item{type}{Type of graph \code{"graphEst"}; can be of type \code{"cpdag"} or \code{"pdag"} (e.g. a CPDAG with background knowledge from Meek, 1995)} 
 }
 \details{
-  It is assumed that we have observational data that are multivariate
-  Gaussian and faithful to the true (but unknown) underlying causal DAG
-  (without hidden variables).  Under these assumptions, this function
-  estimates the multiset of possible total causal effects of \code{x} on
-  \code{y}, where the total causal effect is defined via Pearl's
-  do-calculus as \eqn{E(Y|do(X=z+1))-E(Y|do(X=z))} (this value does not
-  depend on \eqn{z}, since Gaussianity implies that conditional
-  expectations are linear).
+  It is assumed that we have observational data from a multivariate Gaussian distribution
+  faithful to the true (but unknown) underlying causal DAG (without hidden variables). 
+  Under these assumptions, this function estimates the multiset of possible total joint effects of \code{X} on \code{Y}. 
+  Here the total joint effect of \code{X} \eqn{= (X_1,X_2)} on \code{Y} is defined via Pearl's do-calculus as the vector 
+  \eqn{(E[Y|do(X_1=x_1+1,X_2=x_2)]-E[Y|do(X_1=x_1,X_2=x_2)], E[Y|do(X_1=x_1,X_2=x_2+1)]-E[Y|do(X_1=x_1,X_2=x_2)])}, 
+  with a similar definition for more than two variables. These values are equal to the partial derivatives 
+  (evaluated at \eqn{x_1,x_2}) of \eqn{E[Y|do(X=x_1',X_2=x_2')]} with respect to \eqn{x_1}' and \eqn{x_2}'. 
+  Moreover, under the Gaussian assumption, these partial derivatives do not depend on the values at which they are evaluated.
 
-  We estimate a \emph{set} of possible total causal effects instead of
-  the unique total causal effect, since it is typically impossible to
+
+  We estimate a \emph{set} of possible joint total causal effects instead of
+  the unique joint total causal effect, since it is typically impossible to
   identify the latter when the true underlying causal DAG is unknown
   (even with an infinite amount of data).  Conceptually, the method
   works as follows.  First, we estimate the equivalence class of DAGs
   that describe the conditional independence relationships in the data,
   using the function \code{\link{pc}} (see the help file of this
-  function).  For each DAG G in the equivalence class, we apply Pearl's
-  do-calculus to estimate the total causal effect of \code{x} on
-  \code{y}.  This can be done via a simple linear regression: if \code{y}
-  is not a parent of \code{x}, we take the regression coefficient of
-  \code{x} in the regression \code{lm(y ~ x + pa(x))}, where
-  \code{pa(x)} denotes the parents of \code{x} in the DAG G; if \code{y}
-  is a parent of \code{x} in G, we set the estimated causal effect to
-  zero.
+  function). For each DAG G in the equivalence class, we apply Pearl's
+  do-calculus to estimate the total causal effect of \code{X} on
+  \code{Y}.  This can be done via a simple linear regression
+  adjusting for a valid adjustment set. 
+  
+  
+  For example, if \code{X} and \code{Y} are singleton and \code{Y} 
+  is not a parent of \code{X}, we can take the regression coefficient of
+  \code{X} in the regression \code{lm(Y ~ X + pa(X,G))}, where
+  \code{pa(X,G)} denotes the parents of \code{X} in the DAG G; if \code{Y}
+  is a parent of \code{X} in G, we can set the estimated causal effect to
+  zero. 
 
   If the equivalence class contains \code{k} DAGs, this will yield
   \code{k} estimated total causal effects.  Since we do not know which DAG
-  is the true causal DAG, we do not know which estimated total causal
-  effect of \code{x} on \code{y} is the correct one.  Therefore, we return
+  is the true causal DAG, we do not know which estimated possible total joint causal
+  effect of \code{X} on \code{Y} is the correct one.  Therefore, we return
   the entire multiset of \code{k} estimated effects (it is a multiset
   rather than a set because it can contain duplicate values).
 
@@ -84,45 +96,69 @@ causalEffect(g, y, x)
   If \code{method="global"}, the method as described above is carried
   out, where all DAGs in the equivalene class of the estimated CPDAG or PDAG
   \code{graphEst} are computed using the function \code{\link{pdag2allDags}}.
-  This method is suitable for small graphs (say, up to 10 nodes).
-
-  If \code{method="local"}, we do not determine all DAGs in the
-  equivalence class of the CPDAG or PDAG.  Instead, we only consider some
-  neighborhood of \code{x} in the CPDAG or PDAG.  
+  The parent set for each DAG is then used to estimate the corresponding possible
+  total causal effect. This method is suitable for small graphs (say, up to 10 nodes) and can
+  only be used for singleton \code{X}.
+  
+  If \code{method="local"}, we only consider all valid possible directions of undirected edges 
+  that have \code{X} as an endpoint.
   
   In the case of a CPDAG, we consider all
-  possible directions of undirected edges that have \code{x} as
+  possible directions of undirected edges that have \code{X} as an
   endpoint, such that no new v-structure is created. 
   Maathuis, Kalisch and Buehlmann (2009) showed that there is at least one DAG in
-  the equivalence class for each such local configuration.
+  the equivalence class for each such local configuration. Hence, the 
+  procedure is truly local in this setting.
   
-  In the case of a PDAG, we usually need to consider a larger neighborhood of \code{x}
-  to determine all valid directions of undirected edges that have \code{x} as an endpoint. 
+  In the case of a PDAG, we need to verify for all possible directions whether they lead to an 
+  amenable max. PDAG if we apply Meek's orientation rules. 
+  In this setting the complexity of the \code{"local"} method is similar to the \code{"optimal"} one and it is not truly local.
   For details see Section 4.2 in Perkovic, Kalisch and Maathuis (2017).  
   
-  Once all valid configuration in a CPDAG or PDAG are determined,
-  we estimate the total causal effect of \code{x} on \code{y} for each
-  valid configuration as above, using linear regression.
-  %%
-  As a result, it follows that the multisets of total causal effects of
-  the "global" and the "local" method have the same unique values. They
-  may, however, have different multiplicities.
+  We estimate the total causal effect of \code{X} on \code{Y} for each
+  valid configuration as above, using linear regression adjusting for the correspoding possible parents.
+  As we adjust for the same sets as in the \code{"global"} method, it follows that the multisets of total causal effects of
+  the two methods have the same unique values. They may, however, have different multiplicities.
 
-  For example, a CPDAG may represent eight DAGs, and the global method
-  may produce the multiset \{1.3, -0.5, 0.7, 1.3, 1.3, -0.5, 0.7, 0.7\}.
+  Since the parents of \code{X} are usually an inefficient valid adjustment set we provide a third method, that uses 
+  different adjustment sets.  
+
+  If \code{method="optimal"}, we do not determine all DAGs in the
+  equivalence class of the CPDAG or PDAG.  Instead, we only direct edges until
+  obtaining an amenable PDAG, which is sufficient for computing the optimal 
+  valid adjustment set. Each amenable PDAG can be obtained by 
+  orienting the neighborhood of \code{X} and then applying Meek's orientation rules, similar to the \code{"local"} method 
+  for PDAGs. This can be done faster than the \code{"global"} method but is slower than the \code{"local"} method, especially for    CPDAGs. For details see Witte, Henckel, Maathuis and Didelez (2019).
+  
+  For each amenable PDAG the corresponding optimal valid adjustment set is computed. 
+  The optimal set is a valid adjustment set irrespectively of whether \code{X} is a singleton.
+  Hence, as opposed to the other two, this method can be applied to sets \code{X}. Sometimes, however, 
+  a joint total causal effect cannot be estimated via adjustment. In these cases we recommend use of the pcalg function \code{\link{jointIda}}.
+  
+  We then estimate the joint total causal effect of \code{X} on \code{Y} for each
+  valid configuration with linear regression, adjusting for the possible optimal sets. 
+  If the estimated graph is correct, each of these regressions is guaranteed 
+  to be more efficient than the corresponding linear regression with any other valid adjustment set
+  (see Henckel, Perkovic and Maathuis (2019) for more details). The estimates are, however, more sensitive to graph estimation errors than the ones obtained with the other two methods. 
+  If \code{X} is a singleton, the output of this method is a multiset of the same size as the output of the \code{"local"} method. 
+  
+  
+
+  For example, a CPDAG may represent eight DAGs, and the \code{"global"} method
+  may produce an estimate of the multiset of possible total effects
+  \{1.3, -0.5, 0.7, 1.3, 1.3, -0.5, 0.7, 0.7\}.
   The unique values in this set are -0.5, 0.7 and 1.3, and the
-  multiplicities are 2, 3 and 3.  The local method, on the other hand,
-  may yield \{1.3, -0.5, -0.5, 0.7\}.  The unique values are again -0.5,
+  multiplicities are 2, 3 and 3.  The \code{"local"} and \code{"optimal"} methods, on the other hand,
+  may prodcue estimates of the set \{1.3, -0.5, -0.5, 0.7\}.  The unique values are again -0.5,
   0.7 and 1.3, but the multiplicities are now 2, 1 and 1.  The fact that
-  the unique values of the multisets of the "global" and "local" method
+  the unique values of the multisets for all three methods
   are identical implies that summary measures of the multiset that only
   depend on the unique values (such as the minimum absolute value) can
-  be estimate by the local method.
+  be estimated with all three.
 
 }
 \value{
-  A vector that represents the multiset containing the estimated
-  possible total causal effects of \code{x} on \code{y}.
+  A list of length |\code{Y}| of matrices, each containing the possible joint total causal effect of \code{X} on one node in \code{Y}.
 }
 \references{
   M.H. Maathuis, M. Kalisch, P. Buehlmann (2009).
@@ -138,21 +174,28 @@ causalEffect(g, y, x)
 
   Markus Kalisch, Martin Maechler, Diego Colombo, Marloes H. Maathuis,
   Peter Buehlmann (2012).
-  Causal Inference Using Graphical Models with the R Package pcalg.
+  Causal inference using graphical models with the R-package pcalg.
   \emph{Journal of Statistical Software} \bold{47}(11) 1--26,
   \url{http://www.jstatsoft.org/v47/i11/}.
 
   Pearl (2005). \emph{Causality. Models, reasoning and inference}.
   Cambridge University Press, New York.
   
-    E. Perkovic, M. Kalisch and M.H. Maathuis (2017). Interpreting and using CPDAGs with background knowledge. In \emph{Proceedings of UAI 2017.}
+  E. Perkovic, M. Kalisch and M.H. Maathuis (2017). Interpreting and using 
+  CPDAGs with background knowledge. In \emph{Proceedings of UAI 2017.}
+    
+  L. Henckel, E. Perkovic and M.H. Maathuis (2019). Graphical criteria for efficient total 
+  effect estimation via adjustment in causal linear models.
+  \emph{Working Paper.}
+    
+  J. Witte, L. Henckel, M.H Maathuis and V. Didelez (2019). On efficient adjustment in causal graphs. 
+  \emph{Working Paper.}
 }
-\author{Markus Kalisch (\email{kalisch@stat.math.ethz.ch}) and Emilija Perkovic}
+\author{Markus Kalisch (\email{kalisch@stat.math.ethz.ch}), Emilija Perkovic and Leonard Henckel}
 \seealso{
   \code{\link{jointIda}} for estimating the multiset of possible total
-  \emph{joint} effects; \code{\link{idaFast}} for estimating the multiset of
-  possible total causal effects for several target variables
-  simultaneously. 
+  \emph{joint} effects; \code{\link{idaFast}} for faster estimation of the multiset of
+  possible total causal effects for several target variables. 
 
   \code{\link{pc}} for estimating a CPDAG. \code{\link{addBgKnowledge}} for obtaining a PDAG from CPDAG and background knowledge.
 }
@@ -160,7 +203,7 @@ causalEffect(g, y, x)
 ## Simulate the true DAG
 suppressWarnings(RNGversion("3.5.0"))
 set.seed(123)
-p <- 7
+p <- 10
 myDAG <- randomDAG(p, prob = 0.2) ## true DAG
 myCPDAG <- dag2cpdag(myDAG) ## true CPDAG
 myPDAG <- addBgKnowledge(myCPDAG,2,3) ## true PDAG with background knowledge 2 -> 3
@@ -180,47 +223,56 @@ if (require(Rgraphviz)) {
   par(mfrow = c(1,3))
   plot(myDAG, main = "True DAG")
   plot(pc.fit, main = "Estimated CPDAG")
-  plot(pc.fit.pdag, main = "Estimated CPDAG")
+  plot(pc.fit.pdag, main = "Max. PDAG")
 }
 
 ## Supppose that we know the true CPDAG and covariance matrix
-(l.ida.cpdag <- ida(2,5, covTrue, myCPDAG, method = "local", type = "cpdag"))
-(g.ida.cpdag <- ida(2,5, covTrue, myCPDAG, method = "global", type = "cpdag"))
-## The global and local method produce the same unique values.
-stopifnot(all.equal(sort(unique(g.ida.cpdag)),
-                    sort(unique(l.ida.cpdag))))
+(l.ida.cpdag <- ida(3,10, covTrue, myCPDAG, method = "local", type = "cpdag"))
+(o.ida.cpdag <- ida(3,10, covTrue, myCPDAG, method = "optimal", type = "cpdag"))
+\dontrun{(g.ida.cpdag <- ida(3,10, covTrue, myCPDAG, method = "global", type = "cpdag"))}
+## All three methods produce the same unique values. 
 
 ## Supppose that we know the true PDAG and covariance matrix
-(l.ida.pdag <- ida(2,5, covTrue, myPDAG, method = "local", type = "pdag"))
-(g.ida.pdag <- ida(2,5, covTrue, myPDAG, method = "global", type = "pdag"))
-## The global and local method produce the same unique values.
-stopifnot(all.equal(sort(unique(g.ida.pdag)),
-                    sort(unique(l.ida.pdag))))
+(l.ida.pdag <- ida(3,10, covTrue, myPDAG, method = "local", type = "pdag"))
+(o.ida.pdag <- ida(3,10, covTrue, myPDAG, method = "optimal", type = "pdag"))
+\dontrun{(g.ida.pdag <- ida(3,10, covTrue, myPDAG, method = "global", type = "pdag"))}
+## All three methods produce the same unique values.
 
-## From the true DAG, we can compute the true causal effect of 2 on 5
-(ce.2.5 <- causalEffect(myDAG, 5, 2))
-## Indeed, this value is contained in the values found by both the
-## local and global method
+## From the true DAG, we can compute the true causal effect of 3 on 10
+(ce.3.10 <- causalEffect(myDAG, 10, 3))
+## Indeed, this value is contained in the values found by all methods
 
-## When working with data, we have to use the estimated CPDAG and
+## When working with data we have to use the estimated CPDAG and
 ## the sample covariance matrix
-(l.ida.cpdag <- ida(2,5, cov(dat), pc.fit@graph, method = "local", type = "cpdag"))
-(g.ida.cpdag <- ida(2,5, cov(dat), pc.fit@graph, method = "global", type = "cpdag"))
-## The unique values of the local and the global method are still identical,
-stopifnot(all.equal(sort(unique(g.ida.cpdag)), sort(unique(l.ida.cpdag))))
-## and the true causal effect is contained in both sets, up to a small
-## estimation error (0.868 vs. 0.857)
-stopifnot(all.equal(ce.2.5, max(l.ida.cpdag), tolerance = 0.02))
+(l.ida.est.cpdag <- ida(3,10, cov(dat), pc.fit@graph, method = "local", type = "cpdag"))
+(o.ida.est.cpdag <- ida(3,10, cov(dat), pc.fit@graph, method = "optimal", type = "cpdag"))
+\dontrun{(g.ida.est.cpdag <- ida(3,10, cov(dat), pc.fit@graph,
+method = "global", type = "cpdag"))}
+## The unique values of the local and the global method are still identical.
+## While not identical, the values of the optimal method are very similar.
+## The true causal effect is contained in all three sets, up to a small
+## estimation error (0.118 vs. 0.112 with true value 0.114) 
 
-## When working with data, we have to use the estimated PDAG and
+## Similarly, when working with data and background knowledge we have to use the estimated PDAG and
 ## the sample covariance matrix
-(l.ida.pdag <- ida(2,5, cov(dat), pc.fit.pdag, method = "local", type = "pdag"))
-(g.ida.pdag <- ida(2,5, cov(dat), pc.fit.pdag, method = "global", type = "pdag"))
-## The unique values of the local and the global method are still identical,
-stopifnot(all.equal(sort(unique(g.ida.pdag)), sort(unique(l.ida.pdag))))
-## and the true causal effect is contained in both sets, up to a small
-## estimation error (0.868 vs. 0.857)
-stopifnot(all.equal(ce.2.5, max(l.ida.pdag), tolerance = 0.02))
+(l.ida.est.pdag <- ida(3,10, cov(dat), pc.fit.pdag, method = "local", type = "pdag"))
+(o.ida.est.pdag <- ida(3,10, cov(dat), pc.fit.pdag, method = "optimal", type = "pdag"))
+\dontrun{(g.ida.est.pdag <- ida(3,10, cov(dat), pc.fit.pdag, method = "global", type = "pdag"))}
+## The unique values of the local and the global method are still identical.
+## While not necessarily identical, the values of the optimal method will be similar.
+
+## The true causal effect is contained in both sets, up to a small estimation error
+
+## All three can also be applied to sets y.
+(l.ida.cpdag.2 <- ida(3,c(6,10), cov(dat), pc.fit@graph, method = "local", type = "cpdag"))
+(o.ida.cpdag.2 <- ida(3,c(6,10), cov(dat), pc.fit@graph, method = "optimal", type = "cpdag"))
+\dontrun{(g.ida.cpdag.2 <- ida(3,c(6,10), cov(dat), pc.fit@graph,
+method = "global", type = "cpdag"))}
+## For the methods local and global we recommend use of idaFast in this case for better performance.
+
+## Note that only the optimal method can be appplied to sets x.
+(o.ida.cpdag.2 <- ida(c(2,3),10, cov(dat), pc.fit@graph, method = "optimal", type = "cpdag"))
+
 }
 \keyword{multivariate}
 \keyword{models}

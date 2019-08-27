@@ -95,7 +95,7 @@ pc.fit <- pc(suffStat, indepTest = gaussCItest, alpha = 0.01, p = p)
 ## use methods of class pcAlgo
 show(pc.fit)
 if(require(Rgraphviz))
-  plot(pc.fit)
+  plot(pc.fit, main = "Fitted graph")
 summary(pc.fit)
 
 ## access slots of this object

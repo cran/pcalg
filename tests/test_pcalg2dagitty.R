@@ -1,5 +1,5 @@
 ## Translate amat as describes in amatType to dagitty object
-
+if(requireNamespace("dagitty")) {
 library(pcalg)
 library(dagitty)
 suppressWarnings(RNGversion("3.5.0"))
@@ -213,7 +213,7 @@ gacVSdagitty <- function(amat, x, y ,z, V, type) {
     dgRes <- pcalg2dagitty(amat, V, type = typeDG)
     Exp <- V[x]; Out <- V[y]; Z <- V[z]
     gacRes <- gac(amat,x,y, z, type)$gac 
-    dgRes <- isAdjustmentSet(x = dgRes, Z = Z, exposure = Exp, outcome = Out)
+    dgRes <- dagitty::isAdjustmentSet(x = dgRes, Z = Z, exposure = Exp, outcome = Out)
     (gacRes == dgRes)
 }
 
@@ -453,5 +453,6 @@ if (!xx) {
     stop("Problem when testing function gacVSdagitty.")
 } else {
     message("OK, no issues were found.")
+}
 }
 }

@@ -108,6 +108,6 @@ pcalg2dagitty <- function(amat,labels,type="cpdag")
   result <- paste0(result,"}")
   
   ## transform the resulting string into a daggity object
-  dagitty(result)
+  dagitty::dagitty(result)
 }
 

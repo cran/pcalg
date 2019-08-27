@@ -2978,30 +2978,95 @@ revealEdge <- function(c,d,s) { ## cpdag, dag, selected edges to reveal
   c
 }
 
-ida <- function (x.pos, y.pos, mcov, graphEst, method = c("local", "global"),
+ida <- function (x.pos, y.pos, mcov, graphEst, method = c("local", "optimal","global"),
                  y.notparent = FALSE, verbose = FALSE, all.dags = NA,
                  type = c("cpdag", "pdag"))
 {
-  stopifnot(x.pos == (x <- as.integer(x.pos)),
-            y.pos == (y <- as.integer(y.pos)),
-            length(x) == 1, length(y) == 1,
-            type %in% c("pdag", "cpdag"))
   method <- match.arg(method)
+  
+  if(method!="optimal"){
+    x <- as.integer(x.pos)
+    y <- as.integer(y.pos)
+    if(length(x) >= 2){
+      cat("The methods \"global\" and \"local\" are only implemented for singleton X.")
+    }
+  stopifnot(x.pos == x,
+            y.pos == y,
+            length(x) == 1, 
+            # length(y) == 1,
+            type %in% c("pdag", "cpdag"))
+    } else{
+      if(y.notparent) {cat("The option y.notparent is not implemented for the optimal method.")}
+              stopifnot(x.pos == (x <- as.vector(x.pos)),
+                        y.pos == (y <- as.vector(y.pos)),
+                        type %in% c("pdag", "cpdag"),
+                        !(y.notparent))
+            }
+  
+  nx <- length(x.pos)
+  ny <- length(y.pos)
+  
   type <- match.arg(type)
   amat <- ad.g <- wgtMatrix(graphEst)
   amat[which(amat != 0)] <- 1 ## coding: amat.cpdag
-
+  
   ## test if valid input amat
   if (!isValidGraph(amat = amat, type = type)) {
     message("The input graph is not a valid ",type,". See function isValidGraph() for details.\n")
   }
+  
+  if (length(y.pos) > 1 && method!="optimal") { ## call myself for each y in y.pos :
+      beta.hat <- lapply(y.pos, function(y) ida(x.pos, y, mcov=mcov,
+                                           graphEst, method=method, type=type,verbose=verbose))
+        return(beta.hat)
+   } 
+  
+  if(method=="optimal"){
+      if(y.notparent) amat[x, y] <- FALSE
+      # if (is.element(y.pos, x.pos)) matrix(0, nrow = nx, ncol = length(all.pasets))
+      ## return joint.effects
+        if(ny==1) {beta.hat <- matrix(unlist(optimal.est(x.pos,y.pos,amat,mcov,verbose)),nrow=nx)} 
+        else{
+          results <- list()
+          beta.hat <- list()
+          result <- optimal.est(x.pos,y.pos,amat,mcov,verbose)
+          
+          
+          if(class(result)=="matrix") {
+            nsibs <- 1
+            if(nx==1 && nrow(result)==1){
+             result <- t(result) 
+            }
+            for(i in 1:ny){
+            beta.hat[[i]] <- matrix(unname(result[i,])) 
+          }
+            } else{
+            nsibs <- length(lengths(result))
+            if(nx==1){
+              for(k in 1:nsibs){
+                if(nrow(result[[k]])==1){
+                result[[k]] <- t(result[[k]])} 
+              }
+            }
+         for(i in 1:ny){
+            beta.hat[[i]] <- matrix(,nrow=nx,ncol=nsibs)
+              for(j in 1:nsibs){
+              beta.hat[[i]][,j] <- result[[j]][i,] 
+            }
+          }
+            }
+        } 
+      return(beta.hat)
+      }
 
-  nl <- colnames(amat) ## Node labels
-  ## double-check that node labels exist (they should given a graph input)
+    
+
+  
+
+  nl <- colnames(amat)
   stopifnot(!is.null(nl))
   amatSkel <- amat + t(amat)
   amatSkel[amatSkel != 0] <- 1
-  ##local method needs changing
   if (method == "local") {
     wgt.est <- (ad.g != 0)
     if (y.notparent) {
@@ -3010,69 +3075,70 @@ ida <- function (x.pos, y.pos, mcov, graphEst, method = c("local", "global"),
     tmp <- wgt.est - t(wgt.est)
     tmp[which(tmp < 0)] <- 0
     wgt.unique <- tmp
-    ##orient pa1 into x
     pa1 <- which(wgt.unique[x, ] != 0)
     if (y %in% pa1) {
       beta.hat <- 0
     }
     else {
       wgt.ambig <- wgt.est - wgt.unique
-      ##orient pa2 out of x
       pa2 <- which(wgt.ambig[x, ] != 0)
-      if (verbose)
-        cat("\n\nx=", x, "y=", y, "\npa1=", pa1, "\npa2=",
+      if (verbose) 
+        cat("\n\nx=", x, "y=", y, "\npa1=", pa1, "\npa2=", 
             pa2, "\n")
       if (length(pa2) == 0) {
         beta.hat <- lm.cov(mcov, y, c(x, pa1))
-        if (verbose)
-          cat("Fit - y:", y, "x:", c(x, pa1), "|b.hat=",
+        if (verbose) 
+          cat("Fit - y:", y, "x:", c(x, pa1), "|b.hat=", 
               beta.hat, "\n")
       }
       else {
         beta.hat <- NA
-        ii <- 0 ## CHANGED LINE
+        ii <- 0
         pa2.f <- pa2
         pa2.t <- NULL
-        if (hasExtension(amat, amatSkel, x, pa1, pa2.t, pa2.f, type, nl)) {
-          ii <- ii + 1 ## NEW LINE
+        if (hasExtension(amat, amatSkel, x, pa1, pa2.t, 
+                                 pa2.f, type, nl)) {
+          ii <- ii + 1
           beta.hat[ii] <- lm.cov(mcov, y, c(x, pa1))
-          if (verbose)
-            cat("Fit - y:", y, "x:", c(x, pa1), "|b.hat=",
+          if (verbose) 
+            cat("Fit - y:", y, "x:", c(x, pa1), "|b.hat=", 
                 beta.hat[ii], "\n")
         }
         for (i2 in seq_along(pa2)) {
           pa2.f <- pa2[-i2]
           pa2.t <- pa2[i2]
-          if (hasExtension(amat, amatSkel, x, pa1, pa2.t, pa2.f, type, nl)) {
+          if (hasExtension(amat, amatSkel, x, pa1, pa2.t, 
+                                   pa2.f, type, nl)) {
             ii <- ii + 1
             if (y %in% pa2.t) {
               beta.hat[ii] <- 0
             }
             else {
-              beta.hat[ii] <- lm.cov(mcov, y, c(x, pa1,
-                                                pa2[i2]))
-              if (verbose)
-                cat("Fit - y:", y, "x:", c(x, pa1, pa2[i2]),
+              beta.hat[ii] <- lm.cov(mcov, y, c(x, pa1, 
+                                                        pa2[i2]))
+              if (verbose) 
+                cat("Fit - y:", y, "x:", c(x, pa1, pa2[i2]), 
                     "|b.hat=", beta.hat[ii], "\n")
             }
           }
         }
-        if (length(pa2) > 1)
+        if (length(pa2) > 1) 
           for (i in 2:length(pa2)) {
             pa.tmp <- combn(pa2, i, simplify = TRUE)
             for (j in seq_len(ncol(pa.tmp))) {
               pa2.t <- pa.tmp[, j]
               pa2.f <- setdiff(pa2, pa2.t)
-              if (hasExtension(amat, amatSkel, x, pa1, pa2.t, pa2.f, type, nl)) {
+              if (hasExtension(amat, amatSkel, x, pa1, 
+                                       pa2.t, pa2.f, type, nl)) {
                 ii <- ii + 1
                 if (y %in% pa2.t) {
                   beta.hat[ii] <- 0
                 }
                 else {
-                  beta.hat[ii] <- lm.cov(mcov, y, c(x,
-                                                    pa1, pa2.t))
-                  if (verbose)
-                    cat("Fit - y:", y, "x:", c(x, pa1,
+                  beta.hat[ii] <- lm.cov(mcov, y, c(x, 
+                                                            pa1, pa2.t))
+                  if (verbose) 
+                    cat("Fit - y:", y, "x:", c(x, pa1, 
                                                pa2.t), "|b.hat=", beta.hat[ii], 
                         "\n")
                 }
@@ -3084,7 +3150,7 @@ ida <- function (x.pos, y.pos, mcov, graphEst, method = c("local", "global"),
   }
   ##method global
   ##should stay the same for pdags
-  else {
+  if (method=="global") {
     p <- numNodes(graphEst)
     am.pdag <- ad.g
     am.pdag[am.pdag != 0] <- 1
@@ -3107,13 +3173,295 @@ ida <- function (x.pos, y.pos, mcov, graphEst, method = c("local", "global"),
       }
       else {
         beta.hat[i] <- lm.cov(mcov, y, c(x, pa1))
-        if (verbose)
-          cat("Fit - y:", y, "x:", c(x, pa1), "|b.hat=",
+        if (verbose) 
+          cat("Fit - y:", y, "x:", c(x, pa1), "|b.hat=", 
               beta.hat[i], "\n")
       }
     }
   }
   unname(beta.hat)
+}
+
+
+optimal.est <- function (x.pos,y.pos, amat.cpdag, mcov,verbose) 
+{ 
+  ## if not working with amat.cpdag type then:
+  ## amat.cpdag <- t(amat.cpdag)
+  
+  nx <- length(x.pos)
+  ny <- length(y.pos)
+  
+  amat.cpdag[which(amat.cpdag != 0)] <- 1  ##just in case make all the non-zero's 1
+  amat.undir <- amat.cpdag * t(amat.cpdag) ## amat.undir - all undirected edges
+  ## the undirected edge i - j has amat[i,j] = amat[j,i] =1
+  amat.dir <- amat.cpdag - amat.undir      ## amat.dir - all directed edges
+  pasets.dir <- lapply(x.pos, function(x) which(amat.dir[x,] != 0))   ## find all parents of x.pos in the PDAG
+  
+  ## sibs will be a vector containing all undirected edges connected with x.pos
+  ## if for example: i is in x.pos and i-j is in G
+  ## then add j;i to sibs 
+  sibs <- c()
+  for (i in 1:nx)
+  {
+    tmp.sib <- which(amat.undir[x.pos[i],]!=0)  ## tmp.sib contains all siblings of x.pos[i]
+    if (length(tmp.sib)!=0){  ## if x.pos[i] has a sibling, then add all those sibling edges to sibs
+      for (j in 1:length(tmp.sib))
+      {
+        sibs <- c(sibs,paste(tmp.sib[j],x.pos[i], sep = ";")) ## sibs is a vector of type a;b c;d 
+        ## where b and d are in x.pos and b-a d-c are in G
+        ## note that if a,b are in x.pos and a-b is in G
+        ## then both a;b and b;a are in sibs
+      }
+    }
+  }
+  
+  ## if there are no undirected edges connected to x.pos, that is
+  ## if sibs is empty, so return pasets.dir as the only parent set
+  if (length(sibs)==0){   
+    check <- checkVAS(amat.cpdag,x.pos,y.pos) 
+    
+    beta.hat <- matrix(numeric(ny*nx),nrow=ny)
+    rownames(beta.hat) <- y.pos
+    colnames(beta.hat) <- x.pos
+    if(ny==1 && nx==1){
+      beta.hat[check[[2]]] <- NA
+    } else{beta.hat[check[[2]],] <- NA}
+    
+    if(length(check[[1]])!=0 && verbose){
+      cat("\n\nWith no added edge orientations:")
+      cat("\ny =",y.pos[check[[1]]], "is not a descendant of x =", 
+          x.pos,"and hence the partial total effects estimates are",0,"\nWe continue with y =",y.pos[-check[[1]]],".\n") 
+    }
+    if(length(check[[2]])!=0 && verbose){
+        cat("\n\nWith no added edge orientations:")
+        cat("\nNo valid adjustment set exists relative to x =", x.pos," and y =", 
+            y.pos[check[[2]]], " and we continue with y =",y.pos[-check[[3]]], "\n") 
+    }
+    
+    if(length(check[[3]]) < ny){
+      if(length(check[[3]])>0){
+      y.pruned <- y.pos[-check[[3]]]
+      opt.set <- optAdjSet(amat.cpdag,x.pos,y.pruned)
+      if(ny==1 && nx==1){
+        beta.hat[-check[[3]]] <- t(gen.lm.cov(mcov,y.pruned,x.pos,opt.set))
+      } else{beta.hat[-check[[3]],] <- t(gen.lm.cov(mcov,y.pruned,x.pos,opt.set))}
+        } else{
+            opt.set <- optAdjSet(amat.cpdag,x.pos,y.pos)
+            beta.hat <- t(gen.lm.cov(mcov,y.pos,x.pos,opt.set))
+          } 
+    }
+    
+      if (verbose){
+        if(length(check[[3]]) == ny){opt.set <- numeric()}
+        cat("\n\nWith no added edge orientations:")
+        cat("\nThe estimated total effect of y=", y.pos, "on x=", 
+            x.pos,"is thus beta=",beta.hat, "\n") 
+        cat("\n with O=", opt.set,"\n") 
+      }
+    return(beta.hat)
+  } else {   ## if sibs is not empty, find all possible joint parent sets
+    
+    beta.hat <- list()  ## this is the object we return, containing a list of all possible total effect estimates 
+    count <- 1         ## this counter will contain the current number (+1) of valid joint parent sets
+    
+    ## first check the no additional parents option
+    ## meaning that it is possible to orient all sibling edges out of x.pos
+    toAdd <- makeBgKnowledge(sibs)
+    ## require that no two nodes in x.pos are siblings
+    if (length(intersect(x.pos,toAdd$x))==0){
+      ## try to orient everything out of x.pos
+      amat.amenable <- addBgKnowledge(amat.cpdag,x=toAdd$y,y=toAdd$x,checkInput = FALSE)
+      if (!is.null(amat.amenable)){  
+        ## if it is possible to orient everyting out of x.pos add the corresponding optimal set to valid optimal sets
+        check <- checkVAS(amat.amenable,x.pos,y.pos) 
+        
+        
+        beta.hat[[count]] <- matrix(numeric(ny*nx),nrow=ny)
+        rownames(beta.hat[[count]]) <- y.pos
+        colnames(beta.hat[[count]]) <- x.pos
+        
+        if(ny==1 && nx==1){
+          beta.hat[[count]][check[[2]]] <- NA
+        } else{beta.hat[[count]][check[[2]],] <- NA}
+        
+        if(length(check[[1]])!=0 && verbose){
+          cat("\n\n With added edge orientations: \n")
+          print(rbind(addFromThis=toAdd$y,addToThis=toAdd$x))
+          cat("\ny =",y.pos[check[[1]]], "is not a descendant of x =", 
+              x.pos,"and hence the respective partial joint total effect estimates are",0,".\n") 
+        }
+        if(length(check[[2]])!=0 && verbose){
+            cat("\n\n With added edge orientations: \n")
+            print(rbind(addFromThis=toAdd$y,addToThis=toAdd$x))
+            cat("\nNo valid adjustment set exists relative to x =", x.pos," and y =", 
+                y.pos[check[[2]]],".\n") 
+        }
+        
+        if(length(check[[3]]) < ny){
+          if(length(check[[3]])>0){
+            y.pruned <- y.pos[-check[[3]]]
+            opt.set <- optAdjSet(amat.amenable,x.pos,y.pruned)
+            if(ny==1 && nx==1){
+              beta.hat[[count]][-check[[3]]] <- t(gen.lm.cov(mcov,y.pruned,x.pos,opt.set))
+            } else{beta.hat[[count]][-check[[3]],] <- t(gen.lm.cov(mcov,y.pruned,x.pos,opt.set))}
+          } else{
+            opt.set <- optAdjSet(amat.amenable,x.pos,y.pos)
+            beta.hat[[count]] <- t(gen.lm.cov(mcov,y.pos,x.pos,opt.set))
+          } 
+        }
+          
+          if (verbose){
+            if(length(check[[3]]) == ny){opt.set <- numeric()}
+            cat("\n\nWith added edge orientations: \n")
+            print(rbind(addFromThis=toAdd$y,addToThis=toAdd$x))
+            cat("\nThe estimated total effect of y=", y.pos, "on x=", 
+                x.pos,"is beta=",beta.hat[[count]], "\n") 
+            cat("\n with O=", opt.set,"\n") 
+          }
+        count <- count + 1
+        }
+    }
+  }
+  
+  
+  ## now for all subsets of possible parents hat is
+  ## all possible subsets of sibs union pasets.dir 
+  ## check if they work
+  size <- length(sibs)
+  for (k in 1:size)
+  {
+    possPa <- combn(sibs,k)  ## form all combinations of sibs of size k
+    for (r in 1:length(possPa[1,]))
+    {
+      s <- possPa[,r]   ## get one subset of sibs which we will try to orient into x.pos
+      toAdd1 <- makeBgKnowledge(s)  ## transform it from sibs format: a;b c;d into bgKnowledge format that is
+      ## into a data.frame with x=c(a,c) y=c(b,d) so that a -> b, c-> d is bgKnowledge
+      
+      sbar <- setdiff(sibs,s)       ## the complement of our subset s should be oriented out of x.pos
+      toAdd2 <- makeBgKnowledge(sbar)
+      
+      ## the following 2 lines define the bg Knowledge that we try to add
+      addFromThis <- c(toAdd1$x,toAdd2$y)  
+      addToThis <- c(toAdd1$y,toAdd2$x)
+      
+      ## only try to add this bg knowledge if its consistent within itself
+      ## meaning if it does not contain contradictory edges
+      ## for example addFromThis =c(1,2) addToThis = c(2,1)
+      check2 <- FALSE  ## if check is true it will indicate that the background knowledge contradicts itself
+      for (i in 1: length(addFromThis)){
+        if (addToThis[i] %in% addFromThis[which(addToThis == addFromThis[i])]){# %in% addToThis)]){
+          check2 <- TRUE
+        }
+      }
+      if (!check2){  ##only try to add background knowledge that does not contradict itself
+        amat.amenable <- addBgKnowledge(amat.cpdag,x=addFromThis,y=addToThis)
+        if (!is.null(amat.amenable)){  
+        check <- checkVAS(amat.amenable,x.pos,y.pos) 
+        
+        beta.hat[[count]] <- matrix(numeric(ny*nx),nrow=ny)
+        rownames(beta.hat[[count]]) <- y.pos
+        colnames(beta.hat[[count]]) <- x.pos
+        if(ny==1 && nx==1){
+          beta.hat[[count]][check[[2]]] <- NA
+        } else{beta.hat[[count]][check[[2]],] <- NA}
+        
+        if(length(check[[1]])!=0 && verbose){
+          cat("\n\n With added edge orientations: \n")
+          print(rbind(addFromThis,addToThis))
+          cat("\ny =",y.pos[check[[1]]], "is not a descendant of x =", 
+              x.pos,"and hence the partial total effects estimates are",0,".\n") 
+        }
+        if(length(check[[2]])!=0 && verbose){
+          cat("\n\n With added edge orientations: \n")
+          print(rbind(addFromThis,addToThis))
+          cat("\nNo valid adjustment set exists relative to x =", x.pos," and y =", 
+              y.pos[check[[2]]], ".\n") 
+        }
+        
+        if(length(check[[3]]) < ny){
+          if(length(check[[3]])>0){
+            y.pruned <- y.pos[-check[[3]]]
+            opt.set <- optAdjSet(amat.amenable,x.pos,y.pruned)
+            if(ny==1 && nx==1){
+              beta.hat[[count]][-check[[3]]] <- t(gen.lm.cov(mcov,y.pruned,x.pos,opt.set))
+            } else{beta.hat[[count]][-check[[3]],] <- t(gen.lm.cov(mcov,y.pruned,x.pos,opt.set))}
+          } else{
+            opt.set <- optAdjSet(amat.amenable,x.pos,y.pos)
+            beta.hat[[count]] <- t(gen.lm.cov(mcov,y.pos,x.pos,opt.set))
+          } 
+        }
+        if (verbose){
+          if(length(check[[3]]) == ny){opt.set <- numeric()}
+          cat("\n\nWith added edge orientations: \n")
+          print(rbind(addFromThis,addToThis))
+          cat("\nThe estimated total effect of x=", x.pos, "on y=", 
+              y.pos,"is beta=",beta.hat[[count]], "\n") 
+          cat("with O=", opt.set,"\n") 
+        }
+        count <- count + 1
+      }
+      }
+      }
+    }
+  return(beta.hat)
+}
+
+## the following functions takes character vector s of type s=c("1;2","3;4")
+## and transforms it into a data frame containing vectors x=c(1,3) and y=c(2,4)
+## so that one can add x -> y (that is 1 -> 2, 3 -> 4) as bg knowledge easier
+makeBgKnowledge <- function(s)
+{
+  x <- y <- c()
+  
+  if (length(s)==0){   ## if s is empty, return empty vectors
+    df.final <- data.frame(x=x, y=y)
+    return(df.final)
+  } else {            ## otherwise transform the charactor vector s into a 
+    ## bg knowledge data frame
+    for (i in 1:length(s))   
+    {
+      addFromTo <- as.numeric(unlist(strsplit(x = s[i],split = ";")))
+      x <- c(x,addFromTo[1])
+      y <- c(y,addFromTo[2])
+    }
+    df.final <- data.frame(x=x, y=y)
+    return(df.final)
+  }
+}
+
+checkVAS <- function(m,x.pos,y.pos){
+  
+  possDeX <- unlist(lapply(x.pos,possDe,m=m,y=c(),type="pdag"))
+  
+  noDescY <- unlist(lapply(y.pos, function(y) length(intersect(y,possDeX))))
+  
+  a <- which(noDescY==0)
+  if(length(a)>0){
+  y.pruned <- y.pos[-a]
+  } else{y.pruned <- y.pos}
+  
+  noVAS <- unlist(lapply(y.pruned, function(y) length(intersect(x.pos,forb(m,x.pos,y)))))
+  
+  b <- which(noDescY!=0)[which(noVAS!=0)]
+  
+  c <- union(a,b)
+  
+  return(list(a,b,c))
+}
+
+forb <- function(m, x, y){
+  possDeX <- unlist(lapply(x,possDe,m=m,y=c(),type="pdag"))
+  possAnY <- unlist(lapply(y,possAn,m=m,
+                           y=x,type="pdag"))
+  cn <- intersect(possAnY,possDeX)
+  forb <- unlist(lapply(cn,possDe,m=m,y=c(),type="pdag"))
+  return(forb)
+}
+
+# generalization of lmvoc to make usable for non-singleton X
+gen.lm.cov <- function(C,y,x,z=NULL){
+  w <- union(x,z)
+  solve(C[w, w], C[w, y, drop = FALSE])[1:length(x), ]
 }
 
 idaFast <- function(x.pos, y.pos.set, mcov, graphEst)
@@ -6862,7 +7210,6 @@ allDags.internal <- function(gm,a,tmp, verbose = FALSE)
   tmp
 }
 
-
 ## this is taken from the  udag2pdag code from pcalg
 ## since these rules were already implemented there.
 ## This fucntion, given a graphNEL object, or an adjacency matrix
@@ -6949,7 +7296,12 @@ applyOrientationRules <- function(gInput, verbose=FALSE) {
         } else {
           diag(g2) <- rep(1,length(indC)) ## no self reference
         }
-        if (any(g2==0)) { ## if two nodes in g2 are not connected
+        ##Bugfix: changed  #####
+               ## if (any(g2 == 0)) {
+        g3 <- g2 + t(g2)
+        if (any(g3 == 0)) {
+        ###### end of change
+        ## if (any(g2==0)) { ## if two nodes in g2 are not connected
           pdag[a,b] <- 1
           pdag[b,a] <- 0
           if (verbose) cat("\nRule 3:",a,"->",b,"\n")

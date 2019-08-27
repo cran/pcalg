@@ -31,8 +31,6 @@
 }
 \usage{
 amat2dag(amat)
-.....
-.....
 }
 \details{
   These are not to be called by the user.

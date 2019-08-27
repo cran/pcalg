@@ -175,3 +175,14 @@ if (!correctEst6) stop("Test population conservative PC wrong: example 6!")
 
 showProc.time()
 }
+
+##################################################
+## Test applyOrientationRules
+##################################################
+amat <- matrix(c(0, 0, 1, 1,
+                 1, 0, 1, 1,
+                 1, 1, 0, 1,
+                 0, 0, 1, 0), 4, 4, byrow=TRUE)
+### hier gibt es eigentlich nichts mehr zu orientieren; vor bugfix hat aber applyOrientationRules  Rule 3 angewendet
+amat2 <- t(pcalg:::applyOrientationRules(t(amat), verbose=TRUE))
+stopifnot( all(amat == amat2 ))

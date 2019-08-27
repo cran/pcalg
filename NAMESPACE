@@ -71,7 +71,7 @@ importFrom("sfsmisc", digitsBase, is.whole)
 
 importFrom("fastICA", fastICA)
 importFrom("clue", solve_LSAP)
-importFrom("dagitty", dagitty, isAdjustmentSet, adjustmentSets)
+## importFrom("dagitty", dagitty, isAdjustmentSet, adjustmentSets)
 ###----- Exports ------------------------------------------------------
 
 export(getGraph)# our S4 generic including methods
@@ -156,7 +156,8 @@ export(trueCov,
        addBgKnowledge,
        adjustment,
        isValidGraph,
-       ages)
+       ages,
+       optAdjSet)
 
 ## These are "internal" i.e., in man/pcalg-internal.Rd
 ## _FIXME ?_                     ---------------------

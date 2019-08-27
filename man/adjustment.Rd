@@ -62,15 +62,24 @@ x <- 3; y <- 6
 ## plot(as(t(mFig1), "graphNEL"))
 
 ## all
-adjustment(amat = mFig1, amat.type = type, x = x, y = y, set.type = "all")
+if(requireNamespace("dagitty")) {
+adjustment(amat = mFig1, amat.type = type, x = x, y = y, set.type =
+"all")
+}
 ## finds adjustment sets: (2,4), (1,2,4), (4,5), (1,4,5), (2,4,5), (1,2,4,5)
 
 ## minimal
-adjustment(amat = mFig1, amat.type = type, x = x, y = y, set.type = "minimal")
+if(requireNamespace("dagitty")) {
+adjustment(amat = mFig1, amat.type = type, x = x, y = y, set.type =
+"minimal")
+}
 ## finds adjustment sets: (2,4), (4,5), i.e., the valid sets with the fewest elements
 
 ## canonical
-adjustment(amat = mFig1, amat.type = type, x = x, y = y, set.type = "canonical")
+if(requireNamespace("dagitty")) {
+adjustment(amat = mFig1, amat.type = type, x = x, y = y, set.type =
+"canonical")
+}
 ## finds adjustment set: (1,2,4,5)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

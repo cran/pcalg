@@ -1,3 +1,4 @@
+if(requireNamespace("dagitty")) {
 library(pcalg)
 (doExtras <- pcalg:::doExtras())
 
@@ -419,6 +420,8 @@ res2 <- adjustment(m,amat.type="pdag",2,4,set.type="canonical")
 
 if (!all.equal(res1, res2)) {
     stop("Canonical set is not the same for type=cpdag and type=pdag\n")
+}
+
 }
 
 }

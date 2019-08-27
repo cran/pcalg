@@ -31,7 +31,7 @@ adjustment <- function(amat, amat.type, x, y, set.type)
                                    type = amat.type)
     
     ## compute adjustment sets in dagitty
-    sets <- adjustmentSets(cpdag.dagitty,
+    sets <- dagitty::adjustmentSets(cpdag.dagitty,
                            exposure = x.lb, outcome = y.lb,
                            type= set.type, effect="total")
     
@@ -102,7 +102,7 @@ adjustment <- function(amat, amat.type, x, y, set.type)
                               type = "dag")
     
     ## step 4
-    sets <- unclass(adjustmentSets(x = daggityD,
+    sets <- unclass(dagitty::adjustmentSets(x = daggityD,
                                    exposure = x.lb, outcome = y.lb,
                                    type= set.type, effect="total") )
     
