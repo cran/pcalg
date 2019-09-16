@@ -1,5 +1,5 @@
 1c213fc1c5a5ec68e7a5ba9293440dc3 *ChangeLog
-6a5da99f38e24e243bdd7d9cc274f9b5 *DESCRIPTION
+33c7f0d1f9f12375a5df5a5fddec0868 *DESCRIPTION
 f7e556652c95f8e139dfbfeccdb140e1 *NAMESPACE
 66963591a11cfdb002f5da9070f1500b *R/Aaux.R
 efd4541f86a58656a414a574acbeb08b *R/AllClasses.R
@@ -32,10 +32,10 @@ f832779eae511757a99906c7670fc0ad *cleanup
 4e33425acbef8bf36705d8a75622baa8 *inst/doc/mkVignettes.R
 cc46b1f49edd31faf5316d5cf4d6c1ce *inst/doc/pcalgDoc.R
 6581d4416f174d4d6f07a2a2d4b9d3cb *inst/doc/pcalgDoc.Rnw
-dea9f374b8df46ba270dcfebf8e5e279 *inst/doc/pcalgDoc.pdf
+53bafab5d699a2ef5dcb899099802936 *inst/doc/pcalgDoc.pdf
 01c5a9cb2024f1234d7c4aebb9762db5 *inst/doc/vignette2018.R
 65ba145dfc8ae12f50c95d77a8bf8600 *inst/doc/vignette2018.Rnw
-0bfc1ba4b74745ce574b6c0ae09219a3 *inst/doc/vignette2018.pdf
+fea9343c673e0faf4d03f182e9bb7139 *inst/doc/vignette2018.pdf
 cee0b4475c720bf58c466e1495451b22 *inst/external/N_6_1000.rds
 0d84fdc119d76d992b72f9bdbd0e613d *inst/external/gac-pags.rds
 e7a2a9117d97986b2ab6afc6b4f77478 *inst/external/test_conservative_pc_data1.rda
@@ -97,7 +97,7 @@ bc93b0a2d31d65d8e33fac866edcc3ff *man/jointIda.Rd
 240d9c697a86a1aad34a623a487d3f5e *man/legal.path.Rd
 7c28e6a542763fa65c25784a96d32e1f *man/mat2targets.Rd
 cd8a6e38249822fc7c54c66b96a6a967 *man/mcor.Rd
-04f1d3a6581a3183147e2f32d14aaa36 *man/optAdjSet.Rd
+088eee045f4ee07c7fd39971203f4c18 *man/optAdjSet.Rd
 67426f4203b1334a56a8715423083745 *man/pag2mag.Rd
 dd33bd15970a3b76a6c47147cc991c2b *man/pc.Rd
 01d980deb40fe93c7e3c2f5039882f9d *man/pc.cons.intern.Rd
