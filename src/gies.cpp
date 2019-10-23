@@ -2,7 +2,7 @@
  * Main file of the Greedy Interventional Equivalence Search library for R
  *
  * @author Alain Hauser
- * $Id: gies.cpp 393 2016-08-20 09:43:47Z alhauser $
+ * $Id: gies.cpp 498 2019-10-20 11:19:45Z alhauser $
  */
 
 #include <vector>
@@ -250,7 +250,7 @@ RcppExport SEXP causalInference(
 			graph.limitVertexDegree(maxDegrees);
 		}
 	}
-	
+
 	// Cast option for required phases
 	dout.level(2) << "  Casting phases...\n";
 	std::vector< std::string > optPhases = Rcpp::as< std::vector<std::string> >(options["phase"]);
@@ -481,7 +481,9 @@ RcppExport SEXP dagToEssentialGraph(SEXP argGraph, SEXP argTargets)
 	END_RCPP
 }
 
-
+/**
+ * Calculate the optimal intervention target for an essential graph.
+ */
 RcppExport SEXP optimalTarget(SEXP argGraph, SEXP argMaxSize)
 {
 	// Initialize automatic exception handling; manual one does not work any more...
@@ -494,10 +496,10 @@ RcppExport SEXP optimalTarget(SEXP argGraph, SEXP argMaxSize)
 	// Calculate optimal intervention target
 	std::set<uint> target = graph.getOptimalTarget(maxSize);
 
-	// Adapt numbering convention...
+	// Convert from C++ (0 based) to R (1 based) numbering convention.
 	std::vector<uint> result(target.begin(), target.end());
 	for (std::vector<uint>::iterator vi = result.begin(); vi != result.end(); ++vi)
-		(*vi)--;
+		(*vi)++;
 	return Rcpp::wrap(result);
 
 	END_RCPP

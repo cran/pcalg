@@ -142,6 +142,7 @@ export(trueCov,
        mat2targets,
        targets2mat,
        dag2essgraph,
+       opt.target,
        ## --- end{Alain}
        fciPlus,
        lingam, LINGAM,

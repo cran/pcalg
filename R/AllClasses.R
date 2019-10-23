@@ -2,7 +2,7 @@
 ### Part 1 : S4 classes used by pc and r/fci
 ##################################################
 
-## $Id: AllClasses.R 466 2018-01-16 14:27:47Z mmaechler $
+## $Id: AllClasses.R 498 2019-10-20 11:19:45Z alhauser $
 
 setClass("gAlgo",
          slots = c(call = "call",
@@ -1173,7 +1173,6 @@ setRefClass("EssGraph",
         #' Calculates an optimal intervention target
         #'
         #' @param   max.size    maximum target size; allowed values: 1, p (= # nodes)
-        ## TODO document that function... or better: provide a documented wrapper function
         opt.target = function(max.size) {
           .Call("optimalTarget", .in.edges, max.size, PACKAGE = "pcalg")
         }
@@ -1201,6 +1200,17 @@ setAs("EssGraph", "matrix",
       vapply(ip, function(i) ip %in% from$.in.edges[[i]],
              logical(p))
     })
+
+##' Coercion from a graph object to EssGraph (assuming an observational
+##' essential graph).
+setAs("graph", "EssGraph",
+      function(from) {
+        node.names <- nodes(from)
+        new("EssGraph",
+            nodes = node.names,
+            in.edges = lapply(graph::inEdges(from),
+                              function(v) match(v, node.names)))
+      })
 
 #' Plot method (needs Rgraphviz to work!!)
 ## TODO maybe adapt method to make sure that undirected edges are not plotted as

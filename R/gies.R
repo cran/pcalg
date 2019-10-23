@@ -1,7 +1,7 @@
 ## GIES algorithm
 ##
 ## Author: Alain Hauser <alain.hauser@bfh.ch>
-## $Id: gies.R 484 2019-04-04 09:03:47Z mkalisch $
+## $Id: gies.R 498 2019-10-20 11:19:45Z alhauser $
 ###############################################################################
 
 ##################################################
@@ -138,14 +138,14 @@ rmvnorm.ivent <- function(n, object, target = integer(0), target.value = numeric
 ##' @param ... 		additional parameters passed to the algorithm chosen
 caus.inf <- function(
     algorithm = c("GIES", "GDS", "SiMy"),
-    score, 
-    labels = score$getNodes(), 
-    targets = score$getTargets(), 
+    score,
+    labels = score$getNodes(),
+    targets = score$getTargets(),
     ...)
 {
   algorithm <- match.arg(algorithm)
-  
-  # Catching error occurring when a user called one of the causal 
+
+  # Catching error occurring when a user called one of the causal
   # inference algorithms using the old calling conventions: try to
   # rearrange passed arguments, print a warning
   #
@@ -154,7 +154,7 @@ caus.inf <- function(
   # (p, targets, score) for all functions allowing interventional data
   # (p, score) for GES
   if (is.numeric(score)) {
-    # This happens when the old calling convention is used with all 
+    # This happens when the old calling convention is used with all
     # mandatory arguments unnamed
     p <- score
     if (is.list(labels) && is(targets, "Score")) {
@@ -179,7 +179,7 @@ caus.inf <- function(
             "gies(), ges(), gds() or simy(); please refer to the documentation",
             "of these functions to adapt to the new calling conventions."))
   }
-  
+
   if (!is(score, "Score")) {
     stop("'score' must be of a class inherited from the class 'Score'.")
   }
@@ -189,7 +189,7 @@ caus.inf <- function(
   if (!is.list(targets) || !all(sapply(targets, is.numeric))) {
     stop("'targets' must be a list of integer vectors.")
   }
-  
+
   essgraph <- new("EssGraph", nodes = labels, targets = targets, score = score)
   if (essgraph$caus.inf(algorithm, ...)) {
     if (algorithm == "GIES") {
@@ -220,21 +220,21 @@ caus.inf <- function(
 ##' @param verbose	indicates whether debug output should be printed
 ##' @param ...		additional parameters (currently none)
 gies <- function(
-    score, 
-    labels = score$getNodes(), 
+    score,
+    labels = score$getNodes(),
     targets = score$getTargets(),
-    fixedGaps = NULL, 
-    adaptive = c("none", "vstructures", "triples"), 
+    fixedGaps = NULL,
+    adaptive = c("none", "vstructures", "triples"),
     phase = c("forward", "backward", "turning"),
     iterate = length(phase) > 1,
-    turning = NULL, 
+    turning = NULL,
     maxDegree = integer(0),
-    verbose = FALSE, 
+    verbose = FALSE,
     ...)
 {
   # Catch calling convention of previous package versions:
   # ges(p, targets, score, fixedGaps = NULL, ...)
-  # If this calling convention is used, issue a warning, but adjust the 
+  # If this calling convention is used, issue a warning, but adjust the
   # arguments
   if (is.numeric(score) && is.list(labels) && inherits(targets, "Score")) {
     score <- targets
@@ -252,13 +252,13 @@ gies <- function(
             "which will be disabled in future versions of the package;",
             "cf. ?gies.", sep = " "))
   }
-  
+
   # Issue warning if argument 'turning' was used
   if (!missing(turning)) {
     stopifnot(is.logical(turning))
     warning(paste0("The argument 'turning' is deprecated; please use 'phase'",
                    "instead (cf. ?ges)"))
-    
+
     if (turning) {
       phase <- c("forward", "backward", "turning")
       iterate <- FALSE
@@ -267,25 +267,25 @@ gies <- function(
       iterate <- FALSE
     }
   }
-  
+
   # Error checks
   if (!inherits(score, "Score")) {
     stop("Argument 'score' must be an instance of a class inherited from 'Score'.")
   }
   phase <- match.arg(phase, several.ok = TRUE)
   # TODO extend...
-  
+
   caus.inf(
-      "GIES", 
-      score = score, 
-      labels = labels, 
+      "GIES",
+      score = score,
+      labels = labels,
       targets = targets,
-      fixedGaps = fixedGaps, 
-      adaptive = adaptive, 
+      fixedGaps = fixedGaps,
+      adaptive = adaptive,
       phase = phase,
       iterate = iterate,
-      maxDegree = maxDegree, 
-      verbose = verbose, 
+      maxDegree = maxDegree,
+      verbose = verbose,
       ...)
 }
 
@@ -304,20 +304,20 @@ gies <- function(
 ##' @param ... 		additional parameters (currently none)
 ##' @param targets 	unique list of targets. Normally determined from the scoring object
 ges <- function(
-    score, 
+    score,
     labels = score$getNodes(),
-    fixedGaps = NULL, 
-    adaptive = c("none", "vstructures", "triples"), 
+    fixedGaps = NULL,
+    adaptive = c("none", "vstructures", "triples"),
     phase = c("forward", "backward", "turning"),
     iterate = length(phase) > 1,
-    turning = NULL, 
+    turning = NULL,
     maxDegree = integer(0),
-    verbose = FALSE, 
+    verbose = FALSE,
     ...)
 {
   # Catch calling convention of previous package versions:
   # ges(p, score, fixedGaps = NULL, ...)
-  # If this calling convention is used, issue a warning, but adjust the 
+  # If this calling convention is used, issue a warning, but adjust the
   # arguments
   if (is.numeric(score) && inherits(labels, "Score")) {
     score <- labels
@@ -334,13 +334,13 @@ ges <- function(
             "which will be disabled in future versions of the package;",
             "cf. ?ges.", sep = " "))
   }
-  
+
   # Issue warning if argument 'turning' was used
   if (!missing(turning)) {
     stopifnot(is.logical(turning))
     warning(paste0("The argument 'turning' is deprecated; please use 'phase'",
                    "instead (cf. ?ges)"))
-    
+
     if (turning) {
       phase <- c("forward", "backward", "turning")
       iterate <- FALSE
@@ -349,7 +349,7 @@ ges <- function(
       iterate <- FALSE
     }
   }
-  
+
   # Error checks
   if (!inherits(score, "Score")) {
     stop("Argument 'score' must be an instance of a class inherited from 'Score'.")
@@ -363,16 +363,16 @@ able to terminate")
   }
 
   caus.inf(
-      "GIES", 
-      score = score, 
-      labels = labels, 
+      "GIES",
+      score = score,
+      labels = labels,
       targets = list(integer(0)),
-      fixedGaps = fixedGaps, 
-      adaptive = adaptive, 
+      fixedGaps = fixedGaps,
+      adaptive = adaptive,
       phase = phase,
       iterate = iterate,
-      maxDegree = maxDegree, 
-      verbose = verbose, 
+      maxDegree = maxDegree,
+      verbose = verbose,
       ...)
 }
 
@@ -390,15 +390,15 @@ able to terminate")
 ##' @param verbose 	indicates whether debug output should be printed
 ##' @param ... 		additional parameters (currently none)
 gds <- function(
-    score, 
-    labels = score$getNodes(), 
+    score,
+    labels = score$getNodes(),
     targets = score$getTargets(),
-    fixedGaps = NULL, 
+    fixedGaps = NULL,
     phase = c("forward", "backward", "turning"),
     iterate = length(phase) > 1,
-    turning = TRUE, 
-    maxDegree = integer(0), 
-    verbose = FALSE, 
+    turning = TRUE,
+    maxDegree = integer(0),
+    verbose = FALSE,
     ...)
 {
   # Issue warning if argument 'turning' was used
@@ -410,19 +410,19 @@ gds <- function(
     warning(paste("The argument 'turning' is deprecated; please use 'phase' instead",
             "(cf. ?ges)", sep = " "))
   }
-  
+
   phase <- match.arg(phase, several.ok = TRUE)
-  
+
   caus.inf(
-      "GDS", 
-      score = score, 
-      labels = labels, 
+      "GDS",
+      score = score,
+      labels = labels,
       targets = targets,
-      fixedGaps = fixedGaps, 
-      phase = phase, 
+      fixedGaps = fixedGaps,
+      phase = phase,
       iterate = iterate,
-      maxDegree = maxDegree, 
-      verbose = verbose, 
+      maxDegree = maxDegree,
+      verbose = verbose,
       ...)
 }
 
@@ -466,3 +466,40 @@ dag2essgraph <- function(dag, targets = list(integer(0))) {
   }
 }
 
+##################################################
+## Active learning algorithms
+##################################################
+
+##' Optimal intervention targets
+##'
+##' @param essgraph (Observational or interventional) essential graph,
+##'   represented by an EssGraph or a graphNEL object.
+##' @param max.size Maximum size of intervention target; only 1 and the
+##'   number of nodes of `essgraph` (the default, if not set) are supported.
+##' @param use.node.names Indicates if the intervention target should be
+##'   returned as a list of node names (if `TRUE`) or indices (if `FALSE`).
+opt.target <- function(essgraph, max.size, use.node.names = TRUE) {
+  # Test parameters.
+  if (inherits(essgraph, "graphNEL")) {
+    essgraph <- as(essgraph, "EssGraph")
+  }
+  if (!inherits(essgraph, "EssGraph")) {
+    stop("`essgraph` must be an object of class EssGraph or graphNEL.")
+  }
+  p <- essgraph$node.count()
+  if (missing(max.size)) {
+    max.size <- p
+  }
+  if (!(max.size %in% c(1, p))) {
+    stop("`max.size` must either be 1 or the number of nodes of `essgraph` (",
+         p, "); actual value: ", max.size)
+  }
+
+  # Get the optimal intervention target.
+  target <- essgraph$opt.target(max.size = max.size)
+  if (use.node.names) {
+    return(essgraph$.nodes[target])
+  } else {
+    return(target)
+  }
+}
