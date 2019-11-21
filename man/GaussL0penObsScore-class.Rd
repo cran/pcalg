@@ -32,7 +32,7 @@
 new("GaussL0penObsScore",
   data = matrix(1, 1, 1),
   lambda = 0.5*log(nrow(data)), 
-  intercept = FALSE, 
+  intercept = TRUE, 
   use.cpp = TRUE, 
   ...)
 }

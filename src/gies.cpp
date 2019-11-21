@@ -2,7 +2,7 @@
  * Main file of the Greedy Interventional Equivalence Search library for R
  *
  * @author Alain Hauser
- * $Id: gies.cpp 498 2019-10-20 11:19:45Z alhauser $
+ * $Id: gies.cpp 500 2019-11-20 13:46:14Z alhauser $
  */
 
 #include <vector>
@@ -278,15 +278,15 @@ RcppExport SEXP causalInference(
 	if (!Rf_isNull(options["fixedGaps"])) {
 		Rcpp::LogicalMatrix gapsMatrix((SEXP)(options["fixedGaps"]));
 		uint n_gaps = 0;
-		for (int i = 0; i < p; ++i)
-			for (int j = i + 1; j < p; ++j)
+		for (uint i = 0; i < p; ++i)
+			for (uint j = i + 1; j < p; ++j)
 				if (gapsMatrix(i, j))
 					n_gaps++;
 		// Invert gaps if more than half of the possible edges are fixed gaps
 		bool gapsInverted = 4*n_gaps > p*(p - 1);
 		EssentialGraph fixedGaps(p);
-		for (int i = 0; i < p; ++i)
-			for (int j = i + 1; j < p; ++j)
+		for (uint i = 0; i < p; ++i)
+			for (uint j = i + 1; j < p; ++j)
 				if (gapsMatrix(i, j) ^ gapsInverted)
 					fixedGaps.addEdge(i, j, true);
 		graph.setFixedGaps(fixedGaps, gapsInverted);
@@ -318,7 +318,7 @@ RcppExport SEXP causalInference(
 		int phaseCount(1);
 		do {
 			cont = false;
-			for (int i = 0; i < phases.size(); ++i) {
+			for (uint i = 0; i < phases.size(); ++i) {
 				for (steps.push_back(0);
 						graph.greedyStepDir(phases[i], adaptive);
 						steps.back()++) {
@@ -392,7 +392,10 @@ RcppExport SEXP causalInference(
 					case SD_TURNING:
 						ss << "turning";
 						break;
-					}
+                                        
+                                        default:
+                                                break;
+                                        }
 					ss << stepCount[dir]++;
 					stepNames.push_back(ss.str());
 				} // IF dir

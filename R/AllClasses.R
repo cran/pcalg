@@ -2,7 +2,7 @@
 ### Part 1 : S4 classes used by pc and r/fci
 ##################################################
 
-## $Id: AllClasses.R 498 2019-10-20 11:19:45Z alhauser $
+## $Id: AllClasses.R 499 2019-11-18 20:08:36Z alhauser $
 
 setClass("gAlgo",
          slots = c(call = "call",
@@ -931,7 +931,7 @@ setRefClass("GaussL0penObsScore", contains = "GaussL0penIntScore",
         initialize = function(data = matrix(1, 1, 1),
             nodes = colnames(data),
             lambda = 0.5*log(nrow(data)),
-            intercept = FALSE,
+            intercept = TRUE,
             format = c("raw", "scatter"),
             use.cpp = TRUE,
             ...) {
