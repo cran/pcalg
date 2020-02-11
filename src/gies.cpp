@@ -2,7 +2,7 @@
  * Main file of the Greedy Interventional Equivalence Search library for R
  *
  * @author Alain Hauser
- * $Id: gies.cpp 500 2019-11-20 13:46:14Z alhauser $
+ * $Id: gies.cpp 501 2019-11-21 07:28:17Z alhauser $
  */
 
 #include <vector>
@@ -413,7 +413,7 @@ RcppExport SEXP causalInference(
 		int phaseCount(1);
 		do {
 			cont = false;
-			for (int i = 0; i < phases.size(); ++i) {
+			for (uint i = 0; i < phases.size(); ++i) {
 				for (steps.push_back(0);
 						graph.greedyDAGStepDir(phases[i]);
 						steps.back()++) {

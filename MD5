@@ -1,5 +1,5 @@
 1c213fc1c5a5ec68e7a5ba9293440dc3 *ChangeLog
-3213adf4c383ace6ded1c77d63078929 *DESCRIPTION
+37d84a7531ceea244c781882060b0d93 *DESCRIPTION
 f813efd2d2208b900ae1d5ceb8dce2cf *NAMESPACE
 66963591a11cfdb002f5da9070f1500b *R/Aaux.R
 83c288d2212114e54bfe624e0edecaaa *R/AllClasses.R
@@ -13,12 +13,12 @@ aca17dcd6f37ce1136086a8bc285046e *R/isValidGraph.R
 b363657f7e2c52dc0f2aa083780fa0f7 *R/jointIda.R
 386ed9be1a524de90dfac185433b009a *R/lingamFuns.R
 cc462e22779cb4c455536d1f28811eb7 *R/optAdjSet.R
-8ec2d6417dc5ac6d01bc0df33a22edc4 *R/pcalg.R
+af4239ca324cb48eaac6b07fc0cf0061 *R/pcalg.R
 67ec62ad56d7cffaba4bee8f88797136 *R/pcalg2dagitty.R
 f84d95dd282c42c32595a27ca98f9a3d *R/possDeAn.R
 0db1ba6d57801a4d8fc6cdf996384a4d *R/zzz.R
 d599e23940bca0203504c0fa6b09e01c *TODO
-e1300b4193240403932f00f2f41019c8 *build/vignette.rds
+bd68b3d89307e8260f55874d7dbcf993 *build/vignette.rds
 f832779eae511757a99906c7670fc0ad *cleanup
 7cbe431a233e6c454e24f7b92d63fe75 *data/datalist
 1d8d4c43b9cbb9dc9dd57acd59f565bf *data/gmB.rda
@@ -32,10 +32,10 @@ f832779eae511757a99906c7670fc0ad *cleanup
 4e33425acbef8bf36705d8a75622baa8 *inst/doc/mkVignettes.R
 cc46b1f49edd31faf5316d5cf4d6c1ce *inst/doc/pcalgDoc.R
 6581d4416f174d4d6f07a2a2d4b9d3cb *inst/doc/pcalgDoc.Rnw
-2b601a85e3079b71bedd7ddaac11d0f9 *inst/doc/pcalgDoc.pdf
+7c38555b6c1bbe4e36f53b8c8810e8f8 *inst/doc/pcalgDoc.pdf
 01c5a9cb2024f1234d7c4aebb9762db5 *inst/doc/vignette2018.R
 65ba145dfc8ae12f50c95d77a8bf8600 *inst/doc/vignette2018.Rnw
-d2855fc52a011633c52bb64aac1ce1c0 *inst/doc/vignette2018.pdf
+fe84a6e311f25d42e56c1f8042c8f07d *inst/doc/vignette2018.pdf
 cee0b4475c720bf58c466e1495451b22 *inst/external/N_6_1000.rds
 0d84fdc119d76d992b72f9bdbd0e613d *inst/external/gac-pags.rds
 e7a2a9117d97986b2ab6afc6b4f77478 *inst/external/test_conservative_pc_data1.rda
@@ -66,7 +66,7 @@ e5e54569fa1222405f18ee7c189b68cd *man/beta.special.pcObj.Rd
 297092d27f80a859b5d89a49a54926d1 *man/condIndFisherZ.Rd
 b2ded6b2c0cd2cf0c30b845d07646736 *man/corGraph.Rd
 14cc497daabf3441d1c1db24ef338244 *man/dag2cpdag.Rd
-e57b4c2a4aec589210e386b72c2333fd *man/dag2essgraph.Rd
+4cb38ff25dcd9cdf5c983da476409c8b *man/dag2essgraph.Rd
 9825306a115fb2370a8bf8d481284983 *man/dag2pag.Rd
 4e804b480585e6a4d57b1ac0f6100760 *man/disCItest.Rd
 3d880e7f58fe68731e9ed4ecb4c13bf4 *man/dreach.Rd
@@ -138,7 +138,7 @@ abddab27448a30a0f87aea03c467e0ee *man/visibleEdge.Rd
 a8c2ba6c143ec7747d3da847ccbcf285 *src/Makevars
 f7855be23d4995a0ebe0e99735c58b3b *src/Makevars.win
 2ced878a9b224e806d51885fafbfa64d *src/constraint.cpp
-f52c777a307fc3b3e79ca73cb0dc7f86 *src/gies.cpp
+2bfeff52f98baadffa6d9f833dee0195 *src/gies.cpp
 35da0b2746092325096fa471446e465e *src/greedy.cpp
 c5e0eb959f4162f8655ea795eec34c50 *src/init.c
 bc5cab68e323949bed42d3d87b68e5a2 *src/score.cpp
@@ -186,7 +186,7 @@ ecaacf0c68bf72d9d96eeeeffd824357 *tests/test_pcorOrder.R
 420318727caccce9211b4f19293e72c5 *tests/test_randDAG.Rout.save
 aee8ad2108a151b25666eaf0ed1b4205 *tests/test_randomDAG.R
 67e98859e85bd2237f9856a8209711e4 *tests/test_rfci.R
-5ff76c5a7b0205bda339e9a159466ff8 *tests/test_rmvDAG.R
+aca0d1fb3b38a6f54fb2d84040aa009d *tests/test_rmvDAG.R
 c1564ccaf570fb24d5e19ffd8d8e4d04 *tests/test_shd.R
 ebc96d20c469e51fc26a7a7c622b82b3 *tests/test_skeleton.R
 8a4bb227766e6d42a944ae1bd3df57b0 *tests/test_udag2pag.R

@@ -176,7 +176,7 @@ rmvDAG <-
     colnames(errMat) <- nodes(dag) # == colnames(weightMatrix)
 
   ## compute X matrix X_i
-  if (sum(weightMatrix) > 0) {
+  if (sum(weightMatrix != 0) > 0) {
     X <- errMat
     for (j in 2:p) { ## uses X[*, 1:(j-1)] -- "recursively" !
       ij <- 1:(j-1)

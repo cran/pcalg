@@ -13,8 +13,8 @@ dag2essgraph(dag, targets = list(integer(0)))
 }
 \arguments{
   \item{dag}{The DAG whose essential graph has to be calculated.  Different
-    representations are possible: \code{dag} can be an adjacency matrix, an 
-    object of \code{\linkS4class{graphNEL}} (package \pkg{graph}), or 
+    representations are possible: \code{dag} can be an 
+    object of \code{\linkS4class{graphNEL}} (package \pkg{graph}) or 
     an instance of a class derived from \code{\linkS4class{ParDAG}}.}
   
   \item{targets}{List of intervention targets with respect to which the 
@@ -43,7 +43,6 @@ dag2essgraph(dag, targets = list(integer(0)))
 \value{
   Depending on the class of \code{dag}, the essential graph is returned as
   \itemize{
-    \item{an adjacency matrix, if \code{dag} is an adjacency matrix}
     \item{an instance of \code{\linkS4class{graphNEL}}, if \code{dag} is an 
       instance of \code{graphNEL},}
     \item{an instance of \code{\linkS4class{EssGraph}}, if \code{dag} is
@@ -80,8 +79,6 @@ res.obs <- dag2essgraph(dag)
 ## Different argument classes
 res2 <- dag2essgraph(as(dag, "GaussParDAG"))
 str(res2)
-res3 <- dag2essgraph(as(dag, "matrix"))
-str(res3)
 
 ## Calculate interventional essential graph for intervention targets
 ## {1} and {3}

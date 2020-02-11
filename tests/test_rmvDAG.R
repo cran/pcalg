@@ -1,5 +1,16 @@
 library(pcalg)
 suppressWarnings(RNGversion("3.5.0"))
+
+## bugfix 02.05.2020 ####
+set.seed(542) ## seed=542 und p=2; seed=20499 und p=3
+p <- 2 ## 20
+rDAG <- randomDAG(p, prob = 0.2, lB=-1, uB=1)
+B <- as(rDAG, "matrix")
+cov.th <- t(solve(diag(p) - B)) %*% solve(diag(p) - B)
+data <- rmvDAG(1e4, rDAG, errDist = "normal")
+stopifnot(cov(data)[2,2] > 1.6)
+##
+
 set.seed(100)
 
 wmat <- rbind(c(0,1,0,0,0),
