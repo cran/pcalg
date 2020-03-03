@@ -197,7 +197,7 @@ isAmenable <- function(m,x,y, type = "pag") {
                     ## check if there is a pdp from cand[j] to y without going through x[i]
                     ## cand could already be in y
                     ## pathOK <- ( length(intersect(y, possibleDeProper(m,cand[j],x[i]))) != 0 )
-                    pdpTemp <- possDe(m = m, x = cand[j], y = x[i],
+                    pdpTemp <- possDe(m = m, x = cand[j], y = x,
                                       possible = TRUE, ds = FALSE,
                                       type = type)
                     pathOK <- ( length(intersect(y, pdpTemp)) != 0 )
