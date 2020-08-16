@@ -237,7 +237,7 @@ pc(suffStat, indepTest, alpha, labels, p,
   M. Kalisch, M. Maechler, D. Colombo, M.H. Maathuis and P. Buehlmann
   (2012). Causal Inference Using Graphical Models with the R Package
   pcalg. \emph{Journal of Statistical Software} \bold{47(11)} 1--26,
-  \url{http://www.jstatsoft.org/v47/i11/}.
+  \url{https://www.jstatsoft.org/v47/i11/}.
 
   M. Kalisch and P. Buehlmann (2007).
   Estimating high-dimensional directed acyclic graphs with the PC-algorithm.

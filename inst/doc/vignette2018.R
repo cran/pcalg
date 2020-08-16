@@ -1,5 +1,4 @@
 ### R code from vignette source 'vignette2018.Rnw'
-### Encoding: UTF-8
 
 ###################################################
 ### code chunk number 1: preliminaries
@@ -42,8 +41,7 @@ showF <- function(f, width = 50) {
 ###################################################
 ### code chunk number 4: exIntro1
 ###################################################
-library("pcalg")
-data("gmG") ## loads data set gmG8
+data("gmG", package = "pcalg") ## loads data sets gmG and gmG8
 
 
 ###################################################
@@ -58,8 +56,6 @@ skel.gmG8 <- skeleton(suffStat, indepTest = gaussCItest,
 ###################################################
 ### code chunk number 6: exIntroPC
 ###################################################
-suffStat <- list(C = cor(gmG8$x), n = nrow(gmG8$x))
-varNames <- gmG8$g@nodes
 pc.gmG8 <- pc(suffStat, indepTest = gaussCItest,
               labels = varNames, alpha = 0.01)
 
@@ -88,7 +84,7 @@ fci.gmL <- fci(suffStat, indepTest=gaussCItest,
 ###################################################
 stopifnot(require(Rgraphviz))# needed for all our graph plots
 par(mfrow = c(1,2))
-plot(gmL$g) ; box(col="gray")
+plot(gmL$g)  ; box(col="gray")
 plot(fci.gmL); box(col="gray")
 
 
@@ -410,7 +406,7 @@ gac(mFig1, x,y, z=c(2,4),    type)
 
 
 ###################################################
-### code chunk number 40: vignette2018.Rnw:1088-1093
+### code chunk number 40: vignette2018.Rnw:1087-1092
 ###################################################
 mFig3a <- matrix(c(0,1,0,0, 0,0,1,1, 0,0,0,1, 0,0,1,0), 4,4)
 type <- "pdag"

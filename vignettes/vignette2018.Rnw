@@ -146,8 +146,7 @@ The dataset $gmG8$ contains $n=5000$ observations of $p = 8$
 continuous variables with a multivariate Gaussian distribution.
 
 <<exIntro1>>=
-library("pcalg")
-data("gmG") ## loads data set gmG8
+data("gmG", package = "pcalg") ## loads data sets gmG and gmG8
 @
 
 In this example, the predefined function
@@ -168,12 +167,12 @@ Finding the skeleton is also the first step in the algorithms FCI, RFCI and FCI+
 
 The PC-algorithm is implemented in function \texttt{pc()}. The arguments follow closely the arguments of \texttt{skeleton()}, i.e., the most important arguments consist of an conditional independence test and a suitable sufficient statistic.
 
-We continue the previous example and illustrate function \texttt{pc()} using the built-in dataset $gmG8$. The result is shown in
+%  vvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+We continue the previous example and illustrate function \texttt{pc()} using the built-in dataset $gmG8$.
+The result is shown in
 Fig.~\ref{fig:intro1} (bidirected edges need to be interpreted as undirected edges in the resulting CPDAG).
 
 <<exIntroPC>>=
-suffStat <- list(C = cor(gmG8$x), n = nrow(gmG8$x))
-varNames <- gmG8$g@nodes
 pc.gmG8 <- pc(suffStat, indepTest = gaussCItest,
               labels = varNames, alpha = 0.01)
 @
@@ -264,7 +263,7 @@ fci.gmL <- fci(suffStat, indepTest=gaussCItest,
 <<exIntroPlotFCI, echo=FALSE, fig=TRUE, fig.width=5, fig.height=2.5>>=
 stopifnot(require(Rgraphviz))# needed for all our graph plots
 par(mfrow = c(1,2))
-plot(gmL$g) ; box(col="gray")
+plot(gmL$g)  ; box(col="gray")
 plot(fci.gmL); box(col="gray")
 @
 \caption{True causal DAG (left) and estimated PAG on the observed nodes with the labels $2$, $3$, $4$ and $5$ (right).}

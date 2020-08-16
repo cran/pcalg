@@ -5023,7 +5023,7 @@ udag2pag <- function(pag, sepset, rules = rep(TRUE,10), unfVect = NULL, verbose 
                     counterX1 <- 0
                     while (counterX1 < length(indX) && pag[c, a] == 1) {
                       counterX1 <- counterX1 + 1
-                      first.pos <- indA[counterX1]
+                      first.pos <- indX[counterX1]
                       indX2 <- setdiff(indX, first.pos)
                       counterX2 <- 0
                       while (counterX2 < length(indX2) && pag[c, a] == 1) {

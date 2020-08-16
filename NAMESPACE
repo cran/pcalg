@@ -9,7 +9,10 @@ importFrom("stats", cor, cor.test, cov, cov2cor,
 
 importFrom("utils", combn, str)
 
-importFrom("graphics", par, plot.default, plot, title)
+importFrom("graphics", par, plot, title)
+## For R >= 4.0.0, plot is in 'base' (but in 'graphics', too)
+## if(getRversion() < "4.0.0")
+##     importFrom("graphics", plot)
 
 importMethodsFrom("methods", coerce, show)
 importFrom("methods",
