@@ -7117,7 +7117,7 @@ fciPlus <- function(suffStat, indepTest, alpha, labels, p, verbose=TRUE)
       max.ord = integer(0),
       max.ordPDSEP = integer(0),
       n.edgetests = integer(0), n.edgetestsPDSEP = integer(0),
-      sepset = list(), pMax = matrix(0,1,1), allPdsep = list())
+      sepset = fcip$sepset, pMax = matrix(0,1,1), allPdsep = list())
 } ## {fciPlus}
 
 ## MM:  Das braucht's ja wirklich nicht;  wir haben extra gute  summary(.) Methoden,
