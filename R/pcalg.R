@@ -3990,60 +3990,85 @@ minUncovPdPath <- function(p, pag, a,b,c, unfVect, verbose = FALSE)
   ##            - a,b,c : nodes under interest
   ##            - unfVect: vector containing the ambiguous triples
   ## ----------------------------------------------------------------------
-  ## Author: Diego Colombo, Date: 19 Oct 2011; small changes: Martin Maechler
-
-  visited <- rep(FALSE, p)
-  visited[c(a,b,c)] <- TRUE
+  ## Author: Diego Colombo, Date: 19 Oct 2011; small changes: Martin Maechler, Joris Mooij
+  
+  ## first check whether a,b,c is already a upd path
+  stopifnot( (pag[a,b] == 1 | pag[a,b] == 2) &
+               (pag[b,a] == 1 | pag[b,a] == 3) )
   min.upd.path <- NA
-  ## find all neighbours of b not visited yet
-  indD <- which((pag[b,] == 1 | pag[b,] == 2) &
-                (pag[,b] == 1 | pag[,b] == 3) &
-                (pag[,a] == 0) & !visited)
-  if (length(indD) > 0) {
-    path.list <- updateList(b, indD, NULL)
-    done <- FALSE
-    while ((length(path.list) > 0) && (!done)) {
-      ## next element in the queue
-      mpath <- path.list[[1]]
-      m <- length(mpath)
-      d <- mpath[m]
-      path.list[[1]] <- NULL
-      visited[d] <- TRUE
-      if (any(pag[d,c] == 1:2) && any(pag[c,d] == c(1,3))) {
-        ## pd path found
-        mpath <- c(a, mpath, c)
-        n <- length(mpath)
-        ## check the path to be uncovered
-        uncov <- TRUE
-	for (l in seq_len(n - 2)) {
-	  if (!(pag[mpath[l], mpath[l + 2]] == 0 &&
-		pag[mpath[l + 2], mpath[l]] == 0)) {
-
-	    uncov <- FALSE
-	    break ## speed up!
-	  }
-	}
-        ## if it is uncovered
-        if (uncov)
-          if (length(unfVect) == 0 || ## <<- normal version: just save
-              ## conservative version, check the path to be faithful:
-              faith.check(mpath, unfVect, p)) {
-            ## save the path to be returned
-            min.upd.path <- mpath
-            done <- TRUE
+  done <- FALSE
+  if( (pag[b,c] == 1 | pag[b,c] == 2) &
+      (pag[c,b] == 1 | pag[c,b] == 3) &
+      (pag[c,a] == 0) )  {
+    mpath = c(a,b,c)
+    if (length(unfVect) == 0 || ## <<- normal version: just save
+        ## conservative version, check the path to be faithful:
+        faith.check(mpath, unfVect, p)) {
+      ## save the path to be returned
+      min.upd.path <- mpath
+      if( verbose )
+        cat('    minUncovPdPath: path found: ',mpath,', uncovered: ',TRUE,'\n')
+      done <- TRUE
+    }
+  }
+  
+  ## now check paths of 4 or more nodes of the form <a,b,...,c>
+  if( !done ) {
+    visited <- rep(FALSE, p)
+    visited[c(a,b,c)] <- TRUE
+    min.upd.path <- NA
+    ## find all neighbours of b not visited yet
+    indD <- which((pag[b,] == 1 | pag[b,] == 2) &
+                    (pag[,b] == 1 | pag[,b] == 3) &
+                    (pag[,a] == 0) & !visited)
+    if (length(indD) > 0) {
+      path.list <- updateList(b, indD, NULL)
+      done <- FALSE
+      while ((length(path.list) > 0) && (!done)) {
+        ## next element in the queue
+        mpath <- path.list[[1]]
+        m <- length(mpath)
+        d <- mpath[m]
+        path.list[[1]] <- NULL
+        visited[d] <- TRUE
+        if (any(pag[d,c] == 1:2) && any(pag[c,d] == c(1,3))) {
+          ## pd path found
+          mpath <- c(a, mpath, c)
+          n <- length(mpath)
+          ## check the path to be uncovered
+          uncov <- TRUE
+          for (l in seq_len(n - 2)) {
+            if (!(pag[mpath[l], mpath[l + 2]] == 0 &&
+                  pag[mpath[l + 2], mpath[l]] == 0)) {
+              
+              uncov <- FALSE
+              break ## speed up!
+            }
           }
-      }
-      else {
-        ## d and c are either not connected or connected with a "wrong" edge -----> search iteratively
-        ## find all neighbours of d not visited yet
-        indR <- which((pag[d,] == 1 | pag[d,] == 2) &
-                      (pag[,d] == 1 | pag[,d] == 3) & !visited)
-        if (length(indR) > 0) {
-          ## update the queues
-          path.list <- updateList(mpath, indR, path.list)
+          if( verbose )
+            cat('    minUncovPdPath: path found: ',mpath,', uncovered: ',uncov,'\n')
+          ## if it is uncovered
+          if (uncov)
+            if (length(unfVect) == 0 || ## <<- normal version: just save
+                ## conservative version, check the path to be faithful:
+                faith.check(mpath, unfVect, p)) {
+              ## save the path to be returned
+              min.upd.path <- mpath
+              done <- TRUE
+            }
         }
-      }
-    } ## {while}
+        else {
+          ## d and c are either not connected or connected with a "wrong" edge -----> search iteratively
+          ## find all neighbours of d not visited yet
+          indR <- which((pag[d,] == 1 | pag[d,] == 2) &
+                          (pag[,d] == 1 | pag[,d] == 3) & !visited)
+          if (length(indR) > 0) {
+            ## update the queues
+            path.list <- updateList(mpath, indR, path.list)
+          }
+        }
+      } ## {while}
+    }
   }
   min.upd.path
 } ## {minUncovPdPath}
@@ -5967,6 +5992,7 @@ udag2apag <- function (apag, suffStat, indepTest, alpha, sepset,
             b <- indB[1]
             indB <- indB[-1]
             ## find a minimal uncovered pd path from initial (a, b, c) :
+            ## cat("R9: a=", a, ", b=", b, ", c=", c,"\n")
 	    upd <- minUncovPdPath(p, apag, a, b, c,
 				  unfVect = unfVect, verbose = verbose)
             ## there is a path ---> orient it
@@ -6030,14 +6056,17 @@ udag2apag <- function (apag, suffStat, indepTest, alpha, sepset,
                     i1 <- 0
                     while (i1 < length(indX) && apag[c, a] == 1) {
                       i1 <- i1 + 1
-                      pos.1 <- indA[i1]
+                      # pos.1 <- indA[i1]
+                      pos.1 <- indX[i1]
                       indX2 <- setdiff(indX, pos.1)
                       i2 <- 0
                       while (i2 < length(indX2) && apag[c, a] == 1) {
                         i2 <- i2 + 1
                         pos.2 <- indX2[i2]
+                        ## cat("R10.1: a=", a, ", b=", b, ", c=", c,"\n")
 			tmp1 <- minUncovPdPath(p, apag, a, pos.1, b,
 					       unfVect = unfVect, verbose = verbose)
+			## cat("R10.2: a=", a, ", b=", b, ", c=", c,"\n")
 			tmp2 <- minUncovPdPath(p, apag, a, pos.2, d,
 					       unfVect = unfVect, verbose = verbose)
                         ## we found 2 uncovered pd paths
@@ -6469,7 +6498,13 @@ pag2magAM <- function(amat.pag, x, max.chordal = 10, verbose = FALSE)
   ## - valid.DAG.mat: adjacency matrix corresponding to the valid MAG
   ## ----------------------------------------------------------------------
   ## Author: Diego Colombo, Date: 12 Apr 2013, 14:24;
-  ## Tweaks by Martin Maechler
+  ## Tweaks by Martin Maechler, bug fix by Joris Mooij
+
+  ## deal with indexing issues
+  rn<-rownames(amat.pag)
+  cn<-colnames(amat.pag)
+  rownames(amat.pag)<-c(1:dim(amat.pag)[1])
+  colnames(amat.pag)<-c(1:dim(amat.pag)[1])
 
   ## 1. step: arrowhead augmentation
   ## find all o-> edges in the PAG
@@ -6523,9 +6558,14 @@ pag2magAM <- function(amat.pag, x, max.chordal = 10, verbose = FALSE)
     } # if() ..end for
 
   ## add directed edges and return "valid.DAG.mat":
-  valid.DAG.mat + amat.dir
+  amat.mag <- valid.DAG.mat + amat.dir
+  rownames(amat.mag)<-rn
+  colnames(amat.mag)<-cn
 
+  ## return mag
+  amat.mag
 } ## {pag2magAM}
+
 
 ##' Auxiliary for  pag2magAM()
 my.SpecialDag <- function (gm, a, X, verbose = FALSE)
@@ -7110,8 +7150,9 @@ fciPlus <- function(suffStat, indepTest, alpha, labels, p, verbose=TRUE)
   fit1 <- udag2pdagRelaxed(gInput = skel, orientCollider = FALSE)
   fcip <- fciplus.intern(pc.fit = fit1, alpha=alpha, suffStat=suffStat,
                          indepTest=indepTest, verbose=verbose)
+  fcip$mat <- (fcip$mat != 0) + 0 # forget orientations in augmented graph: FCI orientation rules seem more accurate  
   fciplus.amat <- udag2pag(pag = fcip$mat, sepset = fcip$sepset,
-                           orientCollider = FALSE)
+                           orientCollider = TRUE, verbose = verbose)
   colnames(fciplus.amat) <- rownames(fciplus.amat) <- labels
   new("fciAlgo", amat = fciplus.amat, call = cl, n = integer(0),
       max.ord = integer(0),

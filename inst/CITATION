@@ -30,7 +30,7 @@ citEntry(entry = "Article",
   year         = "2012",
   volume       = "13",
   pages        = "2409--2464",
-  url          = "http://jmlr.org/papers/v13/hauser12a.html",
+  url          = "https://jmlr.org/papers/v13/hauser12a.html",
 
   textVersion  =
   paste("Alain Hauser, Peter Buehlmann (2012).",

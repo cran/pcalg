@@ -1,5 +1,5 @@
 1c213fc1c5a5ec68e7a5ba9293440dc3 *ChangeLog
-ae6a1555639ce7d21db187bdd7482215 *DESCRIPTION
+813d0b69690dd00cf195f309fa45f486 *DESCRIPTION
 f9c1992369a6565cdfb3fdf5e8d8ebd1 *NAMESPACE
 66963591a11cfdb002f5da9070f1500b *R/Aaux.R
 83c288d2212114e54bfe624e0edecaaa *R/AllClasses.R
@@ -13,7 +13,7 @@ aca17dcd6f37ce1136086a8bc285046e *R/isValidGraph.R
 b363657f7e2c52dc0f2aa083780fa0f7 *R/jointIda.R
 f28cf0b020d974238796d27cfde61bf4 *R/lingamFuns.R
 ace998420ba6145fe7fe3c75c5892e66 *R/optAdjSet.R
-37f26524d577b5e73c98060c9eb6a057 *R/pcalg.R
+a22386351b642ae12f57859393c232a3 *R/pcalg.R
 67ec62ad56d7cffaba4bee8f88797136 *R/pcalg2dagitty.R
 f84d95dd282c42c32595a27ca98f9a3d *R/possDeAn.R
 0db1ba6d57801a4d8fc6cdf996384a4d *R/zzz.R
@@ -27,15 +27,15 @@ f832779eae511757a99906c7670fc0ad *cleanup
 6d96fac64134a91ecf0c244b4679ec0f *data/gmI.rda
 385d41164301819ce274673db8743fc9 *data/gmInt.rda
 1b3a78b432a5e46b991f5ae5eb4b77f3 *data/gmL.rda
-7207fa41fa9372e94d6799af40bd4aa1 *inst/CITATION
+da7142ac6e00dbcdef7bfe60f1cd5c66 *inst/CITATION
 2f13a20f69511d72dd63f9212308bc80 *inst/NEWS.Rd
 4e33425acbef8bf36705d8a75622baa8 *inst/doc/mkVignettes.R
 ea230ec4a19260aa9a751cef43965296 *inst/doc/pcalgDoc.R
 6581d4416f174d4d6f07a2a2d4b9d3cb *inst/doc/pcalgDoc.Rnw
-14ab89a1cd46bbaaa76ee71af0f84bc4 *inst/doc/pcalgDoc.pdf
+55d00311cc3e3be430a31b65cec4586a *inst/doc/pcalgDoc.pdf
 c7e3ec8f056bcb4ffedf8f38e06e1692 *inst/doc/vignette2018.R
 e2e81e4c1014989c895e5764846e7a3e *inst/doc/vignette2018.Rnw
-e4cb288353e02f194bd8a1a984ca0192 *inst/doc/vignette2018.pdf
+c90fc6647190375520a6f3a897d243ea *inst/doc/vignette2018.pdf
 cee0b4475c720bf58c466e1495451b22 *inst/external/N_6_1000.rds
 0d84fdc119d76d992b72f9bdbd0e613d *inst/external/gac-pags.rds
 e7a2a9117d97986b2ab6afc6b4f77478 *inst/external/test_conservative_pc_data1.rda
