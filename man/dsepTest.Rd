@@ -39,7 +39,8 @@ dsepTest(x, y, S=NULL, suffStat)
   Graphical Models, \emph{Oxford University Press}.
 }
 
-\seealso{\code{\link{gaussCItest}}, \code{\link{disCItest}} and
+\seealso{\code{\link{dsepAMTest}} for a similar function for MAGs.
+  \code{\link{gaussCItest}}, \code{\link{disCItest}} and
   \code{\link{binCItest}} for similar functions for a conditional
   independence test for gaussian, discrete and
   binary variables, respectively.

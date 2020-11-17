@@ -135,6 +135,8 @@ export(trueCov,
        pag2magAM,
        backdoor,
        jointIda,
+       dsep,
+       dsepTest,
        ## Alain's :
        r.gauss.pardag,
        rmvnorm.ivent,
@@ -161,7 +163,14 @@ export(trueCov,
        adjustment,
        isValidGraph,
        ages,
-       optAdjSet)
+       optAdjSet,
+       ## Joris:
+       dsepAM,
+       dsepAMTest,
+       pag2anc,
+       pag2conf,
+       pag2edge,
+       searchAM)
 
 ## These are "internal" i.e., in man/pcalg-internal.Rd
 ## _FIXME ?_                     ---------------------

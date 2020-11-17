@@ -31,9 +31,10 @@ dsep(a, b, S=NULL, g, john.pairs = NULL)
 }
 
 \seealso{\code{\link{dsepTest}} for a wrapper of this function that can
-  easily be included into \code{\link{skeleton}}, \code{\link{pc}} or
-      \code{\link{fci}}
-    }
+  easily be included into \code{\link{skeleton}}, \code{\link{pc}},
+  \code{\link{fci}} or \code{\link{fciPlus}}. 
+  \code{\link{dsepAM}} for a similar function for MAGs.
+}
 
 \author{
   Markus Kalisch (\email{kalisch@stat.math.ethz.ch})

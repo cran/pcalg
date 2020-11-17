@@ -12,7 +12,8 @@
   oriented as colliders when appropriate.  Then, for all nodes x in the
   resulting partially directed graph G, Possible-D-SEP(x,G) is computed,
   using the function \code{qreach}.  Finally, for any edge y-z that is
-  present in G, conditional independence between Y and Z is tested given
+  present in G and that is not flagged as fixed by the \code{fixedEdges}
+  argument, conditional independence between Y and Z is tested given
   all subsets of Possible-D-SEP(y,G) and all subsets of
   Possible-D-SEP(z,G).  These tests are done at level alpha, using
   \code{indepTest}.  If the pair of nodes is judged to be independent
@@ -23,7 +24,7 @@
 \usage{
 pdsep(skel, suffStat, indepTest, p, sepset, alpha, pMax, m.max = Inf,
       pdsep.max = Inf, NAdelete = TRUE, unfVect = NULL,
-      biCC = FALSE, verbose = FALSE)
+      biCC = FALSE, fixedEdges = NULL, verbose = FALSE)
 }
 \arguments{
   \item{skel}{Graph object returned by \code{\link{skeleton}}.}
@@ -71,6 +72,10 @@ pdsep(skel, suffStat, indepTest, p, sepset, alpha, pMax, m.max = Inf,
   \item{biCC}{Logical; if \code{TRUE}, only nodes on paths between nodes
     a and c are considered to be in sepset(a,c).  This uses biconnected
     components, see \code{\link[RBGL]{biConnComp}} from \pkg{RBGL}.}
+  \item{fixedEdges}{a logical \emph{symmetric} matrix of dimension p*p.  If entry
+    \code{[i,j]} is true, the edge \eqn{i--j}{i-j} is never considered
+    for removal. Therefore, this edge is guaranteed to be \emph{present} in
+    the resulting graph.}
   \item{verbose}{Logical indicating that detailed output is to be provided.}
 }
 \value{A list with the following elements:
@@ -98,7 +103,7 @@ pdsep(skel, suffStat, indepTest, p, sepset, alpha, pMax, m.max = Inf,
   selection variables.
   \emph{Annals of Statistics} \bold{40}, 294--321.
 
-  D. Colombo and M.H. Maathuis (2014).Order-independent constraint-based
+  D. Colombo and M.H. Maathuis (2014). Order-independent constraint-based
   causal structure learning. \emph{Journal of Machine Learning Research}
   \bold{15} 3741-3782. 
 }

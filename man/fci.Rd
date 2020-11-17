@@ -1,9 +1,11 @@
 \name{fci}
 \alias{fci}
-\title{Estimate a PAG by the FCI Algorithm}
+\title{Estimate a PAG with the FCI Algorithm}
 \description{
   Estimate a Partial Ancestral Graph (PAG) from observational data, using
-  the FCI (Fast Causal Inference) algorithm.
+  the FCI (Fast Causal Inference) algorithm, or from a combination of 
+  data from different (e.g., observational and interventional) contexts, 
+  using the FCI-JCI (Joint Causal Inference) extension.
 }
 
 \usage{
@@ -14,7 +16,9 @@ fci(suffStat, indepTest, alpha, labels, p,
     NAdelete = TRUE, m.max = Inf, pdsep.max = Inf,
     rules = rep(TRUE, 10), doPdsep = TRUE, biCC = FALSE,
     conservative = FALSE, maj.rule = FALSE,
-    numCores = 1, verbose = FALSE)
+    numCores = 1, selectionBias = TRUE,
+    jci = c("0","1","12","123"), contextVars = NULL, 
+    verbose = FALSE)
 }
 
 \arguments{
@@ -23,11 +27,10 @@ fci(suffStat, indepTest, alpha, labels, p,
     decisions in the function \code{indepTest}.}
   \item{indepTest}{a \code{\link{function}} for testing conditional
     independence.  The function is internally called as
-    \code{indepTest(x,y, S, suffStat)}, and
-    tests conditional independence of \code{x} and \code{y} given
-    \code{S}.  Here, \code{x} and \code{y} are variables, and \code{S} is
-    a (possibly empty) vector of variables (all variables are denoted
-    by their column numbers
+    \code{indepTest(x,y, S, suffStat)}, and tests conditional independence
+    of \code{x} and \code{y} given \code{S}.  Here, \code{x} and
+    \code{y} are variables, and \code{S} is a (possibly empty) vector of
+    variables (all variables are denoted by their column numbers
     in the adjacency matrix). \code{suffStat} is a list with all
     relevant information, see above.  The return value of
     \code{indepTest()} is the p-value of the test for conditional
@@ -91,6 +94,27 @@ fci(suffStat, indepTest, alpha, labels, p,
     standard conservative.  For more information, see details.}
   \item{numCores}{Specifies the number of cores to be used for parallel
     estimation of \code{\link{skeleton}}.}
+  \item{selectionBias}{If \code{TRUE}, allow for selection bias. 
+    If \code{FALSE}, selection bias is excluded by assumption and hence 
+    rules R5-R7, as in Zhang (2008), are disabled.}
+  \item{jci}{String specifying the JCI assumptions that are used. 
+    It can be one of:
+    \describe{
+      \item{"0"}{No JCI assumption is made (default),}
+      \item{"1"}{JCI assumption 1 (no system variable causes any context 
+	variable),}
+      \item{"12"}{JCI assumptions 1 and 2 (no system variable causes any 
+        context variable, and no system variable is confounded with any 
+	context variable),}
+      \item{"123"}{JCI assumptions 1, 2 and 3 (no system variable causes
+	any context variable, no system variable is confounded with any 
+	context variable, and all context variables are confounded but 
+	are not direct causes of each other).}
+    }
+    For more information, see Mooij et al. (2020).
+    }
+  \item{contextVars}{Subset of variable indices \{1,...,p\} that will be 
+    treated as context variables in the JCI extension of FCI.}
   \item{verbose}{If true, more detailed output is provided.}
 }
 \value{An object of \code{\link{class}} \code{fciAlgo} (see
@@ -101,34 +125,42 @@ fci(suffStat, indepTest, alpha, labels, p,
 }
 
 \details{
-  This function is a generalization of the PC algorithm (see
-  \code{\link{pc}}), in the sense that it allows arbitrarily many
-  latent and selection variables. Under the assumption that the data
-  are faithful to a DAG that includes all latent and selection variables,
-  the FCI algorithm (Fast Causal Inference algorithm) (Spirtes, Glymour
-  and Scheines, 2000) estimates the Markov equivalence class of MAGs
-  that describe the conditional independence relationships between the
-  observed variables.
+  This function is a generalization of the PC algorithm (see \code{\link{pc}}),
+  in the sense that it allows arbitrarily many latent and selection variables.
+  Under the assumption that the data are faithful to a DAG that includes all
+  latent and selection variables, the FCI algorithm (Fast Causal Inference
+  algorithm) (Spirtes, Glymour and Scheines, 2000) estimates the Markov
+  equivalence class of MAGs that describe the conditional independence
+  relationships between the observed variables. Under the assumption that the
+  data are \eqn{\sigma}-faithful to a simple (possibly cyclic) SCM that allows
+  for latent confounding (but selection bias is absent), the FCI algorithm
+  estimates the \eqn{\sigma}-Markov equivalence class of the DMGs (directed
+  mixed graphs) that describe the causal relations between the observed
+  variables and the conditional independence relationships in the observed
+  distribution through \eqn{\sigma}-separation (Mooij and Claassen, 2020).  The
+  FCI-JCI (Joint Causal Inference) extension allows the algorithm to combine
+  data from different contexts, for example, observational and different types
+  of interventional data (Mooij et al., 2020).
 
-  We estimate an equivalence class of \bold{maximal ancestral graph}s (\bold{MAG}s)
-  instead of DAGs, since DAGs are not closed under marginalization and
-  conditioning (Richardson and Spirtes, 2002).
-
-  An equivalence class of a MAG can be uniquely represented by a \bold{partial
-  ancestral graph} (\bold{PAG}).  A PAG contains the following types of edges:
-  o-o, o-, o->, ->, <->, -. The bidirected edges come from hidden variables,
-  and the undirected edges come from selection variables. The edges have
+  FCI estimates a \bold{partial ancestral graph} (\bold{PAG}). The PAG
+  represents a Markov equivalence class of DAGs with latent and selection
+  variables in the acyclic case (Zhang, 2008), and a Markov equivalence class
+  of directed graphs with latent variables (but without selection variables) 
+  in the cyclic \eqn{\sigma}-separation case. 
+  A PAG contains the following types of edges: o-o, o--, o->, -->, <->, ---. 
+  The bidirected edges come from latent confounders,
+  and the undirected edges come from latent selection variables. The edges have
   the following interpretation: (i) there is an edge between \code{x}
   and \code{y} if and only if variables {x} and {y} are conditionally dependent
   given S for all sets S consisting of all selection variables
-  and a subset of the observed variables; (ii) a tail on an edge means
-  that this tail is present in all MAGs in the Markov equivalence class;
-  (iii) an arrowhead on an edge means that this arrowhead is present in
-  all MAGs in the Markov equivalence class; (iv) a o-edgemark means that
-  there is a at least one MAG in the Markov equivalence class where the
-  edgemark is a tail, and at least one where the edgemark is an
-  arrowhead. Information on the interpretation of edges in a MAG can be
-  found in the references given below.
+  and a subset of the observed variables (assuming the Markov property and
+  faithfulness); (ii) a tail \code{x --* y} at x on an edge between x and y means that
+  x is an ancestor of y or S; (iii) an arrowhead \code{x <-* y} at x on an edge between 
+  x and y means that x is not an ancestor of y, nor of S;
+  (iv) a circle mark \code{x o-* y} at x on an edge between x and y means that there
+  exists both a graph in the Markov equivalence class where x is ancestor of
+  y or S, and one where x is not ancestor of y, nor of S. For further information 
+  on the interpretation of PAGs see e.g. (Zhang, 2008) and (Mooij and Claassen, 2020).
 
   The first part of the FCI algorithm is analogous to the PC algorithm. It
   starts with a complete undirected graph and estimates an initial skeleton
@@ -205,14 +237,44 @@ fci(suffStat, indepTest, alpha, labels, p,
   2014). Colombo and Maathuis (2014) showed that with both these
   modifications, the final skeleton and the decisions about the
   v-structures of the FCI algorithm are fully order-independent.
-
   Note that the order-dependence issues on the 10 orientation rules are
   still present, see Colombo and Maathuis (2014) for more details.
+
+  The FCI-JCI extension of FCI was introduced by Mooij et. al (2020).  It is an
+  implementation of the \emph{Joint Causal Inference} (JCI) framework that
+  reduces causal discovery from several data sets corresponding to different
+  contexts (e.g., observational and different interventional settings, or data
+  measured in different labs or in different countries) to causal discovery
+  from the pooled data (treated as a single 'observational' data set). Two
+  types of variables are distinguished in the JCI framework: system variables
+  (describing aspects of the system in some environment) and context variables
+  (describing aspects of the environment of the system). Different 
+  assumptions regarding the causal relations between context variables and
+  system variables can be made. The most common assumption (JCI Assumption 1:
+  'exogeneity') is that no system variable can affect any context variable.
+  The second, less common, assumption (JCI Assumption 2: 'complete randomized
+  context') is that there is no latent confounding between system and context.
+  The third assumption (JCI Assumption 3: 'generic context model') is in fact
+  a faithfulness assumption on the context distribution. The FCI-JCI extension
+  can be used by specifying the subset of the variables that are designated as
+  context variables with the \code{contextVars} argument, and by specifying
+  the combination of JCI assumptions that is used with the \code{jci} argument.
+  For the default values of these arguments, the JCI extension is not used.
+  The only difference between the FCI-JCI extension and the standard FCI 
+  algorithm is that the background knowledge about the PAG implied by the
+  JCI assumptions is exploited at several points in the FCI-JCI algorithm to
+  enforce adjacencies between context variables (in case of JCI Assumption 3) 
+  and to orient certain edges adjacent to context variables (in case of JCI
+  Assumptions 1, 2 or 3).
+  The current JCI framework assumes that no selection bias is present, and
+  therefore the FCI-JCI extension should be called with 
+  \code{selectionBias = FALSE}. For more details on FCI-JCI, and the general
+  JCI framework, see Mooij et al. (2020).
 }
 \references{
   D. Colombo and M.H. Maathuis (2014). Order-independent
-  constraint-based causal structure learning. Journal of Machine
-  Learning Research 15 3741-3782. 
+  constraint-based causal structure learning. \emph{Journal of Machine
+  Learning Research} 15 3741-3782. 
 
   D. Colombo, M. H. Maathuis, M. Kalisch, T. S. Richardson
   (2012). Learning high-dimensional directed acyclic graphs with latent
@@ -223,8 +285,16 @@ fci(suffStat, indepTest, alpha, labels, p,
   the R Package pcalg. \emph{Journal of Statistical Software}
   \bold{47(11)} 1--26, \url{https://www.jstatsoft.org/v47/i11/}.
 
+  J. M. Mooij, S. Magliacane, T. Claassen (2020).
+  Joint Causal Inference from Multiple Contexts.
+  \emph{Journal of Machine Learning Research} \bold{21}(99), 1-108.
+
+  J. M. Mooij and T. Claassen (2020).
+  Constraint-Based Causal Discovery using Partial Ancestral Graphs in the presence of Cycles.
+  \emph{In Proc. of the 36th Conference on Uncertainty in Artificial Intelligence (UAI-20)}, 1159-1168.
+
   P. Spirtes (2001). An anytime algorithm for causal inference. \emph{In
-  Proc. of the Eighth International Workshop on Artifiial Intelligence
+  Proc. of the Eighth International Workshop on Artificial Intelligence
   and Statistics} 213-221. Morgan Kaufmann, San Francisco.
 
   P. Spirtes, C. Glymour and R. Scheines (2000).
@@ -241,7 +311,7 @@ fci(suffStat, indepTest, alpha, labels, p,
 
   J. Zhang (2008). On the completeness of orientation rules for
   causal discovery in the presence of latent confounders and selection bias.
-   \emph{Artificial Intelligence} \bold{172} 1873-1896.
+  \emph{Artificial Intelligence} \bold{172} 1873-1896.
 }
 \seealso{\code{\link{fciPlus}} for a more efficient variation of FCI;
   \code{\link{skeleton}} for estimating a skeleton 
@@ -252,11 +322,12 @@ fci(suffStat, indepTest, alpha, labels, p,
   for a given node.
 
   \code{\link{gaussCItest}}, \code{\link{disCItest}},
-  \code{\link{binCItest}} and \code{\link{dsepTest}} as examples for
-  \code{indepTest}.
+  \code{\link{binCItest}}, \code{\link{dsepTest}} and \code{\link{dsepAMTest}} 
+  as examples for \code{indepTest}.
 }
 \author{
-  Diego Colombo and Markus Kalisch (\email{kalisch@stat.math.ethz.ch}).
+  Diego Colombo, Markus Kalisch (\email{kalisch@stat.math.ethz.ch})
+  and Joris Mooij.
 }
 \examples{
 ##################################################
@@ -350,6 +421,68 @@ all(corr.pag[ij] == anytime.pag @ amat[ij]) # TRUE
   ,
   corr.pag == adaptive.pag@ amat
   )}
+
+##################################################
+## Joint Causal Inference Example
+## Mooij et al. (2020), Fig. 43(a), p. 97
+##################################################
+\donttest{
+# Encode MAG as adjacency matrix
+p <- 8 # total number of variables
+V <- c("Ca","Cb","Cc","X0","X1","X2","X3","X4") # 3 context variables, 5 system variables
+# amat[i,j] = 0 iff no edge btw i,j
+# amat[i,j] = 1 iff i *-o j
+# amat[i,j] = 2 iff i *-> j
+# amat[i,j] = 3 iff i *-- j
+amat <- rbind(c(0,2,2,2,0,0,0,0),
+              c(2,0,2,0,2,0,0,0),
+              c(2,2,0,0,2,2,0,0),
+              c(3,0,0,0,0,0,2,0),
+              c(0,3,3,0,0,3,0,2),
+              c(0,0,3,0,2,0,0,0),
+              c(0,0,0,3,0,0,0,2),
+              c(0,0,0,0,2,0,3,0))
+rownames(amat)<-V
+colnames(amat)<-V
+
+# Make use of d-separation oracle as "independence test"
+indepTest <- dsepAMTest
+suffStat<-list(g=amat,verbose=FALSE)
+
+# Derive PAG that represents the Markov equivalence class of the MAG with the FCI algorithm
+# (assuming no selection bias)
+fci.pag <- fci(suffStat, indepTest, alpha = 0.5, labels = V,
+verbose=TRUE, selectionBias=FALSE)
+
+# Derive PAG with FCI-JCI, the Joint Causal Inference extension of FCI
+# (assuming no selection bias, and all three JCI assumptions)
+fcijci.pag <- fci(suffStat, indepTest, alpha = 0.5, labels = V,
+verbose=TRUE, contextVars=c(1,2,3), jci="123", selectionBias=FALSE)
+
+# Report results
+cat('True MAG:\n')
+print(amat)
+cat('PAG output by FCI:\n')
+print(fci.pag@amat)
+cat('PAG output by FCI-JCI:\n')
+print(fcijci.pag@amat)
+
+# Read off causal features from the FCI PAG
+cat('Identified absence (-1) and presence (+1) of ancestral causal relations from FCI PAG:\n')
+print(pag2anc(fci.pag@amat))
+cat('Identified absence (-1) and presence (+1) of direct causal relations from FCI PAG:\n')
+print(pag2edge(fci.pag@amat))
+cat('Identified absence (-1) and presence (+1) of pairwise latent confounding from FCI PAG:\n')
+print(pag2conf(fci.pag@amat))
+
+# Read off causal features from the FCI-JCI PAG
+cat('Identified absence (-1) and presence (+1) of ancestral causal relations from FCI-JCI PAG:\n')
+print(pag2anc(fcijci.pag@amat))
+cat('Identified absence (-1) and presence (+1) of direct causal relations from FCI-JCI PAG:\n')
+print(pag2edge(fcijci.pag@amat))
+cat('Identified absence (-1) and presence (+1) of pairwise latent confounding from FCI-JCI PAG:\n')
+print(pag2conf(fcijci.pag@amat))
+}
 }
 \keyword{multivariate}
 \keyword{models}

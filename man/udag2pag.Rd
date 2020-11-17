@@ -2,15 +2,16 @@
 \alias{udag2pag}
 \title{Last steps of FCI algorithm: Transform Final Skeleton into FCI-PAG}
 \description{
-  This function perform the last steps of the FCI algorithm, as it
-  transforms an un-oriented final skeleton into a Partial Ancestral
+  This function performs the last steps of the FCI algorithm, as it
+  transforms an unoriented final skeleton into a Partial Ancestral
   Graph (PAG).  The final skeleton must have been estimated with
-  \code{\link{pdsep}()}.  The result is an adjacency matrix
-  indicating also the edge marks.
+  \code{\link{pdsep}()} or \code{fciplus.intern()}.
+  The result is an adjacency matrix indicating also the edge marks.
 }
 \usage{
 udag2pag(pag, sepset, rules = rep(TRUE, 10), unfVect = NULL,
-  verbose = FALSE, orientCollider = TRUE)
+  jci = c("0","1","12","123"), contextVars = NULL, verbose = FALSE, 
+  orientCollider = TRUE)
 }
 \arguments{
   \item{pag}{Adjacency matrix of type \link{amat.pag}}
@@ -28,10 +29,25 @@ udag2pag(pag, sepset, rules = rep(TRUE, 10), unfVect = NULL,
     triples (as returned by \code{\link{pc.cons.intern}}).  This is
     needed in the conservative and majority rule versions of FCI.}
   \item{verbose}{If \code{TRUE}, detailed output is provided.}
-  \item{orientCollider}{if \code{TRUE}, collider are oriented.}
+  \item{orientCollider}{if \code{TRUE}, colliders are oriented.}
+  \item{jci}{String specifying the JCI assumptions that are used. It can be one of:
+    \describe{
+      \item{"0"}{No JCI assumption is made (default),}
+      \item{"1"}{JCI assumption 1 (no system variable causes any context variable),}
+      \item{"12"}{JCI assumptions 1 and 2 (no system variable causes any context variable,
+             and no system variable is confounded with any context variable),}
+      \item{"123"}{JCI assumptions 1, 2 and 3 (no system variable causes any context variable,
+             no system variable is confounded with any context variable, and all context variables are
+	     confounded but are not direct causes of each other).}
+    }}
+  \item{contextVars}{Subset of variable indices \{1,...,p\} that will be treated 
+	  as context variables in the JCI extension.}
 }
 \details{
   The skeleton is transformed into an FCI-PAG using rules by Zhang (2008).
+  When using the JCI extension, additional adjacency and orientation rules
+  incorporate the JCI background knowledge regarding the causal relations 
+  of the context variables; for details, see Mooij et al. (2020).
 
   If \code{unfVect = NULL} (i.e., one uses standard FCI or one uses
   conservative/majority rule FCI but there are no ambiguous triples),
@@ -65,13 +81,18 @@ udag2pag(pag, sepset, rules = rep(TRUE, 10), unfVect = NULL,
   (2012). Learning high-dimensional directed acyclic graphs with latent
   and selection variables. \emph{Ann. Statist.} \bold{40}, 294--321.
 
+  J. M. Mooij, S. Magliacane, T. Claassen (2020).
+  Joint Causal Inference from Multiple Contexts.
+  \emph{Journal of Machine Learning Research} \bold{21}(99), 1--108.
+
   J. Zhang (2008). On the completeness of orientation rules for causal
   discovery in the presence of latent confounders and selection bias.
   \emph{Artificial Intelligence} \bold{172}, 1873--1896.
 }
-\author{Diego Colombo and Markus Kalisch (\email{kalisch@stat.math.ethz.ch})}
+\author{Diego Colombo and Markus Kalisch (\email{kalisch@stat.math.ethz.ch});
+JCI extension by Joris Mooij.}
 
-\seealso{\code{\link{fci}}, \code{\link{udag2apag}}, \code{\link{dag2pag}};
+\seealso{\code{\link{fci}}, \code{\link{fciPlus}}, \code{\link{udag2apag}}, \code{\link{dag2pag}};
   further, \code{\link{udag2pdag}} (incl. \code{udag2pdagSpecial} and
   \code{udag2pdagRelaxed}).
 }
@@ -142,5 +163,3 @@ if (require("MASS")) {
 \keyword{multivariate}
 \keyword{models}
 \keyword{graphs}
-
-
