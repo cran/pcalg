@@ -1,4 +1,5 @@
 library(pcalg)
+(doExtras <- pcalg:::doExtras())
 
 suppressWarnings(RNGversion("3.5.0"))
 set.seed(123)
@@ -39,7 +40,7 @@ eff.g.est <- Rnd(ida(x,y, mcov, myCPDAG, method="global", verbose=TRUE))
 stopifnot(eff.est.local == eff.g.est)
 
 ## cat('Time elapsed additionally: ', proc.time() - .pt,"\n")
-
+if (doExtras) {
 ## another special case (from Raphael Gervais)
 set.seed(123)
 p <- 7
@@ -149,3 +150,4 @@ stopifnot(all.equal(sort(Rnd7(o.ida.est.pdag)), sort(Rnd7(l.ida.est.pdag)), tole
 stopifnot(all.equal(ce.3.10, min(l.ida.est.pdag), tolerance = 0.04))
 stopifnot(all.equal(ce.3.10, min(o.ida.est.pdag), tolerance = 0.02))
 
+}

@@ -1,5 +1,6 @@
 library(pcalg)
-
+(doExtras <- pcalg:::doExtras())
+if (doExtras) {
 ##################################################
 ## Mooij et al. (2020), Fig. 43(a), p. 97
 ##################################################
@@ -47,3 +48,4 @@ rownames(true.anc)<-V
 colnames(true.anc)<-V
 
 stopifnot(identical(true.anc,fci.anc))
+}

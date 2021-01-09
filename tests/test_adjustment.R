@@ -77,7 +77,7 @@ if (!xx) {
 ## Extensive checks
 ############################################################
 if (doExtras) {
-
+cat("doExtras is ON\n")
 ## Test that "no adjustment set" and "empty adjustment set" are distinguished properly
 x <- 1; y <- 2
 cpdag <- matrix(c(0,1,1,0),2,2) ## 1 --- 2 => no adj set
@@ -422,6 +422,9 @@ if (!all.equal(res1, res2)) {
     stop("Canonical set is not the same for type=cpdag and type=pdag\n")
 }
 
+} ## doExtras
+else {
+    cat("doExtras is OFF\n")
 }
 
 }
