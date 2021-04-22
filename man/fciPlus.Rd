@@ -128,37 +128,37 @@ suffStat<-list(g=amat,verbose=FALSE)
 
 # Derive PAG that represents the Markov equivalence class of the MAG with the FCI+ algorithm
 # (assuming no selection bias)
-fci.pag <- fciPlus(suffStat, indepTest, alpha = 0.5, labels = V,
-selectionBias=FALSE,verbose=TRUE)
+# fci.pag <- fciPlus(suffStat, indepTest, alpha = 0.5, labels = V,
+# selectionBias=FALSE,verbose=TRUE)
 
 # Derive PAG with FCI+-JCI, the Joint Causal Inference extension of FCI
 # (assuming no selection bias, and all three JCI assumptions)
-fcijci.pag <- fciPlus(suffStat, indepTest, alpha = 0.5, labels = V,
-selectionBias=FALSE, contextVars=c(1,2,3), jci="123", verbose=TRUE)
+# fcijci.pag <- fciPlus(suffStat, indepTest, alpha = 0.5, labels = V,
+# selectionBias=FALSE, contextVars=c(1,2,3), jci="123", verbose=TRUE)
 
 # Report results
-cat('True MAG:\n')
-print(amat)
-cat('PAG output by FCI+:\n')
-print(fci.pag@amat)
-cat('PAG output by FCI+-JCI:\n')
-print(fcijci.pag@amat)
+# cat('True MAG:\n')
+# print(amat)
+# cat('PAG output by FCI+:\n')
+# print(fci.pag@amat)
+# cat('PAG output by FCI+-JCI:\n')
+# print(fcijci.pag@amat)
 
 # Read off causal features from the FCI PAG
-cat('Identified absence (-1) and presence (+1) of ancestral causal relations from FCI+ PAG:\n')
-print(pag2anc(fci.pag@amat))
-cat('Identified absence (-1) and presence (+1) of direct causal relations from FCI+ PAG:\n')
-print(pag2edge(fci.pag@amat))
-cat('Identified absence (-1) and presence (+1) of pairwise latent confounding from FCI+ PAG:\n')
-print(pag2conf(fci.pag@amat))
+#cat('Identified absence (-1) and presence (+1) of ancestral causal relations from FCI+ PAG:\n')
+#print(pag2anc(fci.pag@amat))
+#cat('Identified absence (-1) and presence (+1) of direct causal relations from FCI+ PAG:\n')
+#print(pag2edge(fci.pag@amat))
+#cat('Identified absence (-1) and presence (+1) of pairwise latent confounding from FCI+ PAG:\n')
+#print(pag2conf(fci.pag@amat))
 
 # Read off causal features from the FCI-JCI PAG
-cat('Identified absence (-1) and presence (+1) of ancestral causal relations from FCI+-JCI PAG:\n')
-print(pag2anc(fcijci.pag@amat))
-cat('Identified absence (-1) and presence (+1) of direct causal relations from FCI+-JCI PAG:\n')
-print(pag2edge(fcijci.pag@amat))
-cat('Identified absence (-1) and presence (+1) of pairwise latent confounding from FCI+-JCI PAG:\n')
-print(pag2conf(fcijci.pag@amat))
+#cat('Identified absence (-1) and presence (+1) of ancestral causal relations from FCI+-JCI PAG:\n')
+#print(pag2anc(fcijci.pag@amat))
+#cat('Identified absence (-1) and presence (+1) of direct causal relations from FCI+-JCI PAG:\n')
+#print(pag2edge(fcijci.pag@amat))
+#cat('Ident. absence (-1) and presence (+1) of pairwise latent confounding from FCI+-JCI PAG:\n')
+#print(pag2conf(fcijci.pag@amat))
 }
 \keyword{multivariate}
 \keyword{models}

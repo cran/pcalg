@@ -1,8 +1,8 @@
 1c213fc1c5a5ec68e7a5ba9293440dc3 *ChangeLog
-c617c5d693729949b3e206e00ef8237c *DESCRIPTION
+788bb44553ebab80ed864e90c89b9fab *DESCRIPTION
 9f25bf0e0365f58a5a0c5266728f04b2 *NAMESPACE
 66963591a11cfdb002f5da9070f1500b *R/Aaux.R
-83c288d2212114e54bfe624e0edecaaa *R/AllClasses.R
+039cfe4711f52c4fdc14a8e2785f9477 *R/AllClasses.R
 9f99e28f01bd00dedf565c6e01978676 *R/adjustment.R
 13a57456f8fd3ae055dd9a45ce6f933f *R/agesFuns.R
 709461024e0516af39a962661e2930d0 *R/deprecated.R
@@ -27,7 +27,7 @@ be8549091476fb77e357c1eb091126dd *R/searchAM.R
 8c8b9114838ab0451f0e557c7942de25 *R/udag2pag.R
 0db1ba6d57801a4d8fc6cdf996384a4d *R/zzz.R
 d599e23940bca0203504c0fa6b09e01c *TODO
-524fadd9a80bf4d9b16f3996c0050f08 *build/vignette.rds
+3ef10b9d182c2fa01b64518daf2b3009 *build/vignette.rds
 f832779eae511757a99906c7670fc0ad *cleanup
 7cbe431a233e6c454e24f7b92d63fe75 *data/datalist
 1d8d4c43b9cbb9dc9dd57acd59f565bf *data/gmB.rda
@@ -41,10 +41,10 @@ da7142ac6e00dbcdef7bfe60f1cd5c66 *inst/CITATION
 4e33425acbef8bf36705d8a75622baa8 *inst/doc/mkVignettes.R
 ea230ec4a19260aa9a751cef43965296 *inst/doc/pcalgDoc.R
 6581d4416f174d4d6f07a2a2d4b9d3cb *inst/doc/pcalgDoc.Rnw
-17defafdab8f2a4ab9e587c08c7c0232 *inst/doc/pcalgDoc.pdf
+fda51f5d1ea8ef682a85a2991e199691 *inst/doc/pcalgDoc.pdf
 c7e3ec8f056bcb4ffedf8f38e06e1692 *inst/doc/vignette2018.R
 e2e81e4c1014989c895e5764846e7a3e *inst/doc/vignette2018.Rnw
-8eb972e701f2c401d1cd2571836929ea *inst/doc/vignette2018.pdf
+4e472d09b429e46f0930efb791ad8634 *inst/doc/vignette2018.pdf
 cee0b4475c720bf58c466e1495451b22 *inst/external/N_6_1000.rds
 0d84fdc119d76d992b72f9bdbd0e613d *inst/external/gac-pags.rds
 e7a2a9117d97986b2ab6afc6b4f77478 *inst/external/test_conservative_pc_data1.rda
@@ -85,7 +85,7 @@ aec0e014304481b623884999c309d810 *man/dsepAMTest.Rd
 bca518ac995023186ff2945b62486043 *man/dsepTest.Rd
 0e2b3df0b2d0b674f58f5231fb9500df *man/fci.Rd
 4210c617d4929290e295ced5e0eeeb43 *man/fciAlgo-class.Rd
-33aaf18fcd349594924d92961fa3967d *man/fciPlus.Rd
+adce79a344a395951d251d5fbb63b1d9 *man/fciPlus.Rd
 44127d2a6a6234ed84cf650a3273e504 *man/find.unsh.triple.Rd
 efed404b8bbbd6700520e6587d65d4ac *man/gAlgo-class.Rd
 b7b554b6006cf4a67024618db013e5ed *man/gac.Rd

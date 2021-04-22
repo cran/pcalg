@@ -136,7 +136,7 @@ print.pcAlgo <- function(x, amat = FALSE, zero.print = ".", ...) {
     if(amat)
         show.pc.amat(A, zero.print=zero.print, ...)
     amat2 <- A + 2*t(A)
-    ude <- sum(amat2 == 3)/2
+    ude <- sum(amat2 == 3)/2 + sum(amat2 == 6)/2 # zweiter Summand: Falls solve.confl = TRUE kann eine 2 in der CPDAG amat vorkommen
     de <- sum(amat2 == 1)
     cat("Number of undirected edges: ", ude, "\n")
     cat("Number of directed edges:   ", de, "\n")
