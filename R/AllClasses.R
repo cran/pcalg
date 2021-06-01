@@ -2,7 +2,7 @@
 ### Part 1 : S4 classes used by pc and r/fci
 ##################################################
 
-## $Id: AllClasses.R 499 2019-11-18 20:08:36Z alhauser $
+## $Id: AllClasses.R 514 2021-04-20 09:53:54Z mkalisch $
 
 setClass("gAlgo",
          slots = c(call = "call",

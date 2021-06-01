@@ -1,8 +1,8 @@
 1c213fc1c5a5ec68e7a5ba9293440dc3 *ChangeLog
-788bb44553ebab80ed864e90c89b9fab *DESCRIPTION
+89b13596fd3b40e55c03b986160b3daa *DESCRIPTION
 9f25bf0e0365f58a5a0c5266728f04b2 *NAMESPACE
 66963591a11cfdb002f5da9070f1500b *R/Aaux.R
-039cfe4711f52c4fdc14a8e2785f9477 *R/AllClasses.R
+fc8bdcc606e75f16acf80001dba2d207 *R/AllClasses.R
 9f99e28f01bd00dedf565c6e01978676 *R/adjustment.R
 13a57456f8fd3ae055dd9a45ce6f933f *R/agesFuns.R
 709461024e0516af39a962661e2930d0 *R/deprecated.R
@@ -27,7 +27,7 @@ be8549091476fb77e357c1eb091126dd *R/searchAM.R
 8c8b9114838ab0451f0e557c7942de25 *R/udag2pag.R
 0db1ba6d57801a4d8fc6cdf996384a4d *R/zzz.R
 d599e23940bca0203504c0fa6b09e01c *TODO
-3ef10b9d182c2fa01b64518daf2b3009 *build/vignette.rds
+396fec84d309d6659f0490e5301ceba3 *build/vignette.rds
 f832779eae511757a99906c7670fc0ad *cleanup
 7cbe431a233e6c454e24f7b92d63fe75 *data/datalist
 1d8d4c43b9cbb9dc9dd57acd59f565bf *data/gmB.rda
@@ -41,10 +41,10 @@ da7142ac6e00dbcdef7bfe60f1cd5c66 *inst/CITATION
 4e33425acbef8bf36705d8a75622baa8 *inst/doc/mkVignettes.R
 ea230ec4a19260aa9a751cef43965296 *inst/doc/pcalgDoc.R
 6581d4416f174d4d6f07a2a2d4b9d3cb *inst/doc/pcalgDoc.Rnw
-fda51f5d1ea8ef682a85a2991e199691 *inst/doc/pcalgDoc.pdf
+338f5ec301f92cc8aa5ea855758aca22 *inst/doc/pcalgDoc.pdf
 c7e3ec8f056bcb4ffedf8f38e06e1692 *inst/doc/vignette2018.R
 e2e81e4c1014989c895e5764846e7a3e *inst/doc/vignette2018.Rnw
-4e472d09b429e46f0930efb791ad8634 *inst/doc/vignette2018.pdf
+6381386dc5c1f89a833d2912ba3a7cd2 *inst/doc/vignette2018.pdf
 cee0b4475c720bf58c466e1495451b22 *inst/external/N_6_1000.rds
 0d84fdc119d76d992b72f9bdbd0e613d *inst/external/gac-pags.rds
 e7a2a9117d97986b2ab6afc6b4f77478 *inst/external/test_conservative_pc_data1.rda
@@ -204,7 +204,7 @@ ecaacf0c68bf72d9d96eeeeffd824357 *tests/test_pcorOrder.R
 388789af59c9135d7f496e7b8918874f *tests/test_randDAG.R
 420318727caccce9211b4f19293e72c5 *tests/test_randDAG.Rout.save
 aee8ad2108a151b25666eaf0ed1b4205 *tests/test_randomDAG.R
-67e98859e85bd2237f9856a8209711e4 *tests/test_rfci.R
+e265f1b5aa31a977b1d25841ceebf3dd *tests/test_rfci.R
 aca0d1fb3b38a6f54fb2d84040aa009d *tests/test_rmvDAG.R
 d795c92a5d7f9fa10296170c950bd5f1 *tests/test_searchAM.R
 c1564ccaf570fb24d5e19ffd8d8e4d04 *tests/test_shd.R
@@ -216,10 +216,6 @@ ebc96d20c469e51fc26a7a7c622b82b3 *tests/test_skeleton.R
 35fe720fff87739bb6b7bfe79d204d33 *vignettes/Figure2FAT.pdf
 e09ebac6632b2bfe877e47f3f8e6640a *vignettes/Mybib.bib
 caf4d21ebf4a2676f3c1b55aa662b781 *vignettes/Mybibliography.bib
-e68bca88cbe7f73986ed03c07c7e162f *vignettes/auto/Mybib.el
-7e774c0dd34d3934e7498f2501d356f3 *vignettes/auto/vignette2018.el
 b9564ddd59a06782310989e8f33db55e *vignettes/jsslogo.jpg
-c9b7539de0d214a8ec11c907472128fc *vignettes/pcalgDoc-concordance.tex
 6581d4416f174d4d6f07a2a2d4b9d3cb *vignettes/pcalgDoc.Rnw
-86183e3233b77b06b41111dd207131ea *vignettes/vignette2018-concordance.tex
 e2e81e4c1014989c895e5764846e7a3e *vignettes/vignette2018.Rnw
