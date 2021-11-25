@@ -12,8 +12,7 @@ citEntry(entry = "Article",
   volume       = "47",
   number       = "11",
   pages        = "1--26",
-  url          = "https://www.jstatsoft.org/article/view/v047i11",
-
+  doi          = "10.18637/jss.v047.i11",
   textVersion  =
   paste("Markus Kalisch, Martin Maechler, Diego Colombo, Marloes H. Maathuis, Peter Buehlmann (2012).",
         "Causal Inference Using Graphical Models with the R Package pcalg.",

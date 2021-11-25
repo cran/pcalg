@@ -1,5 +1,5 @@
 1c213fc1c5a5ec68e7a5ba9293440dc3 *ChangeLog
-89b13596fd3b40e55c03b986160b3daa *DESCRIPTION
+08e0051cf59126a2b6848a5afdac2acb *DESCRIPTION
 9f25bf0e0365f58a5a0c5266728f04b2 *NAMESPACE
 66963591a11cfdb002f5da9070f1500b *R/Aaux.R
 fc8bdcc606e75f16acf80001dba2d207 *R/AllClasses.R
@@ -27,7 +27,8 @@ be8549091476fb77e357c1eb091126dd *R/searchAM.R
 8c8b9114838ab0451f0e557c7942de25 *R/udag2pag.R
 0db1ba6d57801a4d8fc6cdf996384a4d *R/zzz.R
 d599e23940bca0203504c0fa6b09e01c *TODO
-396fec84d309d6659f0490e5301ceba3 *build/vignette.rds
+9a1d28da1b25c39f52c4009c73d193dc *build/partial.rdb
+8c3a6898c100f77d4baef3f51dbeca1f *build/vignette.rds
 f832779eae511757a99906c7670fc0ad *cleanup
 7cbe431a233e6c454e24f7b92d63fe75 *data/datalist
 1d8d4c43b9cbb9dc9dd57acd59f565bf *data/gmB.rda
@@ -36,15 +37,12 @@ f832779eae511757a99906c7670fc0ad *cleanup
 6d96fac64134a91ecf0c244b4679ec0f *data/gmI.rda
 385d41164301819ce274673db8743fc9 *data/gmInt.rda
 1b3a78b432a5e46b991f5ae5eb4b77f3 *data/gmL.rda
-da7142ac6e00dbcdef7bfe60f1cd5c66 *inst/CITATION
+76c66a8c98cca35c24431b3441eea38c *inst/CITATION
 2f13a20f69511d72dd63f9212308bc80 *inst/NEWS.Rd
 4e33425acbef8bf36705d8a75622baa8 *inst/doc/mkVignettes.R
-ea230ec4a19260aa9a751cef43965296 *inst/doc/pcalgDoc.R
-6581d4416f174d4d6f07a2a2d4b9d3cb *inst/doc/pcalgDoc.Rnw
-338f5ec301f92cc8aa5ea855758aca22 *inst/doc/pcalgDoc.pdf
 c7e3ec8f056bcb4ffedf8f38e06e1692 *inst/doc/vignette2018.R
 e2e81e4c1014989c895e5764846e7a3e *inst/doc/vignette2018.Rnw
-6381386dc5c1f89a833d2912ba3a7cd2 *inst/doc/vignette2018.pdf
+da955827e11e27f6e351bdbd05941928 *inst/doc/vignette2018.pdf
 cee0b4475c720bf58c466e1495451b22 *inst/external/N_6_1000.rds
 0d84fdc119d76d992b72f9bdbd0e613d *inst/external/gac-pags.rds
 e7a2a9117d97986b2ab6afc6b4f77478 *inst/external/test_conservative_pc_data1.rda
@@ -83,7 +81,7 @@ b2ded6b2c0cd2cf0c30b845d07646736 *man/corGraph.Rd
 85b81fe8630fe2b5a812da31d41d2130 *man/dsepAM.Rd
 aec0e014304481b623884999c309d810 *man/dsepAMTest.Rd
 bca518ac995023186ff2945b62486043 *man/dsepTest.Rd
-0e2b3df0b2d0b674f58f5231fb9500df *man/fci.Rd
+2b09fd6274f125e0d886c5805d0afbb8 *man/fci.Rd
 4210c617d4929290e295ced5e0eeeb43 *man/fciAlgo-class.Rd
 adce79a344a395951d251d5fbb63b1d9 *man/fciPlus.Rd
 44127d2a6a6234ed84cf650a3273e504 *man/find.unsh.triple.Rd
@@ -100,7 +98,7 @@ cbb33c4976caf365b69cb9c76a7a493e *man/gmB.Rd
 66a7855809f1fd6e9a0ced7dbd612af6 *man/gmI.Rd
 6a624691a6a19dd55526a9e9585ce0b3 *man/gmInt.Rd
 0fc0725cd27113dfa0505deb9504b3ec *man/gmL.Rd
-eb1f2a346b3a92262713be8090f9e64d *man/ida.Rd
+09869c2316e23e93cb53a2863f74cbfb *man/ida.Rd
 7aa46e96c96d02d55e876f3d52c2d5d7 *man/idaFast.Rd
 90a088350b43454d621b4b315ab3d2cf *man/iplotPC.Rd
 57051c656a17c7be27f38816fddc0b4c *man/isValidGraph.Rd
@@ -114,7 +112,7 @@ b19638bed84ac520eef81968bf75eec7 *man/pag2anc.Rd
 4d3e89b74016644821e676808d9ac720 *man/pag2conf.Rd
 a05d67efd1b2ecef92b144176a7e4802 *man/pag2edge.Rd
 67426f4203b1334a56a8715423083745 *man/pag2mag.Rd
-f67ca974ccf8e71a2e62cec316c4da7e *man/pc.Rd
+999058226d5b92a97826254353da24b9 *man/pc.Rd
 01d980deb40fe93c7e3c2f5039882f9d *man/pc.cons.intern.Rd
 342566226ce52d9795a928ef44a7ca3c *man/pcAlgo-class.Rd
 143110b2d6797b5ef727a5c05d2790f8 *man/pcAlgo.Rd
@@ -212,10 +210,9 @@ ebc96d20c469e51fc26a7a7c622b82b3 *tests/test_skeleton.R
 8a4bb227766e6d42a944ae1bd3df57b0 *tests/test_udag2pag.R
 8654391f8c8ce47e5085d2d13e2f0622 *tests/test_udag2pdag.R
 38ee4574e75e7ddae986365cf8886080 *tests/test_wgtMatrix.R
-0d1ee156042f23c1c2a4a3abd0ca22ec *vignettes/Figure1FAT.pdf
-35fe720fff87739bb6b7bfe79d204d33 *vignettes/Figure2FAT.pdf
-e09ebac6632b2bfe877e47f3f8e6640a *vignettes/Mybib.bib
 caf4d21ebf4a2676f3c1b55aa662b781 *vignettes/Mybibliography.bib
-b9564ddd59a06782310989e8f33db55e *vignettes/jsslogo.jpg
-6581d4416f174d4d6f07a2a2d4b9d3cb *vignettes/pcalgDoc.Rnw
+e68bca88cbe7f73986ed03c07c7e162f *vignettes/auto/Mybib.el
+b0422dd779536f6cc3c95e4d26c7fee2 *vignettes/auto/pcalgDoc.el
+7e774c0dd34d3934e7498f2501d356f3 *vignettes/auto/vignette2018.el
+86183e3233b77b06b41111dd207131ea *vignettes/vignette2018-concordance.tex
 e2e81e4c1014989c895e5764846e7a3e *vignettes/vignette2018.Rnw

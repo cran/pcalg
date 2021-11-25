@@ -283,7 +283,7 @@ fci(suffStat, indepTest, alpha, labels, p,
   M.Kalisch, M. Maechler, D. Colombo, M. H. Maathuis,
   P. Buehlmann (2012). Causal Inference Using Graphical Models with
   the R Package pcalg. \emph{Journal of Statistical Software}
-  \bold{47(11)} 1--26, \url{https://www.jstatsoft.org/v47/i11/}.
+  \bold{47(11)} 1--26, \doi{10.18637/jss.v047.i11}.
 
   J. M. Mooij, S. Magliacane, T. Claassen (2020).
   Joint Causal Inference from Multiple Contexts.

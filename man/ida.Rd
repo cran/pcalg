@@ -176,7 +176,7 @@ ida(x.pos, y.pos, mcov, graphEst, method = c("local","optimal","global"),
   Peter Buehlmann (2012).
   Causal inference using graphical models with the R-package pcalg.
   \emph{Journal of Statistical Software} \bold{47}(11) 1--26,
-  \url{https://www.jstatsoft.org/v47/i11/}.
+  \doi{10.18637/jss.v047.i11}.
 
   Pearl (2005). \emph{Causality. Models, reasoning and inference}.
   Cambridge University Press, New York.
