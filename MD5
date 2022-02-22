@@ -1,5 +1,5 @@
 1c213fc1c5a5ec68e7a5ba9293440dc3 *ChangeLog
-08e0051cf59126a2b6848a5afdac2acb *DESCRIPTION
+1874e7c1b082ac3ce630023aaf7e4f5d *DESCRIPTION
 9f25bf0e0365f58a5a0c5266728f04b2 *NAMESPACE
 66963591a11cfdb002f5da9070f1500b *R/Aaux.R
 fc8bdcc606e75f16acf80001dba2d207 *R/AllClasses.R
@@ -24,10 +24,10 @@ b7129da2cf5772e06fb7cf106d19a970 *R/pcalg.R
 31c1150532d7490e79532304f08a4fba *R/pdsep.R
 f84d95dd282c42c32595a27ca98f9a3d *R/possDeAn.R
 be8549091476fb77e357c1eb091126dd *R/searchAM.R
-8c8b9114838ab0451f0e557c7942de25 *R/udag2pag.R
+87a281b79088f0d9ab6974755915e0d4 *R/udag2pag.R
 0db1ba6d57801a4d8fc6cdf996384a4d *R/zzz.R
 d599e23940bca0203504c0fa6b09e01c *TODO
-9a1d28da1b25c39f52c4009c73d193dc *build/partial.rdb
+5c00f0931c38949475d3b66a3b4cd413 *build/partial.rdb
 8c3a6898c100f77d4baef3f51dbeca1f *build/vignette.rds
 f832779eae511757a99906c7670fc0ad *cleanup
 7cbe431a233e6c454e24f7b92d63fe75 *data/datalist
@@ -42,7 +42,7 @@ f832779eae511757a99906c7670fc0ad *cleanup
 4e33425acbef8bf36705d8a75622baa8 *inst/doc/mkVignettes.R
 c7e3ec8f056bcb4ffedf8f38e06e1692 *inst/doc/vignette2018.R
 e2e81e4c1014989c895e5764846e7a3e *inst/doc/vignette2018.Rnw
-da955827e11e27f6e351bdbd05941928 *inst/doc/vignette2018.pdf
+f5dfe5766800dfc73153a161d27a46be *inst/doc/vignette2018.pdf
 cee0b4475c720bf58c466e1495451b22 *inst/external/N_6_1000.rds
 0d84fdc119d76d992b72f9bdbd0e613d *inst/external/gac-pags.rds
 e7a2a9117d97986b2ab6afc6b4f77478 *inst/external/test_conservative_pc_data1.rda

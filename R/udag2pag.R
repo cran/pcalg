@@ -504,11 +504,22 @@ udag2pag <- function(pag, sepset, rules = rep(TRUE,10), unfVect = NULL, jci = c(
                       while (counterX2 < length(indX2) && pag[c, a] == 1) {
                         counterX2 <- counterX2 + 1
                         sec.pos <- indX2[counterX2]
-                        t1 <- minUncovPdPath(p, pag, a, first.pos, b,
-                                             unfVect = unfVect, verbose = verbose)
-                        if (length(t1) > 1) { # otherwise, can skip next minUnc..()
-                          t2 <- minUncovPdPath(p, pag, a, sec.pos, d,
-                                               unfVect = unfVect, verbose = verbose)
+                        if (first.pos == b) { t1 <- c(a,b)
+                  } else {
+                    t1 <- minUncovPdPath(p, pag, a, first.pos, b, unfVect = unfVect, verbose = verbose) ## is first X mu? meaning is there a path from a to b through X?
+                  }
+                  if (length(t1) > 1) {     
+                    if (sec.pos == d) { t2 <- c(a,d) 
+                    } else { 
+                      t2 <- minUncovPdPath(p, pag, a, sec.pos, d, unfVect = unfVect, verbose = verbose)
+                    }
+                        ## start cut
+                        ## t1 <- minUncovPdPath(p, pag, a, first.pos, b,
+                           ##                  unfVect = unfVect, verbose = verbose)
+                        ## if (length(t1) > 1) { # otherwise, can skip next minUnc..()
+                          ## t2 <- minUncovPdPath(p, pag, a, sec.pos, d,
+                             ##                  unfVect = unfVect, verbose = verbose)
+                          ## end cut
                           if (length(t2) > 1 &&
                               first.pos != sec.pos && pag[first.pos, sec.pos] == 0) {
                             ## we found 2 uncovered pd paths
