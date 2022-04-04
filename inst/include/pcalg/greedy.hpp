@@ -2,7 +2,7 @@
  * Classes for greedy estimation of causal structures
  *
  * @author Alain Hauser
- * $Id: greedy.hpp 393 2016-08-20 09:43:47Z alhauser $
+ * $Id: greedy.hpp 524 2022-04-03 10:10:41Z alhauser $
  */
 
 #ifndef GREEDY_HPP_
@@ -77,7 +77,7 @@ struct Edge
  * Comparator that yields an lexicographic ordering of edges with _inverse_
  * priority (first target, then source)
  */
-struct EdgeCmp : public std::binary_function<Edge, Edge, bool>
+struct EdgeCmp
 {
 	bool operator()(const Edge& first, const Edge& second) const
 	{
@@ -122,7 +122,7 @@ struct ArrowChange
 	double score;
 };
 
-struct ArrowChangeCmp : public std::binary_function<Edge, Edge, bool>
+struct ArrowChangeCmp
 {
 	bool operator()(const ArrowChange& first, const ArrowChange& second) const
 	{

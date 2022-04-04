@@ -2,7 +2,7 @@
 ### Part 1 : S4 classes used by pc and r/fci
 ##################################################
 
-## $Id: AllClasses.R 514 2021-04-20 09:53:54Z mkalisch $
+## $Id: AllClasses.R 521 2022-03-31 11:04:52Z mmaechler $
 
 setClass("gAlgo",
          slots = c(call = "call",
@@ -580,7 +580,7 @@ setRefClass("Score",
                     function(i) local.score(i, edges[[i]], ...)))
           } else {
             ## Calculate score with the C++ library
-            .Call("globalScore", c.fcn, pp.dat, edges, c.fcn.options(...), PACKAGE = "pcalg")
+            .Call(globalScore, c.fcn, pp.dat, edges, c.fcn.options(...))
           }
         },
 
@@ -611,8 +611,7 @@ setRefClass("Score",
             }
           } else {
             ## Calculate score with the C++ library
-            .Call("globalMLE", c.fcn, pp.dat, dag$.in.edges, c.fcn.options(...),
-                PACKAGE = "pcalg")
+            .Call(globalMLE, c.fcn, pp.dat, dag$.in.edges, c.fcn.options(...))
           }
         }
     )
@@ -627,7 +626,6 @@ setRefClass("DataScore",
                             seq_along(object$pp.dat$targets)))) {
         return("Data from all intervention targets must be available")
       }
-
       ## Check if dimensions of target.index and data conincide
       if (length(object$pp.dat$target.index) != nrow(object$pp.dat$data))
         return("Length of target index vector does not coincide with sample size.")
@@ -852,10 +850,11 @@ setRefClass("GaussL0penIntScore",
             }
 
             ## Return local score
-            return(-0.5*pp.dat$data.count[vertex]*(1 + log(sigma2/pp.dat$data.count[vertex])) - pp.dat$lambda*(1 + length(parents)))
+              -0.5*pp.dat$data.count[vertex]*(1 + log(sigma2/pp.dat$data.count[vertex])) -
+               pp.dat$lambda*(1 + length(parents))
           } else {
             ## Calculate score with the C++ library
-            return(.Call("localScore", c.fcn, pp.dat, vertex, parents, c.fcn.options(...), PACKAGE = "pcalg"))
+            .Call(localScore, c.fcn, pp.dat, vertex, parents, c.fcn.options(...))
           } # IF c.fcn
         },
 
@@ -917,9 +916,9 @@ setRefClass("GaussL0penIntScore",
             }
           } else {
             ## Calculate score with the C++ library
-            return(.Call("localMLE", c.fcn, pp.dat, vertex, parents, c.fcn.options(...), PACKAGE = "pcalg"))
+            .Call(localMLE, c.fcn, pp.dat, vertex, parents, c.fcn.options(...))
           } # IF c.fcn
-        }
+        } ## local.fit()
         )
     )
 
@@ -1089,13 +1088,12 @@ setRefClass("EssGraph",
               backward = "GIES-B",
               turning = "GIES-T")
 
-          new.graph <- .Call("causalInference",
+          new.graph <- .Call(causalInference,
               .in.edges,
               score$pp.dat,
               alg.name,
               score$c.fcn,
-              causal.inf.options(caching = FALSE, maxSteps = 1, verbose = verbose, ...),
-              PACKAGE = "pcalg")
+              causal.inf.options(caching = FALSE, maxSteps = 1, verbose = verbose, ...))
           if (identical(new.graph, "interrupt"))
             return(FALSE)
 
@@ -1117,13 +1115,13 @@ setRefClass("EssGraph",
               backward = "GIES-B",
               turning = "GIES-T")
 
-          new.graph <- .Call("causalInference",
+          new.graph <- .Call(causalInference,
               .in.edges,
               score$pp.dat,
               alg.name,
               score$c.fcn,
-              causal.inf.options(caching = FALSE),
-              PACKAGE = "pcalg")
+              causal.inf.options(caching = FALSE))
+
           if (identical(new.graph, "interrupt"))
             return(FALSE)
 
@@ -1142,13 +1140,12 @@ setRefClass("EssGraph",
           stopifnot(!is.null(score <- getScore()))
           algorithm <- match.arg(algorithm)
 
-          new.graph <- .Call("causalInference",
+          new.graph <- .Call(causalInference,
               .in.edges,
               score$pp.dat,
               algorithm,
               score$c.fcn,
-              causal.inf.options(...),
-              PACKAGE = "pcalg")
+              causal.inf.options(...))
 
           if (identical(new.graph, "interrupt"))
             return(FALSE)
@@ -1164,7 +1161,7 @@ setRefClass("EssGraph",
           stopifnot(!is.null(score <- getScore()))
 
           result <- score$create.dag()
-          result$.in.edges <- .Call("representative", .in.edges, PACKAGE = "pcalg")
+          result$.in.edges <- .Call(representative, .in.edges)
           result$.params <- score$global.fit(result)
 
           return(result)
@@ -1174,7 +1171,7 @@ setRefClass("EssGraph",
         #'
         #' @param   max.size    maximum target size; allowed values: 1, p (= # nodes)
         opt.target = function(max.size) {
-          .Call("optimalTarget", .in.edges, max.size, PACKAGE = "pcalg")
+          .Call(optimalTarget, .in.edges, max.size)
         }
         ))
 

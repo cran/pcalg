@@ -1,4 +1,4 @@
-useDynLib(pcalg)
+useDynLib(pcalg, .registration=TRUE)
 
 ###----- Imports ------------------------------------------------------
 

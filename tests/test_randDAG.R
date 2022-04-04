@@ -16,15 +16,29 @@ rDAGall <- function(n, d, ...)
     sapply(rDAGmeths, function(meth) randDAG(n,d, method=meth, ...),
            simplify=FALSE)
 set.seed(37)
-rD.10.4 <- rDAGall(10, 4)
-## with a low-level warning
+rD.10.4 <- withCallingHandlers(
+    rDAGall(10, 4) # "low-level warning" -- get it here and test it below
+    , warning = function(w) {
+        rDAG.warn <<- conditionMessage(w); invokeRestart("muffleWarning") })
+## with a low-level warning:
+## IGNORE_RDIFF_BEGIN
+rDAG.warn
+## IGNORE_RDIFF_END
+stopifnot(grepl("graph_molloy_.*Cannot shuffle graph", rDAG.warn))
+##
 rD.10.4 # looks ok
+## Show, but ignore the package startup messages:
+## IGNORE_RDIFF_BEGIN
+stopifnot( require("graph") )
+## IGNORE_RDIFF_END
 
-ok <- suppressPackageStartupMessages(
-    require("graph"))
-stopifnot(ok)
+stopifnot(vapply(rD.10.4, isDirected, NA),
+          vapply(rD.10.4, inherits, NA, what="graph"))
+## nice plot of all 8 :
+op <- par(mfrow=c(4,2))
+invisible(lapply(names(rD.10.4), function(nm) plot(rD.10.4[[nm]], main=nm)))
+par(op)
 
-stopifnot(vapply(rD.10.4, isDirected, NA))
 
 stopifnot(identical(
     lapply(rD.10.4, leaves, "out"),

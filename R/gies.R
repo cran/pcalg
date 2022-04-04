@@ -1,7 +1,7 @@
 ## GIES algorithm
 ##
 ## Author: Alain Hauser <alain.hauser@bfh.ch>
-## $Id: gies.R 498 2019-10-20 11:19:45Z alhauser $
+## $Id: gies.R 521 2022-03-31 11:04:52Z mmaechler $
 ###############################################################################
 
 ##################################################
@@ -443,7 +443,7 @@ simy <- function(score, labels = score$getNodes(), targets = score$getTargets(),
 #' Converts a DAG to an (observational or interventional) essential graph
 dag2essgraph <- function(dag, targets = list(integer(0))) {
   edgeListDAG <- inEdgeList(dag)
-  edgeListEssGraph <- .Call("dagToEssentialGraph", edgeListDAG, targets)
+  edgeListEssGraph <- .Call(dagToEssentialGraph, edgeListDAG, targets)
   if (is.matrix(dag)) {
     p <- nrow(dag)
     result <- sapply(1:p, function(i) 1:p %in% edgeListEssGraph[[i]])

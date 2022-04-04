@@ -158,7 +158,7 @@ showF(gies, width = 60)
 ## set.seed(40)
 ## p <- 8
 ## n <- 5000
-## gGtrue <- randomDAG(p, prob = 0.3)
+## gGtrue <- pcalg::randomDAG(p, prob = 0.3) # :: *not* dagitty's randomDAG()
 ## pardag <- as(gGtrue, "GaussParDAG")
 ## pardag$set.err.var(rep(1, p))
 ## targets <- list(integer(0), 3, 5)
@@ -270,7 +270,7 @@ showF(ida)
 ## Simulate the true DAG
 set.seed(123)
 p <- 7
-myDAG <- randomDAG(p, prob = 0.2) ## true DAG
+myDAG <- pcalg::randomDAG(p, prob = 0.2) ## true DAG
 myCPDAG <- dag2cpdag(myDAG) ## true CPDAG
 
 ## simulate Gaussian data from the true DAG
@@ -406,7 +406,7 @@ gac(mFig1, x,y, z=c(2,4),    type)
 
 
 ###################################################
-### code chunk number 40: vignette2018.Rnw:1087-1092
+### code chunk number 40: vignette2018.Rnw:1095-1100
 ###################################################
 mFig3a <- matrix(c(0,1,0,0, 0,0,1,1, 0,0,0,1, 0,0,1,0), 4,4)
 type <- "pdag"
@@ -509,7 +509,7 @@ if(requireNamespace("dagitty")) {
 set.seed(42)
 p <- 4
 ## generate and draw random DAG :
-myDAG <- randomDAG(p, prob = 0.4)
+myDAG <- pcalg::randomDAG(p, prob = 0.4)
 myCPDAG <- dag2cpdag(myDAG)
 
 ## find skeleton and PAG using the FCI algorithm
@@ -598,7 +598,7 @@ for(r in 1:num_settings) {
     ## get DAG
     isEmpty <-  1
     while(isEmpty){
-      g <- randomDAG(p, prob)  ## true DAG
+      g <- pcalg::randomDAG(p, prob)  ## true DAG
       cpdag <- dag2cpdag(g) ## true CPDAG
 
       ## get adjacency matrix of the CPDAG  and DAG
@@ -666,13 +666,11 @@ for(r in 1:num_settings) {
                                        checkInput = FALSE)
 
       ## find adjustment set (if it exists)
-        if(requireNamespace("dagitty")) {
-      adjust <- adjustment(pdag.amat[[j]],amat.type="pdag",x,y,
-                           set.type="canonical")
-      } else {
-          adjust <- NULL
-      }
-      adjust_set[[j]] <- if (length(adjust) > 0) adjust$'1' else NA
+      adjust <- if(requireNamespace("dagitty")) {
+                    adjustment(pdag.amat[[j]],amat.type="pdag",x,y,
+                               set.type="canonical")
+                } else NULL
+      adjust_set[[j]] <- if(length(adjust)) adjust$'1' else NA
       result_adjust_set[[j]] <- length(adjust) > 0
       ## ida
       ## convert to graph for ida()

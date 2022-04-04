@@ -69,6 +69,14 @@ showF <- function(f, width = 50) {
 }
 @
 
+%% For debugging {get correct version of 'graph' ?
+% \pagebreak[3]
+% <<debug>>=
+% .libPaths()
+% <<sessionInfo, results=tex>>=
+% toLatex(sessionInfo())
+% @
+
 \section{Introduction}
 The paper \cite{KalischEtAl12} reports on pcalg Version 1.1-4. Back then,
 the package covered basic functions for
@@ -453,7 +461,7 @@ Most arguments coincide with those of \texttt{ges()}.  The causal model underlyi
 set.seed(40)
 p <- 8
 n <- 5000
-gGtrue <- randomDAG(p, prob = 0.3)
+gGtrue <- pcalg::randomDAG(p, prob = 0.3) # :: *not* dagitty's randomDAG()
 pardag <- as(gGtrue, "GaussParDAG")
 pardag$set.err.var(rep(1, p))
 targets <- list(integer(0), 3, 5)
@@ -773,7 +781,7 @@ As an example, we simulate a random DAG, sample data, estimate the CPDAG (see Fi
 ## Simulate the true DAG
 set.seed(123)
 p <- 7
-myDAG <- randomDAG(p, prob = 0.2) ## true DAG
+myDAG <- pcalg::randomDAG(p, prob = 0.2) ## true DAG
 myCPDAG <- dag2cpdag(myDAG) ## true CPDAG
 
 ## simulate Gaussian data from the true DAG
@@ -1269,7 +1277,7 @@ The most flexible way to visualize graph objects is via the \pkg{Rgraphviz} pack
 set.seed(42)
 p <- 4
 ## generate and draw random DAG :
-myDAG <- randomDAG(p, prob = 0.4)
+myDAG <- pcalg::randomDAG(p, prob = 0.4)
 myCPDAG <- dag2cpdag(myDAG)
 
 ## find skeleton and PAG using the FCI algorithm
@@ -1378,7 +1386,7 @@ for(r in 1:num_settings) {
     ## get DAG
     isEmpty <-  1
     while(isEmpty){
-      g <- randomDAG(p, prob)  ## true DAG
+      g <- pcalg::randomDAG(p, prob)  ## true DAG
       cpdag <- dag2cpdag(g) ## true CPDAG
 
       ## get adjacency matrix of the CPDAG  and DAG
@@ -1446,13 +1454,11 @@ for(r in 1:num_settings) {
                                        checkInput = FALSE)
 
       ## find adjustment set (if it exists)
-        if(requireNamespace("dagitty")) {
-      adjust <- adjustment(pdag.amat[[j]],amat.type="pdag",x,y,
-                           set.type="canonical")
-      } else {
-          adjust <- NULL
-      }
-      adjust_set[[j]] <- if (length(adjust) > 0) adjust$'1' else NA
+      adjust <- if(requireNamespace("dagitty")) {
+                    adjustment(pdag.amat[[j]],amat.type="pdag",x,y,
+                               set.type="canonical")
+                } else NULL
+      adjust_set[[j]] <- if(length(adjust)) adjust$'1' else NA
       result_adjust_set[[j]] <- length(adjust) > 0
       ## ida
       ## convert to graph for ida()
