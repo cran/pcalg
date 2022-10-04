@@ -69,9 +69,9 @@ p <- 9
 n.perm <- 12
 
 ## for real
-nrep <- 7
-n.perm <- 5
-p <- 100
+##nrep <- 7
+##n.perm <- 5
+##p <- 100
 
 showProc.time()
 pr0 <- 1/ 2^ceiling(log2(p))

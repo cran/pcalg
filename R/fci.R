@@ -110,9 +110,10 @@ fci <- function(suffStat, indepTest, alpha, labels, p,
 
   if (doPdsep) {
     if (verbose) cat("\nCompute PDSEP\n=============\n")
-    pc.ci <- pc.cons.intern(skel, suffStat, indepTest,
-                            alpha = alpha, version.unf = c(1,1),
-                            maj.rule = FALSE, verbose = verbose)
+#    pc.ci <- pc.cons.intern(skel, suffStat, indepTest,
+#                            alpha = alpha, version.unf = c(1,1),
+#                            maj.rule = FALSE, verbose = verbose)
+    pc.ci <- list(unfTripl = c(), sk = skel)
     ## Recompute (sepsets, G, ...):
     pdsepRes <- pdsep(skel@graph, suffStat, indepTest = indepTest, p = p,
                       sepset = pc.ci$sk@sepset, alpha = alpha, pMax = pMax,
