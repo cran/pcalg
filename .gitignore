@@ -1,0 +1,6 @@
+pcalg-Ex.R
+src/*.o 
+src/*.so 
+src/symbols.rds
+*~ 
+
