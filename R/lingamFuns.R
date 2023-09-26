@@ -51,7 +51,7 @@ uselingam <- function(X, verbose = FALSE) {
 ##' All permutations of integers 1:n -- as a matrix  (n!) x n
 ##' this a version of e1071::permutations()
 ##' slightly faster only for small n, __slower__ for larger n {even after MM improvements}
-all.perm <- function(n) {
+allPerm <- function(n) {
   p <- matrix(1L, 1L, 1L)
   if(n > 1L) for (i in 2L:n) { # 2 <= i <= n
     p <- pp <- cbind(p, i, deparse.level=0L)
@@ -181,7 +181,7 @@ nzdiagbruteforce <- function( W ) {
 
   stopifnot((n <- nrow(W)) >= 1)
 
-  allperms <- all.perm(n)
+  allperms <- allPerm(n)
   I.n <- diag(n)
   bestval <- Inf
   besti <- 0
@@ -372,7 +372,7 @@ sltbruteforce <- function( B ) {
 
   bestval <- Inf
   besti <- 0
-  allperms <- all.perm(n)
+  allperms <- allPerm(n)
   nperms <- nrow(allperms)
 
   for (i in 1:nperms) {

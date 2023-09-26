@@ -13,7 +13,7 @@
 ##' @param r numeric (vector) in \eqn{[0,1]}.
 ##' @return numeric vector \dQuote{as} \code{r}.
 ##' @author Martin Maechler
-log.q1pm <- function(r) log1p(2*r/(1-r))
+logQ1pm <- function(r) log1p(2*r/(1-r))
 
 
 ## MM: "Lifted" from Matrix package ~/R/Pkgs/Matrix/R/Auxiliaries.R

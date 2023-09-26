@@ -1,12 +1,12 @@
 citHeader("To cite pcalg in publications use:")
 
-citEntry(entry = "Article",
+bibentry(bibtype = "Article",
   title        = "Causal Inference Using Graphical Models with the {R} Package {pcalg}",
-  author       = personList(as.person("Markus Kalisch"),
-                   as.person("Martin M\\\"achler"),
-                   as.person("Diego Colombo"),
-                   as.person("Marloes H. Maathuis"),
-                   as.person("Peter B\\\"uhlmann")),
+  author       = c(person("Markus Kalisch"),
+                   person("Martin M\\\"achler"),
+                   person("Diego Colombo"),
+                   person("Marloes H. Maathuis"),
+                   person("Peter B\\\"uhlmann")),
   journal      = "Journal of Statistical Software",
   year         = "2012",
   volume       = "47",
@@ -20,17 +20,16 @@ citEntry(entry = "Article",
         "URL https://www.jstatsoft.org/article/view/v047i11.")
 )
 
-citEntry(entry = "Article",
+bibentry(bibtype = "Article",
   title        = "Characterization and greedy learning of interventional {M}arkov
                   equivalence classes of directed acyclic graphs",
-  author       = personList(as.person("Alain Hauser"),
-                   as.person("Peter B\\\"uhlmann")),
+  author       = c(person("Alain Hauser"),
+                   person("Peter B\\\"uhlmann")),
   journal      = "Journal of Machine Learning Research",
   year         = "2012",
   volume       = "13",
   pages        = "2409--2464",
   url          = "https://jmlr.org/papers/v13/hauser12a.html",
-
   textVersion  =
   paste("Alain Hauser, Peter Buehlmann (2012).",
         "Characterization and greedy learning of interventional Markov",
@@ -38,4 +37,3 @@ citEntry(entry = "Article",
         "Journal of Machine Learning Research, 13, 2409-2464.",
         "URL http://jmlr.org/papers/v13/hauser12a.html.")
 )
-

@@ -300,7 +300,7 @@ zStat <- function(x,y, S, C, n)
   ##      r <- .C("parcorC",as.double(res),as.integer(x-1),as.integer(y-1),as.integer(S-1),as.integer(length(S)),as.integer(dim(C)[1]),as.double(as.vector(C)))[[1]]
   ##  }
 
-  res <- sqrt(n- length(S) - 3) * 0.5*log.q1pm(r)
+  res <- sqrt(n- length(S) - 3) * 0.5*logQ1pm(r)
   if (is.na(res)) 0 else res
 }
 
@@ -327,7 +327,7 @@ condIndFisherZ <- function(x,y,S,C,n, cutoff,
   ## C p <- dim(C)[1]
   ## C r <- .C("parcor",as.double(res),as.integer(x-1),as.integer(y-1),as.integer(S-1),as.integer(length(S)),as.integer(p),as.double(C))[[1]]
 
-  T <- sqrt(n-length(S)-3)* 0.5*log.q1pm(r)
+  T <- sqrt(n-length(S)-3)* 0.5*logQ1pm(r)
 
   ## cat(" (",x,",",y,") | ",S," : T = ",T,"\n", sep='')
 
