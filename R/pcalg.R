@@ -6267,11 +6267,11 @@ skeleton.dag2pag <- function(suffStat, indepTest, graph, ancList, L, alpha,
       sepset = sepset, pMax = pMax, zMin = matrix(NA, 1, 1))
 }
 
+## igraph alternative to Rgraphviz (only for pcAlgo objects)
 iplotPC <- function(pc.fit, labels = NULL) {
-  ## igraph alternative to Rgraphviz (only for pcAlgo objects)
   adjm <- wgtMatrix(getGraph(pc.fit), transpose = FALSE)
   if (!is.null(labels)) dimnames(adjm) <- list(labels, labels)
-  g1 <- graph.adjacency( adjm )
+  g1 <- graph_from_adjacency_matrix( adjm )
   plot.igraph(g1)
 }
 
@@ -6550,7 +6550,7 @@ pag2magAM <- function(amat.pag, x, max.chordal = 10, verbose = FALSE)
       if(length(cci) > max.chordal) return(NULL)
       ## check whether the component is chordal
       am.u.ii <- amat.undir[cci,cci]
-      if(!is.chordal(graph.adjacency(am.u.ii, "undirected"),
+      if(!is_chordal(graph_from_adjacency_matrix(am.u.ii, "undirected"),
 		     fillin = TRUE)$chordal)
         return(NULL)
       ## else: not extendable or too large to handle

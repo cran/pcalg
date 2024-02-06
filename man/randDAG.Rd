@@ -96,7 +96,7 @@ randDAG(n, d, method ="er", par1=NULL, par2=NULL,
 }%% MM: --> ../TODO - we should add optional sorting
 
 \seealso{the package \code{\link{igraph}}, notably help pages such as
-  \code{\link[igraph]{random.graph.game}} or \code{\link[igraph]{barabasi.game}};
+  \code{\link[igraph]{sample_k_regular}} or \code{\link[igraph]{sample_smallworld}};
 
   \code{\link[unifDAG]{unifDAG}} from package \pkg{unifDAG} for generating uniform random DAGs.
 

@@ -58,7 +58,7 @@ pdsep(skel, suffStat, indepTest, p, sepset, alpha, pMax, m.max = Inf,
   \item{pdsep.max}{Maximum size of Possible-D-SEP for which subsets are
     considered as conditioning sets in the conditional independence
     tests. If the nodes \code{x} and \code{y} are adjacent in the graph
-    and the size of Possible-D-SEP(x,G)\ {\code{x},\code{y}}, is
+    and the size of \eqn{\textrm{Possible-D-SEP}(x,G) \setminus \{x, y\}}{Possible-D-SEP(x,G) \ {x, y}}, is
     bigger than pdsep.max, the edge is simply left in the graph.
     Note that if pdsep.max is less than Inf, the final PAG
     is typically a supergraph of the one computed with pdsep.max = Inf,

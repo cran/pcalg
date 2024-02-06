@@ -427,4 +427,4 @@ else {
     cat("doExtras is OFF\n")
 }
 
-}
+} # only if CRAN package  {dagitty} is available

@@ -63,7 +63,7 @@ randDAG <- function(n, d, method = "er", par1=NULL, par2=NULL, DAG = TRUE,
 
   ## From igraph graph to upper triangular Q - via random re-labeling
   g2Q <- function(g, sparse=FALSE) {
-    Q <- get.adjacency(g, sparse=sparse)
+    Q <- as_adjacency_matrix(g, sparse=sparse)
     perm <- sample.int(n)
     Q <- Q[perm, perm]
     Q * upper.tri(Q)
@@ -77,7 +77,8 @@ randDAG <- function(n, d, method = "er", par1=NULL, par2=NULL, DAG = TRUE,
          "regular" = {
            ## s = d = number of neighbours in expectation
            s <- d
-           g <- k.regular.game(n, s)
+           g <- sample_k_regular(no.of.nodes = n, 
+                                 k = s)
 	   Q <- g2Q(g)
          },
 
@@ -86,7 +87,10 @@ randDAG <- function(n, d, method = "er", par1=NULL, par2=NULL, DAG = TRUE,
            beta <- if(is.numeric(par1)) par1 else 1/2
            ## s = number of neighbours in expectation:
            s <- round(d/2)
-           g <- watts.strogatz.game(1, n, s, beta)
+           g <- sample_smallworld(dim = 1, 
+                                  size = n, 
+                                  nei = s, 
+                                  p = beta)
 	   Q <- g2Q(simplify(g))
          },
 
@@ -97,7 +101,7 @@ randDAG <- function(n, d, method = "er", par1=NULL, par2=NULL, DAG = TRUE,
            p <- d/(2*alpha*(1-alpha)*n)
            n1 <- ceiling(n*alpha)
            n2 <- floor(n*(1-alpha))
-           g <- bipartite.random.game(n1=n1, n2=n2, type="gnp", p=p)
+           g <- sample_bipartite(n1=n1, n2=n2, type="gnp", p=p)
 	   Q <- g2Q(g)
          },
 
@@ -110,7 +114,7 @@ randDAG <- function(n, d, method = "er", par1=NULL, par2=NULL, DAG = TRUE,
            mbar <- (2*m*n-m^2+m)/(2*(n-m))
            seq <- sample(c(m, m+1), n, replace=TRUE, prob=c(1-mbar+m, mbar-m))
 
-           g <- barabasi.game(n=n, power=power, out.seq=seq, out.pref=TRUE, directed=FALSE)
+           g <- sample_pa(n=n, power=power, out.seq=seq, out.pref=TRUE, directed=FALSE)
 	   Q <- g2Q(simplify(g))
          },
 
@@ -143,7 +147,10 @@ randDAG <- function(n, d, method = "er", par1=NULL, par2=NULL, DAG = TRUE,
            stopifnot(0 < p, p <= 1)
 
            m <- round((alpha*p*(n-2*s.island)*(n-s.island))/(2*s.island^2*(s.island-1)))
-           g <- interconnected.islands.game(s.island, n/s.island, p, m)
+           g <- sample_islands(islands.n = s.island, 
+                               islands.size = n/s.island, 
+                               islands.pin = p, 
+                               n.inter = m)
 	   Q <- g2Q(g)
          },
          stop("unsupported 'method': ", method))## switch end
@@ -185,12 +192,12 @@ powerLawDAG <- function(n, gamma, maxtry = 20L) {
     if(sum(degs) %% 2 == 1)
       degs[which.max(degs)] <- degs[which.max(degs)] - 1L
     ## try: sometimes its not possible to construct graph for computed sequence
-    g <- tryCatch(degree.sequence.game(degs, method="vl"), error = function(e) e)
+    g <- tryCatch(sample_degseq(out.deg = degs, method="vl"), error = function(e) e)
     if(!inherits(g, "error"))
         break
   }
   if(i == maxtry && inherits(g, "error"))
-      stop(gettextf("degree.sequence.game() did not succeed in maxtry=%d iterations",
+      stop(gettextf("sample_degseq() did not succeed in maxtry=%d iterations",
                     maxtry), domain=NA)
   ## otherwise we are done
   simplify(g)

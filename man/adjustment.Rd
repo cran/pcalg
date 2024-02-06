@@ -30,7 +30,7 @@ adjustment(amat, amat.type, x, y, set.type)
 \details{
 If \code{set.type} is "minimal", then only minimal sufficient adjustment sets are returned. If \code{set.type} is "all", all valid
 adjustment sets are returned. If \code{set.type} is "canonical", a single adjustment set
-is returned that consists of all (possible) ancestors of \code{x} and {y},
+is returned that consists of all (possible) ancestors of \code{x} and \code{y},
 minus (possible) descendants of nodes on proper causal paths.  This canonical adjustment set is always valid if any valid set exists at all.
 }
 \value{

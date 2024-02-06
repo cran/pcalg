@@ -152,7 +152,7 @@ extract.parent.sets <- function (x.pos, amat.cpdag, isCPDAG = FALSE)
   conn.comp.imp <- NULL
   x.temp <- x.pos
   while (length(x.temp) > 0) {
-    comp.temp <- graph.dfs(graph = graph.adjacency(amat.undir, 
+    comp.temp <- dfs(graph = graph_from_adjacency_matrix(amat.undir, 
                                                    mode = "undirected"), root = x.temp[1], unreachable = FALSE)$order
     comp.temp <- comp.temp[!is.na(comp.temp)]
     x.temp <- setdiff(x.temp, comp.temp)
@@ -160,7 +160,7 @@ extract.parent.sets <- function (x.pos, amat.cpdag, isCPDAG = FALSE)
   }
   conn.comp.imp <- lapply(conn.comp.imp, as.integer)
   chordal <- if (!isCPDAG) {
-    vapply(conn.comp.imp, function(i) is.chordal(graph.adjacency(amat.undir[i, 
+    vapply(conn.comp.imp, function(i) is_chordal(graph_from_adjacency_matrix(amat.undir[i, 
                                                                             i], mode = "undirected"), fillin = FALSE)$chordal, 
            NA)
   }

@@ -490,21 +490,7 @@ str( gac(m1, x=1,y=3, z=NULL, type = "dag") )
 
 
 ###################################################
-### code chunk number 48: pcalg2dagitty
-###################################################
-n <- nrow    (gmG8$x)
-V <- colnames(gmG8$x) # labels aka node names
-
-amat <- wgtMatrix(gmG8$g)
-amat[amat != 0] <- 1
-if(requireNamespace("dagitty")) {
-    dagitty_dag1 <- pcalg2dagitty(amat,V,type="dag")
-    dagitty::is.dagitty(dagitty_dag1)
-}
-
-
-###################################################
-### code chunk number 49: Rgraphviz
+### code chunk number 48: Rgraphviz
 ###################################################
 set.seed(42)
 p <- 4
@@ -524,7 +510,7 @@ if (require(Rgraphviz)) {
 
 
 ###################################################
-### code chunk number 50: iplot
+### code chunk number 49: iplot
 ###################################################
 data(gmG)
 n <- nrow    (gmG8$ x)
@@ -541,20 +527,20 @@ if (require(igraph)) {
 
 
 ###################################################
-### code chunk number 51: showAmat
+### code chunk number 50: showAmat
 ###################################################
 as(pc.fit,  "amat") ## Adj. matrix of type  'amat.cpdag'
 as(fci.fit, "amat") ## Adj. matrix of type  'amat.pag'
 
 
 ###################################################
-### code chunk number 52: showEdgeList
+### code chunk number 51: showEdgeList
 ###################################################
 showEdgeList(pc.fit) ## Edge list
 
 
 ###################################################
-### code chunk number 53: simParSettings
+### code chunk number 52: simParSettings
 ###################################################
 possible_p <- c(seq(5,10,by=1))   # paper: possible_p = c(seq(20,100,by=10))
 possible_neighb_size <- c(1:3)    # paper: possible_neighb_size = c(3:10)
@@ -564,7 +550,7 @@ pb <- seq(0,1,by=0.5)             # paper: pb = seq(0,1,by=0.2)
 
 
 ###################################################
-### code chunk number 54: simRunSim
+### code chunk number 53: simRunSim
 ###################################################
 ## helper function
 revealEdge <- function(c,d,s) {
@@ -707,7 +693,7 @@ for(r in 1:num_settings) {
 
 
 ###################################################
-### code chunk number 55: simList2Df
+### code chunk number 54: simList2Df
 ###################################################
 ## total number of unique cpdags = num_settings*num_rep graphs
 nn <- sum(sapply(resFin, length))
@@ -754,7 +740,7 @@ for (i1 in 1:length(resFin)) { ## settings
 
 
 ###################################################
-### code chunk number 56: simFig4Prepare
+### code chunk number 55: simFig4Prepare
 ###################################################
   ## Fig 4 in paper: Fraction of identifiable effects
   ## Fraction of identifiable effects: ALL EFFECTS
@@ -776,7 +762,7 @@ for (i1 in 1:length(resFin)) { ## settings
 
 
 ###################################################
-### code chunk number 57: simFig4
+### code chunk number 56: simFig4
 ###################################################
 if(require(ggplot2)) {
   k <- ggplot(dfID, aes(pb, fit, ymin = fit-se,
@@ -793,7 +779,7 @@ if(require(ggplot2)) {
 
 
 ###################################################
-### code chunk number 58: simFig5prepare
+### code chunk number 57: simFig5prepare
 ###################################################
 ## use dfNU2: settings where effect is NOT unique given zero bg knowledge
 nn <- length(pb)
@@ -812,7 +798,7 @@ df3N$idaNumF <- droplevels(df3N$idaNumF)
 
 
 ###################################################
-### code chunk number 59: simFig5
+### code chunk number 58: simFig5
 ###################################################
 ggplot(df3N, aes(x = pb, y=idx, fill = idaNumF)) +
   geom_bar(stat = "identity") +

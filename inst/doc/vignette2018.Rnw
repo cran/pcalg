@@ -1252,20 +1252,21 @@ m1 <- matrix(c(0,1,0,1,0,0, 0,0,1,0,1,0, 0,0,0,0,0,1,
 str( gac(m1, x=1,y=3, z=NULL, type = "dag") )
 @
 
-\subsection{Interface to package dagitty}
-The web-based software \emph{DAGitty} offers functionality for analyzing causal graphical models. The R package \texttt{dagitty} offers an interface to \emph{DAGitty}. In our package \texttt{pcalg} we offer the function \texttt{pcalg2dagitty()} for converting the adjacency matrix of type \texttt{amat.cpdag} or \texttt{amat.pag} into a \texttt{dagitty} object. Thus, it is easy to use the full functionality of \texttt{dagitty}. As an example, we convert an adjacency matrix to a dagitty object and use the function \texttt{is.dagitty()} from the \pkg{dagitty} package to verify that the resulting object is indeed a \texttt{dagitty} object.
+% \subsection{Interface to package dagitty}
+% The web-based software \emph{DAGitty} offers functionality for analyzing causal graphical models. The R package \texttt{dagitty} offers an interface to \emph{DAGitty}. In our package \texttt{pcalg} we offer the function \texttt{pcalg2dagitty()} for converting the adjacency matrix of type \texttt{amat.cpdag} or \texttt{amat.pag} into a \texttt{dagitty} object. Thus, it is easy to use the full functionality of \texttt{dagitty}. As an example, we convert an adjacency matrix to a dagitty object and use the function \texttt{is.dagitty()} from the \pkg{dagitty} package to verify that the resulting object is indeed a \texttt{dagitty} object.
 
-<<pcalg2dagitty, message = FALSE>>=
-n <- nrow    (gmG8$x)
-V <- colnames(gmG8$x) # labels aka node names
+%% pcalg2dagitty, message = FALSE>>=
 
-amat <- wgtMatrix(gmG8$g)
-amat[amat != 0] <- 1
-if(requireNamespace("dagitty")) {
-    dagitty_dag1 <- pcalg2dagitty(amat,V,type="dag")
-    dagitty::is.dagitty(dagitty_dag1)
-}
-@
+%% n <- nrow    (gmG8$x)
+%% V <- colnames(gmG8$x) # labels aka node names
+%% 
+%% amat <- wgtMatrix(gmG8$g)
+%% amat[amat != 0] <- 1
+%%  if(requireNamespace("dagitty")) {
+    %% dagitty_dag1 <- pcalg2dagitty(amat,V,type="dag")
+    %% dagitty::is.dagitty(dagitty_dag1)
+%% }
+%% @
 %% MM: above, do *not* require(dagitty) : it masks our randomDAG() !
 
 \subsection{Methods for visualizing graph objects}

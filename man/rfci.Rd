@@ -114,7 +114,9 @@ rfci(suffStat, indepTest, alpha, labels, p,
   -> c,  the algorithm searches for a discriminating path p = <d,
   . . . , a,b,c> for b of minimal length, and checks that the vertices
   in every consecutive pair (f1,f2) on p are conditionally dependent
-  given all subsets of sepset(d,c) \ {f1,f2 }. If we do not find any
+  given all subsets of 
+  \eqn{\textrm{sepset}(d,c) \setminus \{f1, f2\}}{sepset(d,c) \ {f1, f2}}
+  . If we do not find any
   conditional independence relationship, the path is oriented as in rule
   (R4). If one or more conditional independence relationships are found,
   the corresponding edges are removed, their minimal separating sets are

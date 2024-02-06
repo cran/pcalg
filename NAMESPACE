@@ -47,10 +47,7 @@ importMethodsFrom("graph",
 		  numNodes, numEdges,
 		  subGraph, ugraph)
 
-importFrom("igraph", graph.adjacency, igraph.from.graphNEL, is.chordal,
-	   plot.igraph, graph.dfs, k.regular.game, get.adjacency,
-           watts.strogatz.game, simplify, bipartite.random.game,
-           barabasi.game, interconnected.islands.game, degree.sequence.game)
+importFrom("igraph", graph_from_adjacency_matrix, graph_from_graphnel, is_chordal, plot.igraph, dfs, sample_k_regular, as_adjacency_matrix, sample_smallworld, simplify, sample_bipartite, sample_pa, sample_islands, sample_degseq)
 
 importFrom("RBGL",
 	   biConnComp, johnson.all.pairs.sp, separates, bfs, connectedComp)

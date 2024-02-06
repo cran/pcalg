@@ -23,7 +23,7 @@ addBgKnowledge(gInput, x = c(), y = c(), verbose = FALSE, checkInput = TRUE)
 \details{
 If the input is a \code{graphNEL} object, it will be converted into an adjacency matrix of type \code{amat.cpdag}.
 If \code{x} and \code{y} are given and if \code{amat[y,x] != 0}, this function adds orientation x -> y to the adjacency matrix \code{amat} and completes the orientation rules from Meek (1995).
-If \code{x} and \code{y} are not specified (or empty vectors) this function simply completes the orientation rules from Meek (1995). If \code{x} and \code{y} are vectors of length k, k>1, this function tries to add \code{x[i] -> y[i]} to the adjacency matrix amat and complete the orientation rules from Meek (1995) for every i in {1,...,k} (see Algorithm 1 in Perkovic et. al, 2017). 
+If \code{x} and \code{y} are not specified (or empty vectors) this function simply completes the orientation rules from Meek (1995). If \code{x} and \code{y} are vectors of length k, k>1, this function tries to add \code{x[i] -> y[i]} to the adjacency matrix amat and complete the orientation rules from Meek (1995) for every \eqn{i \in \{1, \ldots, k\}}{i in {1,...,k}} (see Algorithm 1 in Perkovic et. al, 2017). 
 }
 \value{
 An adjacency matrix of type \code{amat.cpdag} of the maximally oriented pdag with added background knowledge \code{x -> y} or \code{NULL}, if the backgound knowledge is not consistent with any DAG represented by the PDAG with the adjacency matrix \code{amat}.

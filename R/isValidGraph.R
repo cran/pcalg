@@ -44,7 +44,7 @@ chordalComponents <- function(amat.cpdag){
   
   #the following while loop finds all connected components of the undirected part of the graph  
   while (length(x.temp) > 0) {
-    comp.temp <- graph.dfs(graph = graph.adjacency(amat.undir, mode = "undirected"), root = x.temp[1], unreachable = FALSE)$order
+    comp.temp <- dfs(graph = graph_from_adjacency_matrix(amat.undir, mode = "undirected"), root = x.temp[1], unreachable = FALSE)$order
     comp.temp <- comp.temp[!is.na(comp.temp)]
     x.temp <- setdiff(x.temp, comp.temp)
     conn.comp.imp <- c(conn.comp.imp, list(comp.temp))
@@ -53,7 +53,7 @@ chordalComponents <- function(amat.cpdag){
   
   ## chordal is a vector of booleans, the length of the number of connected components in conn.comp.imp
   ## TRUE or FALSE value depends on whether each conn comp is chordal
-  chordal <-  vapply(conn.comp.imp, function(i) is.chordal(graph.adjacency(amat.undir[i,i], mode = "undirected"), 
+  chordal <-  vapply(conn.comp.imp, function(i) is_chordal(graph_from_adjacency_matrix(amat.undir[i,i], mode = "undirected"), 
                                                            fillin = FALSE)$chordal, NA)
   
   

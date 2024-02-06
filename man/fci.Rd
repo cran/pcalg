@@ -67,7 +67,8 @@ fci(suffStat, indepTest, alpha, labels, p,
   \item{pdsep.max}{Maximum size of Possible-D-SEP for which subsets are
     considered as conditioning sets in the conditional independence
     tests. If the nodes \code{x} and \code{y} are adjacent in the graph
-    and the size of Possible-D-SEP(\code{x})\ {\code{x},\code{y}} is
+    and the size of \eqn{\textrm{Possible-D-SEP}(x) \setminus \{x, y\}}{Possible-D-SEP(x) \ {x, y}} 
+    is
     bigger than pdsep.max, the edge is simply left in the graph.
     Note that if pdsep.max is less than Inf, the final PAG
     may be a supergraph of the one computed with pdsep.max = Inf,
@@ -151,7 +152,7 @@ fci(suffStat, indepTest, alpha, labels, p,
   The bidirected edges come from latent confounders,
   and the undirected edges come from latent selection variables. The edges have
   the following interpretation: (i) there is an edge between \code{x}
-  and \code{y} if and only if variables {x} and {y} are conditionally dependent
+  and \code{y} if and only if variables \code{x} and \code{y} are conditionally dependent
   given S for all sets S consisting of all selection variables
   and a subset of the observed variables (assuming the Markov property and
   faithfulness); (ii) a tail \code{x --* y} at x on an edge between x and y means that
