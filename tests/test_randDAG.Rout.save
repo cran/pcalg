@@ -1,19 +1,19 @@
 
-R Under development (unstable) (2024-02-05 r85863) -- "Unsuffered Consequences"
-Copyright (C) 2024 The R Foundation for Statistical Computing
-Platform: x86_64-pc-linux-gnu
+R version 4.3.1 (2023-06-16) -- "Beagle Scouts"
+Copyright (C) 2023 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
 
-R is free software and comes with ABSOLUTELY NO WARRANTY.
-You are welcome to redistribute it under certain conditions.
-Type 'license()' or 'licence()' for distribution details.
+R ist freie Software und kommt OHNE JEGLICHE GARANTIE.
+Sie sind eingeladen, es unter bestimmten Bedingungen weiter zu verbreiten.
+Tippen Sie 'license()' or 'licence()' für Details dazu.
 
-R is a collaborative project with many contributors.
-Type 'contributors()' for more information and
-'citation()' on how to cite R or R packages in publications.
+R ist ein Gemeinschaftsprojekt mit vielen Beitragenden.
+Tippen Sie 'contributors()' für mehr Information und 'citation()',
+um zu erfahren, wie R oder R packages in Publikationen zitiert werden können.
 
-Type 'demo()' for some demos, 'help()' for on-line help, or
-'help.start()' for an HTML browser interface to help.
-Type 'q()' to quit R.
+Tippen Sie 'demo()' für einige Demos, 'help()' für on-line Hilfe, oder
+'help.start()' für eine HTML Browserschnittstelle zur Hilfe.
+Tippen Sie 'q()', um R zu verlassen.
 
 > library(pcalg)
 > suppressWarnings(RNGversion("3.5.0"))
@@ -88,16 +88,16 @@ Number of Edges = 16
 > ## Show, but ignore the package startup messages:
 > ## IGNORE_RDIFF_BEGIN
 > stopifnot( require("graph") )
-Loading required package: graph
-Loading required package: BiocGenerics
+Lade nötiges Paket: graph
+Lade nötiges Paket: BiocGenerics
 
-Attaching package: 'BiocGenerics'
+Attache Paket: ‘BiocGenerics’
 
-The following objects are masked from 'package:stats':
+Die folgenden Objekte sind maskiert von ‘package:stats’:
 
     IQR, mad, sd, var, xtabs
 
-The following objects are masked from 'package:base':
+Die folgenden Objekte sind maskiert von ‘package:base’:
 
     Filter, Find, Map, Position, Reduce, anyDuplicated, aperm, append,
     as.data.frame, basename, cbind, colnames, dirname, do.call,
@@ -207,11 +207,11 @@ Number of Edges = 11
 > 
 > ## Use the output here
 > require(Matrix)
-Loading required package: Matrix
+Lade nötiges Paket: Matrix
 > lapply(rD.10.4, function(g) as(as(g, "Matrix"),"nMatrix"))
 $er
 10 x 10 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 10 column names '1', '2', '3' ... ]]
+  [[ suppressing 10 column names ‘1’, ‘2’, ‘3’ ... ]]
                       
 1  . . . . . . . | | .
 2  . . | . . . . . . .
@@ -226,7 +226,7 @@ $er
 
 $regular
 10 x 10 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 10 column names '1', '2', '3' ... ]]
+  [[ suppressing 10 column names ‘1’, ‘2’, ‘3’ ... ]]
                       
 1  . | . | . | . | . .
 2  . . | . . | . . | .
@@ -241,7 +241,7 @@ $regular
 
 $watts
 10 x 10 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 10 column names '1', '2', '3' ... ]]
+  [[ suppressing 10 column names ‘1’, ‘2’, ‘3’ ... ]]
                       
 1  . . . | . . . . . .
 2  . . . | . . . . . .
@@ -256,7 +256,7 @@ $watts
 
 $bipartite
 10 x 10 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 10 column names '1', '2', '3' ... ]]
+  [[ suppressing 10 column names ‘1’, ‘2’, ‘3’ ... ]]
                       
 1  . . . | . . . | . |
 2  . . . . . . | . . |
@@ -271,7 +271,7 @@ $bipartite
 
 $barabasi
 10 x 10 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 10 column names '1', '2', '3' ... ]]
+  [[ suppressing 10 column names ‘1’, ‘2’, ‘3’ ... ]]
                       
 1  . . . . . . . . . .
 2  . . . . . . . . . .
@@ -286,7 +286,7 @@ $barabasi
 
 $geometric
 10 x 10 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 10 column names '1', '2', '3' ... ]]
+  [[ suppressing 10 column names ‘1’, ‘2’, ‘3’ ... ]]
                       
 1  . . . . . | . | . .
 2  . . . . . . . . . .
@@ -301,7 +301,7 @@ $geometric
 
 $power
 10 x 10 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 10 column names '1', '2', '3' ... ]]
+  [[ suppressing 10 column names ‘1’, ‘2’, ‘3’ ... ]]
                       
 1  . . | . | . . . | .
 2  . . . . . . . . . .
@@ -316,7 +316,7 @@ $power
 
 $interEr
 10 x 10 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 10 column names '1', '2', '3' ... ]]
+  [[ suppressing 10 column names ‘1’, ‘2’, ‘3’ ... ]]
                       
 1  . . . . | . . . . |
 2  . . . . . | . . | .
@@ -332,7 +332,7 @@ $interEr
 > lapply(rD.12.2, function(g) as(as(g, "Matrix"),"nMatrix"))
 $er
 12 x 12 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 12 column names '1', '2', '3' ... ]]
+  [[ suppressing 12 column names ‘1’, ‘2’, ‘3’ ... ]]
                           
 1  . . . . . . . . . . | .
 2  . . . . . . . . . | . .
@@ -349,7 +349,7 @@ $er
 
 $regular
 12 x 12 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 12 column names '1', '2', '3' ... ]]
+  [[ suppressing 12 column names ‘1’, ‘2’, ‘3’ ... ]]
                           
 1  . . . . . . . . . . . |
 2  . . . . . . . . . . . .
@@ -366,7 +366,7 @@ $regular
 
 $watts
 12 x 12 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 12 column names '1', '2', '3' ... ]]
+  [[ suppressing 12 column names ‘1’, ‘2’, ‘3’ ... ]]
                           
 1  . . | . . . | | . . . .
 2  . . . . . . . . . . . .
@@ -383,7 +383,7 @@ $watts
 
 $bipartite
 12 x 12 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 12 column names '1', '2', '3' ... ]]
+  [[ suppressing 12 column names ‘1’, ‘2’, ‘3’ ... ]]
                           
 1  . . . . . . . . . . . .
 2  . . . . | . . . | . . .
@@ -400,7 +400,7 @@ $bipartite
 
 $barabasi
 12 x 12 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 12 column names '1', '2', '3' ... ]]
+  [[ suppressing 12 column names ‘1’, ‘2’, ‘3’ ... ]]
                           
 1  . . . . . . . . . . . .
 2  . . . . . . . . . . . .
@@ -417,7 +417,7 @@ $barabasi
 
 $geometric
 12 x 12 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 12 column names '1', '2', '3' ... ]]
+  [[ suppressing 12 column names ‘1’, ‘2’, ‘3’ ... ]]
                           
 1  . . . . . . . . . . . .
 2  . . . . . . . . . . . .
@@ -434,7 +434,7 @@ $geometric
 
 $power
 12 x 12 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 12 column names '1', '2', '3' ... ]]
+  [[ suppressing 12 column names ‘1’, ‘2’, ‘3’ ... ]]
                           
 1  . . . . . . . . . . . .
 2  . . . . . . . . . . . .
@@ -451,7 +451,7 @@ $power
 
 $interEr
 12 x 12 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 12 column names '1', '2', '3' ... ]]
+  [[ suppressing 12 column names ‘1’, ‘2’, ‘3’ ... ]]
                           
 1  . . . . . . . . . . . |
 2  | . . . . . . | . . . .
@@ -470,24 +470,23 @@ $interEr
 > ## Minimal checks on graphs generated via igraph
 > stopifnot( require("graph") )
 > set.seed(37)
-> dagList <- vector(mode = "list", length = 7)
+> dagList <- vector(mode = "list", length = 6)
 > dagList[[1]] <- randDAG(10, 4, "regular")
 > dagList[[2]] <- randDAG(10, 4, "watts")
 > dagList[[3]] <- randDAG(10, 4, "er")
 > dagList[[4]] <- randDAG(10, 4, "bipartite")
-> dagList[[5]] <- randDAG(10, 4, "barabasi")
-> dagList[[6]] <- randDAG(10, 4, "geometric")
-> dagList[[7]] <- randDAG(10, 4, "interEr", par2 = 0.5)
+> dagList[[5]] <- randDAG(10, 4, "geometric")
+> dagList[[6]] <- randDAG(10, 4, "interEr", par2 = 0.5)
 > 
 > ## number of nodes
 > stopifnot(all.equal(
 +   sapply(dagList, numNodes),
-+   rep(10,7)
++   rep(10,6)
 + ))
 > ## number of edges
 > stopifnot(all.equal(
 +   sapply(dagList, numEdges),
-+   c(20,20,16,15,0,10,19)
++   c(20,20,16,15,10,18)
 + ))
 > 
 > ## Use the output here -- FIXME: check more
@@ -495,7 +494,7 @@ $interEr
 > lapply(rD.10.4, function(g) as(as(g, "Matrix"),"nMatrix"))
 $er
 10 x 10 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 10 column names '1', '2', '3' ... ]]
+  [[ suppressing 10 column names ‘1’, ‘2’, ‘3’ ... ]]
                       
 1  . . . . . . . | | .
 2  . . | . . . . . . .
@@ -510,7 +509,7 @@ $er
 
 $regular
 10 x 10 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 10 column names '1', '2', '3' ... ]]
+  [[ suppressing 10 column names ‘1’, ‘2’, ‘3’ ... ]]
                       
 1  . | . | . | . | . .
 2  . . | . . | . . | .
@@ -525,7 +524,7 @@ $regular
 
 $watts
 10 x 10 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 10 column names '1', '2', '3' ... ]]
+  [[ suppressing 10 column names ‘1’, ‘2’, ‘3’ ... ]]
                       
 1  . . . | . . . . . .
 2  . . . | . . . . . .
@@ -540,7 +539,7 @@ $watts
 
 $bipartite
 10 x 10 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 10 column names '1', '2', '3' ... ]]
+  [[ suppressing 10 column names ‘1’, ‘2’, ‘3’ ... ]]
                       
 1  . . . | . . . | . |
 2  . . . . . . | . . |
@@ -555,7 +554,7 @@ $bipartite
 
 $barabasi
 10 x 10 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 10 column names '1', '2', '3' ... ]]
+  [[ suppressing 10 column names ‘1’, ‘2’, ‘3’ ... ]]
                       
 1  . . . . . . . . . .
 2  . . . . . . . . . .
@@ -570,7 +569,7 @@ $barabasi
 
 $geometric
 10 x 10 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 10 column names '1', '2', '3' ... ]]
+  [[ suppressing 10 column names ‘1’, ‘2’, ‘3’ ... ]]
                       
 1  . . . . . | . | . .
 2  . . . . . . . . . .
@@ -585,7 +584,7 @@ $geometric
 
 $power
 10 x 10 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 10 column names '1', '2', '3' ... ]]
+  [[ suppressing 10 column names ‘1’, ‘2’, ‘3’ ... ]]
                       
 1  . . | . | . . . | .
 2  . . . . . . . . . .
@@ -600,7 +599,7 @@ $power
 
 $interEr
 10 x 10 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 10 column names '1', '2', '3' ... ]]
+  [[ suppressing 10 column names ‘1’, ‘2’, ‘3’ ... ]]
                       
 1  . . . . | . . . . |
 2  . . . . . | . . | .
@@ -616,7 +615,7 @@ $interEr
 > lapply(rD.12.2, function(g) as(as(g, "Matrix"),"nMatrix"))
 $er
 12 x 12 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 12 column names '1', '2', '3' ... ]]
+  [[ suppressing 12 column names ‘1’, ‘2’, ‘3’ ... ]]
                           
 1  . . . . . . . . . . | .
 2  . . . . . . . . . | . .
@@ -633,7 +632,7 @@ $er
 
 $regular
 12 x 12 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 12 column names '1', '2', '3' ... ]]
+  [[ suppressing 12 column names ‘1’, ‘2’, ‘3’ ... ]]
                           
 1  . . . . . . . . . . . |
 2  . . . . . . . . . . . .
@@ -650,7 +649,7 @@ $regular
 
 $watts
 12 x 12 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 12 column names '1', '2', '3' ... ]]
+  [[ suppressing 12 column names ‘1’, ‘2’, ‘3’ ... ]]
                           
 1  . . | . . . | | . . . .
 2  . . . . . . . . . . . .
@@ -667,7 +666,7 @@ $watts
 
 $bipartite
 12 x 12 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 12 column names '1', '2', '3' ... ]]
+  [[ suppressing 12 column names ‘1’, ‘2’, ‘3’ ... ]]
                           
 1  . . . . . . . . . . . .
 2  . . . . | . . . | . . .
@@ -684,7 +683,7 @@ $bipartite
 
 $barabasi
 12 x 12 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 12 column names '1', '2', '3' ... ]]
+  [[ suppressing 12 column names ‘1’, ‘2’, ‘3’ ... ]]
                           
 1  . . . . . . . . . . . .
 2  . . . . . . . . . . . .
@@ -701,7 +700,7 @@ $barabasi
 
 $geometric
 12 x 12 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 12 column names '1', '2', '3' ... ]]
+  [[ suppressing 12 column names ‘1’, ‘2’, ‘3’ ... ]]
                           
 1  . . . . . . . . . . . .
 2  . . . . . . . . . . . .
@@ -718,7 +717,7 @@ $geometric
 
 $power
 12 x 12 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 12 column names '1', '2', '3' ... ]]
+  [[ suppressing 12 column names ‘1’, ‘2’, ‘3’ ... ]]
                           
 1  . . . . . . . . . . . .
 2  . . . . . . . . . . . .
@@ -735,7 +734,7 @@ $power
 
 $interEr
 12 x 12 sparse Matrix of class "ngCMatrix"
-  [[ suppressing 12 column names '1', '2', '3' ... ]]
+  [[ suppressing 12 column names ‘1’, ‘2’, ‘3’ ... ]]
                           
 1  . . . . . . . . . . . |
 2  | . . . . . . | . . . .
@@ -774,5 +773,5 @@ $interEr
 + 	  unlist(tmp2@edgeData@data) == -2 )
 > 
 > proc.time()
-   user  system elapsed 
-  1.597   0.189   2.152 
+       User      System verstrichen 
+      3.097       0.218       3.375 

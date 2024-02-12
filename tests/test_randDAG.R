@@ -78,24 +78,23 @@ lapply(rD.12.2, function(g) as(as(g, "Matrix"),"nMatrix"))
 ## Minimal checks on graphs generated via igraph
 stopifnot( require("graph") )
 set.seed(37)
-dagList <- vector(mode = "list", length = 7)
+dagList <- vector(mode = "list", length = 6)
 dagList[[1]] <- randDAG(10, 4, "regular")
 dagList[[2]] <- randDAG(10, 4, "watts")
 dagList[[3]] <- randDAG(10, 4, "er")
 dagList[[4]] <- randDAG(10, 4, "bipartite")
-dagList[[5]] <- randDAG(10, 4, "barabasi")
-dagList[[6]] <- randDAG(10, 4, "geometric")
-dagList[[7]] <- randDAG(10, 4, "interEr", par2 = 0.5)
+dagList[[5]] <- randDAG(10, 4, "geometric")
+dagList[[6]] <- randDAG(10, 4, "interEr", par2 = 0.5)
 
 ## number of nodes
 stopifnot(all.equal(
   sapply(dagList, numNodes),
-  rep(10,7)
+  rep(10,6)
 ))
 ## number of edges
 stopifnot(all.equal(
   sapply(dagList, numEdges),
-  c(20,20,16,15,0,10,19)
+  c(20,20,16,15,10,18)
 ))
 
 ## Use the output here -- FIXME: check more

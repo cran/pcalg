@@ -1,5 +1,5 @@
 1c213fc1c5a5ec68e7a5ba9293440dc3 *ChangeLog
-5a1af0be3e0cdbc7c7921af505d9105e *DESCRIPTION
+440a9d31b6239ad5dcca646c3094c714 *DESCRIPTION
 79fd4acb4bfb63ec9e5f128b83d9b519 *NAMESPACE
 1ff3899574f2834d3ccd16abecf9bb1a *R/Aaux.R
 b93a5be8eca41fda6c169327121fbf98 *R/AllClasses.R
@@ -42,7 +42,7 @@ f0d1c0728b0d9fcf297e6f0c48893ebd *inst/NEWS.Rd
 4e33425acbef8bf36705d8a75622baa8 *inst/doc/mkVignettes.R
 415ef587902bfe185df240f1fd7a983f *inst/doc/vignette2018.R
 e3ccf4421514bf7e337aa67d75bde656 *inst/doc/vignette2018.Rnw
-4aaf5b7ea2b620f5f7191fb3452fead4 *inst/doc/vignette2018.pdf
+2969d85808d0f6373b26d73301641825 *inst/doc/vignette2018.pdf
 cee0b4475c720bf58c466e1495451b22 *inst/external/N_6_1000.rds
 0d84fdc119d76d992b72f9bdbd0e613d *inst/external/gac-pags.rds
 e7a2a9117d97986b2ab6afc6b4f77478 *inst/external/test_conservative_pc_data1.rda
@@ -155,7 +155,9 @@ abddab27448a30a0f87aea03c467e0ee *man/visibleEdge.Rd
 35da0b2746092325096fa471446e465e *src/greedy.cpp
 c5e0eb959f4162f8655ea795eec34c50 *src/init.c
 bc5cab68e323949bed42d3d87b68e5a2 *src/score.cpp
+2a3703c998cfee5643aba359c366c621 *tests/Rplots.pdf
 83187ba1f22cdb1b239e07027ddf489a *tests/discr100k.rda
+d41d8cd98f00b204e9800998ecf8427e *tests/nohup.out
 e55f723241bfbf463ec914b2bcc694d0 *tests/test_LINGAM.R
 daeeb27e6aae053f7b69fa562716582f *tests/test_addBgKnowledge.R
 94d9a6136b5d720bfa53e96616e459ca *tests/test_adjustment.R
@@ -199,8 +201,8 @@ ecaacf0c68bf72d9d96eeeeffd824357 *tests/test_pcorOrder.R
 67fbdda0dd8ab5f4fbd185ee85916d12 *tests/test_pdag2allDags.R
 76fd1ade1f75af8bbdcc8d88b655fbdc *tests/test_pdag2dag.R
 6e781edbdbfa26fbff95bac51ebac9bc *tests/test_possDeAn.R
-648386141ec66018d42a568c005d2a52 *tests/test_randDAG.R
-5154e08a7fc68e4f6649d81e7b51007e *tests/test_randDAG.Rout.save
+507c58ed9fd5d94df32413b3293b4618 *tests/test_randDAG.R
+df10c14587ea074ed0f3b95f3211f81a *tests/test_randDAG.Rout.save
 aee8ad2108a151b25666eaf0ed1b4205 *tests/test_randomDAG.R
 e265f1b5aa31a977b1d25841ceebf3dd *tests/test_rfci.R
 aca0d1fb3b38a6f54fb2d84040aa009d *tests/test_rmvDAG.R
