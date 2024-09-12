@@ -19,7 +19,7 @@ corGraph(dm, alpha=0.05, Cmethod="pearson")
     abbreviated.}
 }
 \value{
-  Undirected correlation graph, a \code{\linkS4class{graph}} object
+  Undirected correlation graph, a \code{\link[graph]{graph-class}} object
   (package \pkg{graph});  \code{\link{getGraph}} for the \dQuote{fitted}
   graph.
 }

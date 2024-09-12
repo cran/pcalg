@@ -3,7 +3,7 @@ library(pcalg)
 res <- rep(FALSE, 10)
 set.seed(123)
 g <- pcalg::randomDAG(n = 7, prob = 0.3)
-plot(g)
+## plot(g)
 cpdag <- dag2cpdag(g)
 ## plot(cpdag)
 cpdag.mat <- t(as(cpdag,"matrix")) ## has correct encoding

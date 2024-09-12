@@ -49,10 +49,12 @@ myDAG <- randomDAG(p, prob = 0.3)
 myCPDAG <- dag2cpdag(myDAG) 
 ## true PDAG with added background knowledge 5 -> 6
 myPDAG <- addBgKnowledge(myCPDAG,5,6) 
+if (require(Rgraphviz)) {
 par(mfrow = c(1,3))
 plot(myDAG)
 plot(myPDAG)
 plot(myCPDAG) ## plot of the graphs
+}
 
 ## if the CPDAG C is amenable relative to (X,Y),
 ## the optimal set will be the same for all DAGs 

@@ -94,10 +94,11 @@ m.fci <- fciPlus(suffStat, indepTest=gaussCItest,
                  alpha = 0.9999, p=p)
 summary(m.fci)
 
-## require("Rgraphviz")
-sfsmisc::mult.fig(2, main="True DAG  //  fciPlus(.) \"oracle\" estimate")
+if (require(Rgraphviz)) {
+  par(mfrow=c(1,2))
 plot(myDAG)
 plot(m.fci)
+}
 
 ##################################################
 ## Joint Causal Inference Example

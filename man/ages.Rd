@@ -144,11 +144,12 @@ score <- new("GaussL0penObsScore", data)
 ges.fit <- ges(score, phase = c("forward","backward"), iterate = FALSE)
 
 ## Plots
+if (require(Rgraphviz)) {
 par(mfrow=c(1,3))
 plot(ges.fit$essgraph, main="Estimated CPDAG with GES")
 plot(ages.fit$essgraph, main="Estimated APDAG with AGES")
 plot(gGtrue, main="TrueDAG")
-
+}
 
 
 ## Example 2: ages adds correct orientations: Author --> Goal and Author --> V5
@@ -175,11 +176,12 @@ score <- new("GaussL0penObsScore", data)
 ges.fit <- ges(score, phase = c("forward","backward"), iterate = FALSE)
 
 ## Plots
+if (require(Rgraphviz)) {
 par(mfrow=c(1,3))
 plot(ges.fit$essgraph, main="Estimated CPDAG with GES")
 plot(ages.fit$essgraph, main="Estimated APDAG with AGES")
 plot(gGtrue, main="TrueDAG")
-
+}
 
 ## Example 3: ges and ages return the same graph
 
@@ -197,10 +199,12 @@ ges.fit <- ges(score)
 
 
 ## Plots
+if (require(Rgraphviz)) {
 par(mfrow=c(1,3))
 plot(ges.fit$essgraph, main="Estimated CPDAG with GES")
 plot(ages.fit$essgraph, main="Estimated APDAG with AGES")
 plot(gmG8$g, main="TrueDAG")
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

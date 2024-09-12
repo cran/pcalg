@@ -43,8 +43,7 @@ randomDAG(n, prob, lB = 0.1, uB = 1, V = as.character(1:n))
 \examples{
 set.seed(101)
 myDAG <- randomDAG(n = 20, prob= 0.2, lB = 0.1, uB = 1)
-## require(Rgraphviz)
-plot(myDAG)
+if (require(Rgraphviz)) plot(myDAG)
 }
 \keyword{graphs}
 \keyword{datagen}

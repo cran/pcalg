@@ -1,3 +1,6 @@
+## Sep 2024: Stopped using output because of volative behaviour
+## of interER, power, geometric, barabasi
+
 library(pcalg)
 suppressWarnings(RNGversion("3.5.0"))
 ## setwd("/sfs/u/kalischm/research/packages/unifDAGs/")
@@ -34,9 +37,9 @@ stopifnot( require("graph") )
 stopifnot(vapply(rD.10.4, isDirected, NA),
           vapply(rD.10.4, inherits, NA, what="graph"))
 ## nice plot of all 8 :
-op <- par(mfrow=c(4,2))
-invisible(lapply(names(rD.10.4), function(nm) plot(rD.10.4[[nm]], main=nm)))
-par(op)
+# op <- par(mfrow=c(4,2))
+# invisible(lapply(names(rD.10.4), function(nm) plot(rD.10.4[[nm]], main=nm)))
+# par(op)
 
 
 str(outs <- lapply(rD.10.4, leaves, "out"))
@@ -69,11 +72,10 @@ stopifnot(exprs = {
 
 ##---------------------------------------------------------------------------
 
-
 ## Use the output here
 require(Matrix)
-lapply(rD.10.4, function(g) as(as(g, "Matrix"),"nMatrix"))
-lapply(rD.12.2, function(g) as(as(g, "Matrix"),"nMatrix"))
+# lapply(rD.10.4, function(g) as(as(g, "Matrix"),"nMatrix"))
+# lapply(rD.12.2, function(g) as(as(g, "Matrix"),"nMatrix"))
 
 ## Minimal checks on graphs generated via igraph
 stopifnot( require("graph") )
@@ -99,8 +101,8 @@ stopifnot(all.equal(
 
 ## Use the output here -- FIXME: check more
 require(Matrix)
-lapply(rD.10.4, function(g) as(as(g, "Matrix"),"nMatrix"))
-lapply(rD.12.2, function(g) as(as(g, "Matrix"),"nMatrix"))
+# lapply(rD.10.4, function(g) as(as(g, "Matrix"),"nMatrix"))
+# lapply(rD.12.2, function(g) as(as(g, "Matrix"),"nMatrix"))
 
 ## check weights
 set.seed(123)

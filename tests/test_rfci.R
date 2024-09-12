@@ -38,8 +38,8 @@ edL[[7]] <- list(edges= 8,       weights=abs(rnorm(1)))
 edL[[1]] <- list(edges=c(4,6),   weights=c(abs(rnorm(1)),abs(rnorm(1))))
 edL[[2]] <- list(edges=c(5,7),   weights=c(abs(rnorm(1)),abs(rnorm(1))))
 g <- new("graphNEL", nodes=V, edgeL=edL, edgemode="directed")
-if(dev.interactive())
-    plot(g)
+
+# plot(g)
 
 ## Compute the true covariance matrix of g
 cov.mat <- trueCov(g)
@@ -94,8 +94,7 @@ edL[[24]] <- list(edges=NULL,weights=NULL)
 edL[[25]] <- list(edges=NULL,weights=NULL)
 (g <- new("graphNEL", nodes=V, edgeL=edL,edgemode="directed"))
 
-if(dev.interactive())
-    plot(g)
+# plot(g)
 
 ## Latent variables (all having no parents):
 L <- c(1:13)

@@ -57,7 +57,7 @@ LINGAM(X, verbose = FALSE)
   and Jonas Peters <jonas.peters@tuebingen.mpg.de>.
 }
 \seealso{
-  \code{\link{fastICA}} from package \pkg{fastICA} is used.
+  \code{\link[fastICA]{fastICA}} from package \pkg{fastICA} is used.
 }
 \examples{
 ##################################################

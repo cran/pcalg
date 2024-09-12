@@ -7,7 +7,7 @@
 \alias{getGraph,pcAlgo-method}
 \title{Get the "graph" Part or Aspect of R Object}
 \description{
-  Get the \code{\linkS4class{graph}}  part or \dQuote{aspect} of an \R
+  Get the \code{\link[graph]{graph-class}}  part or \dQuote{aspect} of an \R
   object, notably from our \code{\link{pc}()}, \code{\link{skeleton}()},
   \code{\link{fci}()}, etc, results.
 }
@@ -19,7 +19,7 @@ getGraph(x)
     (with nodes and edges).}
 }
 \value{
-  a \code{\linkS4class{graph}} object, i.e., one inheriting from (the
+  a \code{\link[graph]{graph-class}} object, i.e., one inheriting from (the
   virtual) class \code{"graph"}, package \pkg{graph}.
 }
 \section{Methods}{
@@ -31,7 +31,7 @@ getGraph(x)
     \item{\code{signature(x = "fciAlgo")}}{extract the graph part
       explicitly.}
     \item{\code{signature(x = "matrix")}}{interpret \code{x} as adjacency
-      matrix and return the corresponding \code{"\linkS4class{graphAM}"}
+      matrix and return the corresponding \code{"\link[graph]{graphAM}"}
       object.}
   }
   For sparseMatrix methods, see the \sQuote{Note}.
@@ -47,7 +47,7 @@ getGraph(x)
 \author{Martin Maechler}
 \seealso{
   \code{\link{fci}}, etc.
-  The \code{\linkS4class{graph}} class description in package \pkg{graph}.
+  The \code{\link[graph]{graph-class}} class description in package \pkg{graph}.
 }
 \examples{
 A <- rbind(c(0,1,0,0,1),

@@ -49,7 +49,7 @@ type = c("cpdag", "pdag", "dag", "mag", "pag"))
 ## a -- b -> c
 amat <- matrix(c(0,1,0, 1,0,1, 0,0,0), 3,3)
 colnames(amat) <- rownames(amat) <- letters[1:3]
-plot(as(t(amat), "graphNEL"))
+if (require(Rgraphviz)) plot(as(t(amat), "graphNEL"))
 
 possAn(m = amat, x = 3, possible = TRUE, ds = FALSE, type = "pdag") ## all nodes
 possAn(m = amat, x = 3, y = 2, possible = TRUE, ds = FALSE, type = "pdag") ## only node 1

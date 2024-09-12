@@ -13,7 +13,7 @@
 \usage{opt.target(essgraph, max.size, use.node.names = TRUE)}
 \arguments{
   \item{essgraph}{An \code{\linkS4class{EssGraph}} or
-    \code{\linkS4class{graphNEL}} object representing a (observational or
+    \code{\link[graph]{graphNEL}} object representing a (observational or
     interventional) essential graph (or "CPDAG").}
   \item{max.size}{Maximum size of the intervention target. Only 1 and the
     number of vertices of \code{essgraph} are allowed; the latter means no size

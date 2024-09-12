@@ -63,6 +63,7 @@ amat3 <- matrix(res3$dags[1,],5,5, byrow = TRUE)
 colnames(amat3) <- rownames(amat3) <- res3$nodeNms
 amat3
 
+if (require(Rgraphviz)) {
 ## for convenience a simple plotting function
 ## for the function output
 plotAllDags <- function(res) {
@@ -82,4 +83,5 @@ plotAllDags(res2)
 amat2 ## adj.matrix corresponding to the first plot for expl 2
 plotAllDags(res3)
 amat3 ## adj.matrix corresponding to the first plot for expl 3
+}
 }

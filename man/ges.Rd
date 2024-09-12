@@ -186,8 +186,10 @@ if (require(Rgraphviz)) {
   par(mfrow=c(1,2))
   plot(ges.fit$essgraph, main = "Estimated CPDAG")
   plot(gmG8$g, main = "True DAG")
-} else { ## alternative:
   str(ges.fit, max=2)
+}
+## alternative:
+if (require(Matrix)) {
   as(as(ges.fit$essgraph,"graphNEL"),"Matrix")
 }
 }

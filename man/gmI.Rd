@@ -37,7 +37,7 @@ str(gmI, max=3)
 stopifnot(identical(gmI $ g, gmI7 $ g))
 if(dev.interactive()) { ## to save time in tests
   round(as(gmI $ g, "Matrix"), 2) # weight ("adjacency") matrix
-  plot(gmI $ g)
+  if (require(Rgraphviz)) plot(gmI $ g)
   pairs(gmI$x, gap = 0,
         panel=function(...) smoothScatter(..., add=TRUE))
 }

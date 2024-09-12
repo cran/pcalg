@@ -49,7 +49,7 @@
 
   In addition, \code{"pcAlgo"} has slots
   \describe{
-    \item{\code{graph}:}{Object of class \code{"\linkS4class{graph}"}:
+    \item{\code{graph}:}{Object of class \code{"\link[graph]{graph-class}"}:
       the undirected or partially directed graph that was estimated.}
 
     \item{\code{zMin}:}{Deprecated.}

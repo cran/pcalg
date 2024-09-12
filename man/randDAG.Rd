@@ -95,7 +95,7 @@ randDAG(n, d, method ="er", par1=NULL, par2=NULL,
   output of \code{\link{randomDAG}}).
 }%% MM: --> ../TODO - we should add optional sorting
 
-\seealso{the package \code{\link{igraph}}, notably help pages such as
+\seealso{the package \pkg{igraph}, notably help pages such as
   \code{\link[igraph]{sample_k_regular}} or \code{\link[igraph]{sample_smallworld}};
 
   \code{\link[unifDAG]{unifDAG}} from package \pkg{unifDAG} for generating uniform random DAGs.
@@ -104,7 +104,7 @@ randDAG(n, d, method ="er", par1=NULL, par2=NULL,
   \code{\link{rmvDAG}} for generating multivariate data according to a DAG.
 }
 \examples{
-set.seed(37)
+set.seed(38)
 dag1 <- randDAG(10, 4, "regular")
 dag2 <- randDAG(10, 4, "watts")
 dag3 <- randDAG(10, 4, "er")
@@ -114,24 +114,27 @@ dag6 <- randDAG(10, 4, "barabasi")
 dag7 <- randDAG(10, 4, "geometric")
 dag8 <- randDAG(10, 4, "interEr", par2 = 0.5)
 
-## require("Rgraphviz")
-par(mfrow=c(4,2))
-plot(dag1,main="Regular graph")
-plot(dag2,main="Watts-Strogatz graph")
-plot(dag3,main="Erdoes-Renyi graph")
-plot(dag4,main="Power-law graph")
-plot(dag5,main="Bipartite graph")
-plot(dag6,main="Barabasi graph")
-plot(dag7,main="Geometric random graph")
-plot(dag8,main="Interconnected island graph")
+if (require(Rgraphviz)) {
+  par(mfrow=c(4,2))
+  plot(dag1,main="Regular graph")
+  plot(dag2,main="Watts-Strogatz graph")
+  plot(dag3,main="Erdoes-Renyi graph")
+  plot(dag4,main="Power-law graph")
+  plot(dag5,main="Bipartite graph")
+  plot(dag6,main="Barabasi graph")
+  plot(dag7,main="Geometric random graph")
+  plot(dag8,main="Interconnected island graph")
+}
 
 set.seed(45)
 dag0 <- randDAG(6,3)
 dag1 <- randDAG(6,3, weighted=FALSE)
 dag2 <- randDAG(6,3, DAG=FALSE)
-par(mfrow=c(1,2))
-plot(dag1)
-plot(dag2)      ## undirected graph
+if (require(Rgraphviz)) {
+  par(mfrow=c(1,2))
+  plot(dag1)
+  plot(dag2)      ## undirected graph
+}
 dag0@edgeData   ## note the uniform weights between 0.1 and 1
 dag1@edgeData   ## note the constant weights
 
