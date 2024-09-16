@@ -15,9 +15,9 @@
 ##################################################
 ## exported
 ##################################################
-lingam <- function(X, verbose = FALSE)
+lingam <- function(X, verbose = FALSE, alpha = 1)
 {
-    structure(uselingam(X, verbose = verbose), class = "LINGAM")
+    structure(uselingam(X, verbose = verbose, alpha = alpha), class = "LINGAM")
 }
 setOldClass("LINGAM")
 
@@ -40,9 +40,9 @@ LINGAM <- function(X, verbose = FALSE)
 ## internal
 ##################################################
 
-uselingam <- function(X, verbose = FALSE) {
+uselingam <- function(X, verbose = FALSE, alpha = 1) {
   t.k <- estLiNGAM(X, only.perm=TRUE, verbose=verbose)$k
-  prune(t(X), t.k, verbose=verbose)
+  prune(t(X), t.k, verbose=verbose, prunefactor = alpha)
 }
 
 ### MM: /u/maechler/R/MM/MISC/Speed/int-permutations.R
